@@ -37,6 +37,8 @@ struct Room {
 
 struct Circle {
   double x, y, r;
+
+  void moveCircle(const double angle, const double dist);
 };
 
 // ParentSpace {};
@@ -52,7 +54,7 @@ struct Circle_lst {
   void appendCircles(Circle_lst);
   void getCoverCircle();
   void moveCircles(double angle, double dist);
-  Circle Circle_lst::getFarthestCircle(const Circle P);
+  Circle getFarthestCircle(const Circle P);
 
   void printCircles();
   void drawCircles(int childrenColor);
@@ -159,6 +161,16 @@ double getRadian(Circle c1, Circle c2);
 
 double getDirection(double* room1_pos, double* room2_pos);
 double getDirection(Circle c1, Circle c2);
+
+
+// vector是否为从小到大顺序
+bool is_sortedVec(std::vector<int> i_vec);
+// 对vec冒泡排序
+void sortedVec(std::vector<int>& i_vec);
+// 从vec1中减去vec2
+std::vector<int>
+removeVec(std::vector<int> vec1, std::vector<int> vec2);
+
 bool is_unboard(Circle c, Circle c1, Circle c2);
 void reviseUnboard(Circle c, Circle c1, Circle& c2);   // 三者若遮挡修改c2位置
 void collide(Circle c1, Circle c2, Circle& c2_new);
@@ -166,40 +178,39 @@ void getUnboardRooms(Circle c1, Circle_lst& unboardRooms, const int room_count);
 
 void collide_cluster(Circle_lst clst1, Circle_lst& clst2);
 
-void angleResourceArrange(Circle parentCircle, Circle_lst& childrenCircles,
+void angleResourceArrange(std::vector<std::vector<int> >& i_vec,
+                          Circle parentCircle,
+                          Circle_lst& childrenCircles,
                           double* area_arr, double* dist_arr, int arr_n);
 
 void searchAngleResource(std::vector<std::vector<int>>& restIndex_vec,
                          int resourceCount,
-                         std::vector<int> usedAngleIndex_vec);
+                         std::vector<int > usedAngleIndex_vec);
 
 void flattenDoubleVec(std::vector<std::vector<int>> doubleVec,
-                      std::vector<int>& resultVec)
+                      std::vector<int>& resultVec);
 
-bool is_sortedVec(std::vector<int> i_vec);
-
-void sortedVec(std::vector<int>& i_vec);
 
 // 得到c2对于c1所占用的资源
-int getResourceIndex(Circle c1, Circle c2, std::vector<int>& resourceIndex_vec);
+void getResourceIndex(Circle c1,Circle c2, std::vector<int>& resourceIndex_vec);
 
 // 判断资源区间是否有重复
 int getGapResourceIndex(std::vector<int> ivec1,
                          std::vector<std::vector<int>> ivec2,
                         std::vector<int>& gapIndex_vec);
 
-// 从vec1中减去vec2
-std::vector<int>
-removeVec(std::vector<int> vec1, std::vector<int> vec2);
-
 // 父空间之间检测遮挡并修改P2占用角度资源
-void reviseParentUnboard(Circle P1, Circle& P2,
-                         std::vector<int>& i_vec1);
+void reviseParentUnboard(Circle P1, Circle_lst C1,
+                         Circle& P2,
+                         std::vector<std::vector<int> >& i_vec1);
 
 // 父空间与子空间之间, 检测遮挡并修改C2_i占用角度资源
-void reviseChildUnboard(Circle P1, Circle& C2_i,
-                         std::vector<int> i_vec1,
-                         std::vector<int>& i_vec2);
+void reviseChildUnboard(Circle P1, Circle_lst C1,
+                        Circle P2, Circle& C2_i, int index,
+                        std::vector<std::vector<int> > i_vec1,
+                        std::vector<std::vector<int> >& i_vec2,
+                        bool& mobility);
+
 
 // 通过资源区间来获得角度
 double getAngleFromResourceIndex(Circle c1,
@@ -208,6 +219,11 @@ double getAngleFromResourceIndex(Circle c1,
                                  std::vector<int> c1_vec,
                                  std::vector<int> c2_vec,
                                  const double unitRadian);
+void angleResourceDynamicWeight(Circle& P1, Circle& P2,
+                                Circle_lst& C1, Circle_lst& C2,
+                                std::vector<std::vector<int>> i_vec1,
+                                std::vector<std::vector<int>>& i_vec2);
+
 
 void test_surround(Circle_lst& clst);
 void test_shareDegree(Circle_lst &clst);
@@ -591,7 +607,7 @@ void align(Circle circle, Circle_lst& clst,
   clst.appendCircles(clst_new);
 }
 
-void Circle::moveCircle(double angle, double dist) {
+void Circle::moveCircle(const double angle, const double dist) {
   // 通过已经确定的空间, 与x轴逆时针角度, 距离, 确定下一个空间的位置
   x += cos(angle) * dist;
   y += sin(angle) * dist;
@@ -808,14 +824,16 @@ void getUnboardRooms(Circle c, Circle_lst& unboardRooms, Circle_lst& restRooms) 
 }
 
 
-void angleResourceArrange(Circle parentCircle, Circle_lst& childrenCircles,
+void angleResourceArrange(std::vector<std::vector<int> >& i_vec,
+                          Circle parentCircle,
+                          Circle_lst& childrenCircles,
                           double* area_arr, double* dist_arr, int arr_n) {
   // 对c各个角度资源进行分配
   // Circle_lst childrenCircles;
   
   // 计算单位角度资源
   int resourceCount = 20;
-  double unitRadian = 2*PI/resourceCount;
+  const double unitRadian = 2*PI/resourceCount;
   // 得到各个圆所对应的资源序号
   int countSum = 0;
   int resource_count_i_arr[100] = {};           // 资源个数数组
@@ -836,7 +854,9 @@ void angleResourceArrange(Circle parentCircle, Circle_lst& childrenCircles,
       // int temp_arr[30] = {};             // 保存当前圆对应的资源序号
       for (int index = 0; index < resource_count_i; index++) {
         // temp_arr[index] = resource_index++;
+        i_vec[i][index] = resource_index;
         circle_resource_i_arr[i][index] = resource_index++;
+         
         // std::cout << "circle_resource_i_arr[i][index] = "
         //           << circle_resource_i_arr[i][index]
         //           << std::endl;
@@ -847,7 +867,7 @@ void angleResourceArrange(Circle parentCircle, Circle_lst& childrenCircles,
   // 检测
   for (int i = 0; i < arr_n; i++) {
     for (int j = 0; j < resource_count_i_arr[i]; j++) {
-      std::cout << circle_resource_i_arr[i][j] << ", ";
+      std::cout << i_vec[i][j] << ", ";
     }
     std::cout << "\n";
   }
@@ -871,15 +891,15 @@ void angleResourceArrange(Circle parentCircle, Circle_lst& childrenCircles,
     childCircle.r = sqrt(area_arr[i]/(2*PI));
     childrenCircles.appendCircle(childCircle);
   }
-
+  /*
   // test searchAngleResource()
   std::vector<std::vector<int>> restAngleIndex_vec = {};
   int restCount = 4;
   // std::vector<int> usedAngleIndex_vec = {0, 1, 4, 5, 9, 10, 11};
   std::vector<int> usedAngleIndex_vec = {0, 4, 1, 9, 5, 11, 10};
   // int usedCount = 7;
-  searchAngleResource(restAngleIndex_vec, restCount,
-                       usedAngleIndex_vec);
+  // searchAngleResource(restAngleIndex_vec, restCount,
+  //                      usedAngleIndex_vec);
 
   // test restAngleIndex_vec
   std::cout << "test restAngleIndex_vec" << std::endl;
@@ -889,6 +909,7 @@ void angleResourceArrange(Circle parentCircle, Circle_lst& childrenCircles,
     }
     std::cout << std::endl;
   }
+  */
   
   /*
   int testArr[100][20] = {{3, 5, 8},{1, 2}, {7, 6, 9}, {10, 11, 4}};
@@ -1000,6 +1021,7 @@ void searchAngleResource(std::vector<std::vector<int>>& restIndex_vec,
   for (int i = 0; i < usedAngleIndex_vec.size(); i++) {
     std::cout << usedAngleIndex_vec[i] << " ";
   }
+  std::cout << std::endl;
   std::cout << "resourceCount = " << resourceCount << std::endl;
   
   // int rest_n = 0;
@@ -1135,19 +1157,19 @@ removeVec(std::vector<int> vec1, std::vector<int> vec2) {
   // 检测
   std::cout << "vec1:" << "\n";
   for (int i = 0; i < vec1.size(); i++) {
-    std::cout << vec1[i] << " "
+    std::cout << vec1[i] << " ";
   }
   std::cout << std::endl;
 
   std::cout << "vec2:" << "\n";
   for (int i = 0; i < vec2.size(); i++) {
-    std::cout << vec2[i] << " "
+    std::cout << vec2[i] << " ";
   }
   std::cout << std::endl;
 
   std::cout << "vec3:" << "\n";
   for (int i = 0; i < vec3.size(); i++) {
-    std::cout << vec3[i] << " "
+    std::cout << vec3[i] << " ";
   }
   std::cout << std::endl;
 }
@@ -1169,7 +1191,7 @@ void angleResourceDynamicWeight(Circle& P1, Circle& P2,
   std::vector<Circle> P2_vec = {};
 
   // ================ 为P2寻找相对于P1的角度资源 ===============
-  reviseParentUnboard(P1, P2, i_vec1);
+  reviseParentUnboard(P1, C1, P2, i_vec1);
 
   // ===================== test =============================
 
@@ -1190,13 +1212,14 @@ void angleResourceDynamicWeight(Circle& P1, Circle& P2,
   Circle farC1 = C1.getFarthestCircle(P1), farC2 = C2.getFarthestCircle(P1);
   // 可明显优化成对象类来写, 继承关系, 私有属性
   highThreshold = farC1.r + farC2.r +
-      getDistance(C1, farC1) + getDistance(C2, farC2);
+      getDistance(P1, farC1) + getDistance(P2, farC2);
   double dist = lowThreshold;
+  double unit_dist = 2e3;
   while (dist < highThreshold) {     // 在退让到最高阈值之前
     int i = 0;   // 防止最后一个c2出错
     for (i = 0; i < C2.n; i++) {      // 对P2的子空间逐一遍历
       bool mobility = true;
-      reviseChildUnboard(P1, C2.circles[i], i, i_vec1, i_vec2);
+      reviseChildUnboard(P1, C1, P2, C2.circles[i], i, i_vec1, i_vec2, mobility);
       if (!mobility) {   // 虽然资源占据重叠, 但无法排下C2_i
         // P2退让, C2整体移动
         yield(P1, P2, C2, unit_dist);
@@ -1204,8 +1227,8 @@ void angleResourceDynamicWeight(Circle& P1, Circle& P2,
         break;
       }
     }
-    std << "i = " << i << std::endl;
-    if (i == c2.n) {     // 循环已对所有C2遍历更改
+    std::cout << "i = " << i << std::endl;
+    if (i == C2.n) {     // 循环已对所有C2遍历更改
       std::cout << "i == c2.n" << std::endl;
       // 记录当前P2, 以及C2所占的资源数组
       i_vec2_resultWeight.push_back(i_vec2);
@@ -1217,7 +1240,7 @@ void angleResourceDynamicWeight(Circle& P1, Circle& P2,
 }
 
 
-void getResourceIndex(Circle c1,Circle c2, std::vector& resourceIndex_vec) {
+void getResourceIndex(Circle c1,Circle c2, std::vector<int>& resourceIndex_vec) {
   // c1为主圆, 得到c2相对于c1所占的资源列表
   const double unitRadian = 2*PI/20;
   double radian = getRadian(PI*pow(c2.r, 2), getDistance(c1, c2));
@@ -1232,8 +1255,10 @@ void getResourceIndex(Circle c1,Circle c2, std::vector& resourceIndex_vec) {
 }
 
 
-void reviseParentUnboard(Circle P1, Circle& P2,
-                         std::vector<int>& i_vec1) {
+void reviseParentUnboard(Circle P1, Circle_lst C1,
+                         Circle& P2,
+                         std::vector<std::vector<int> >& i_vec1) {
+  const double unitRadian = 2*PI/20;
   // 父空间之间检测遮挡并修改P2占用角度资源
   // 储存P2占用P1的资源所有可能的情况
   std::vector<std::vector<int>> restIndexP2_vec = {};
@@ -1257,7 +1282,9 @@ void reviseParentUnboard(Circle P1, Circle& P2,
         // P2所占用的资源数量
         int restCount = resourceIndexP1P2.size();
         // 从vec1中减去vec2, 得到已经被使用过的资源
-        searchAngleResource(restIndexP2_vec, restCount, i_vec1);
+        std::vector<int> i_vec1_flatten = {};
+        flattenDoubleVec(i_vec1, i_vec1_flatten);
+        searchAngleResource(restIndexP2_vec, restCount, i_vec1_flatten);
         // 只要有一个C1_i与之冲突, 得到修改可能性后, 退出循环
         break;
       }
@@ -1267,7 +1294,7 @@ void reviseParentUnboard(Circle P1, Circle& P2,
       i_vec1.push_back(restIndexP2_vec[0]);
       // 改变P2的位置
       double rotateAngle_P2 = getAngleFromResourceIndex(
-          P2, P2, P1, resourceIndexP1P2, restIndexP2_vec[0]);
+          P2, P2, P1, resourceIndexP1P2, restIndexP2_vec[0], unitRadian);
       rotateCircle(P2, P1, rotateAngle_P2);
     } else {
       // 退让
@@ -1282,11 +1309,13 @@ void reviseParentUnboard(Circle P1, Circle& P2,
 
 
 
-void reviseChildUnboard(Circle P1, Circle& C2_i, int index,
-                        std::vector<int> i_vec1,
-                        std::vector<int>& i_vec2,
+void reviseChildUnboard(Circle P1, Circle_lst C1,
+                        Circle P2, Circle& C2_i, int index,
+                        std::vector<std::vector<int> > i_vec1,
+                        std::vector<std::vector<int> >& i_vec2,
                         bool& mobility) {
   // 父空间与子空间之间, 检测遮挡并修改C2_i占用角度资源
+  const double unitRadian = 2*PI/20;
   // 储存C2_i占用P1的资源所有可能的情况
   std::vector<std::vector<int>> restIndexC2_i_vec = {};
   // 得到当前未修改前C2_i占用P1的资源
@@ -1310,8 +1339,11 @@ void reviseChildUnboard(Circle P1, Circle& C2_i, int index,
         // 相对于P2的占用, 寻找资源
         int restCount = resourceIndexP1C2_i.size();   // c2_i所占用的资源数量
         // 从P2所占资源中减去C2_i占用的资源, 得到已经被使用过的资源
+        std::vector<int> i_vec2_flatten = {};
+        flattenDoubleVec(i_vec2, i_vec2_flatten);
+        
         std::vector<int> usedAngleIndex_vec =
-            removeVec(i_vec2, i_vec2[index]);
+            removeVec(i_vec2_flatten, i_vec2[index]);
         searchAngleResource(restIndexC2_i_vec, restCount,
                             usedAngleIndex_vec);
         // 只要有一个C1_i与之冲突, 得到修改可能性后, 退出循环
@@ -1323,7 +1355,7 @@ void reviseChildUnboard(Circle P1, Circle& C2_i, int index,
       i_vec2[index] = restIndexC2_i_vec[0];
       // 从位置角度更新C2_i
       double rotateAngle_C2_i = getAngleFromResourceIndex(
-          C2_i, C2_i, P2, resourceIndexP1C2_i, restIndexC2_i_vec[0]);
+          C2_i, C2_i, P2, resourceIndexP1C2_i, restIndexC2_i_vec[0], unitRadian);
       rotateCircle(C2_i, P2, rotateAngle_C2_i);
     } else {   // 虽然资源占据重叠, 但无法排下C2_i
       // P2退让, 拉开距离, C2整体改变
@@ -1388,8 +1420,8 @@ void test_angleResourceArrange(Circle_tree& ctre) {
   Circle parentCircle;
   Circle_lst childrenCircles;
   Circle_lst clst1;
+  std::vector<std::vector<int> > i_vec1 = {};
   
-
   parentCircle.x = 0, parentCircle.y = 0, parentCircle.r = 2e3;
   // 子空间资源分配列表
   double area_arr[100] = {10e6, 15.5e6, 20.5e6, 14e6,
@@ -1398,7 +1430,7 @@ void test_angleResourceArrange(Circle_tree& ctre) {
                           6.6e3, 8.2e3,  15.3e3, 13.2e3, 10.2e3,
                           5.2e3, 6.4e3};
   int arr_n = 10;
-  angleResourceArrange(parentCircle, childrenCircles,
+  angleResourceArrange(i_vec1, parentCircle, childrenCircles,
                        area_arr, dist_arr, arr_n);
   clst1.appendCircle(parentCircle);
   clst1.appendCircles(childrenCircles);
@@ -1407,6 +1439,8 @@ void test_angleResourceArrange(Circle_tree& ctre) {
   Circle parentCircle2;
   Circle_lst childrenCircles2;
   Circle_lst clst2;
+  std::vector<std::vector<int> > i_vec2 = {};
+
   parentCircle2.x = 3e3, parentCircle2.y = 5e3, parentCircle2.r = 3e3;
   // 子空间资源分配列表
   double area_arr2[100] = {10e6,  20.5e6, 14e6,
@@ -1414,14 +1448,18 @@ void test_angleResourceArrange(Circle_tree& ctre) {
   double dist_arr2[100] = {5e3,   13.2e3, 15.3e3,
                           13.2e3, 10.2e3, 5.2e3};
   int arr_n2 = 6;
-  angleResourceArrange(parentCircle2, childrenCircles2,
+  angleResourceArrange(i_vec2, parentCircle2, childrenCircles2,
                        area_arr2, dist_arr2, arr_n2);
   clst2.appendCircle(parentCircle2);
   clst2.appendCircles(childrenCircles2);
 
+  /*
   // 动态权重
-  
-  
+  angleResourceDynamicWeight(parentCircle, parentCircle2,
+                             childrenCircles, childrenCircles2,
+                             i_vec1,
+                             i_vec2);
+  */
   ctre.appendClst(clst2);
 }
 
