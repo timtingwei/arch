@@ -213,6 +213,10 @@ void angleResourceDynamicWeight(Circle& P1, Circle& P2,
 void getWorkableResourceIndexArrangement(
     std::vector<std::vector<std::vector<int> > > setVec,
     std::vector<std::vector<std::vector<int> > >& workableResouceIndex_3vec);
+void getWorkableResourceIndexArrangementForParent(
+    ParentCircle& P1, ParentCircle& P2,
+    ChildCircle& C,
+    std::vector<std::vector<int> >& workableResouceIndex_2vec);
 
 
 void test_surround(Circle_lst& clst);
@@ -1398,26 +1402,79 @@ double getAngleFromResourceIndex(Circle c1,
   return angle;
 }
 
-void angleResourceDynamicWeight() {
+void angleResourceDynamicWeight(Circle_tree& ctre) {
   // 动态权重问题
+  // 初始数据
+  ParentCircle parentCircle1;
+  Circle_lst childCircles1;
+  std::vector<std::vector<int> > i_vec1 = {};
+
+  parentCircle1.x = 0, parentCircle1.y = 0, parentCircle1.r = 2e3;
+  // 子空间资源分配列表
+  double area_arr1[100] = {10e6, 15.5e6, 14e6,
+                           10.3e6, 5e6, 13.2e6};
+  double dist_arr1[100] = {5e3,   13.2e3, 9e3,
+                          6.4e3, 15.3e3, 10.2e3};
+  int arr_n1 = 6;
+  angleResourceArrange(i_vec1, parentCircle1, childCircles1,
+                       area_arr1, dist_arr1, arr_n1);
+
+  printVector(i_vec1[0]);
+
+
+  ParentCircle parentCircle2;
+  Circle_lst childCircles2;
+  parentCircle2.x = 3e3, parentCircle2.y = 5e3, parentCircle2.r = 3e3;
+  // 子空间资源分配列表
+  double area_arr2[100] = {10e6,  20.5e6, 14e6,
+                          7e6 , 30.2e6, 5e6};
+  double dist_arr2[100] = {5e3,   13.2e3, 15.3e3,
+                          13.2e3, 10.2e3, 5.2e3};
+  int arr_n2 = 6;
 
   /* 得到子空间C2对于P1可以放的所有位置*/
 
-  int c2_count = 6;
+  std::vector<std::vector<std::vector<int> > > set_vec3;
+  int c2_count = arr_n2;
   for (int i = 0; i < c2_count; i++) {
+    std::vector<std::vector<int> > set_vec2;
     // ..
+    ChildCircle C;
+    C.r = sqrt(area_arr1[i]/PI), C.dist = dist_arr1[i];
+    getWorkableResourceIndexArrangementForParent(
+        parentCircle1, parentCircle2,
+        C,
+        set_vec2);
+
+    set_vec3.push_back(set_vec2);
   }
 
 
   /* 对子空间C2对于P1可以放的所有资源位置进行运算, 得到对于P2也成立的资源组合 */
-  std::vector<std::vector<std::vector<int> > > setVec;
-  setVec = {
+  /*
+  set_vec3 = {
     { {0, 1, 2}, {2, 3, 4}, {6, 7, 8} },
     { {2, 3}, {6, 7}, {8, 9}, {10, 11} },
     { {3}, {5}, {6}, {10}, {11} }
   };
+  */
   std::vector<std::vector<std::vector<int> > > workableResouceIndex_3vec = {};
-  // getWorkableResourceIndexArrangement(setVec, workableResouceIndex_3vec);
+  getWorkableResourceIndexArrangement(set_vec3, workableResouceIndex_3vec);
+
+  std::vector<std::vector<int> > final_vec2 = workableResouceIndex_3vec[0];
+    angleResourceArrange(final_vec2, parentCircle2, childCircles2,
+                       area_arr2, dist_arr2, arr_n2);
+
+  Circle_lst clst1, clst2;
+
+  clst1.appendCircle(parentCircle1);
+  clst1.appendCircles(childCircles1);
+  ctre.appendClst(clst1);
+  clst2.appendCircle(parentCircle2);
+  clst2.appendCircles(childCircles2);
+  // */
+  ctre.appendClst(clst2);
+
 }
 
 // 得到一个子空间C对于已排列资源P1的资源占据可能性
@@ -1680,7 +1737,8 @@ int main() {
   // test_clusterConnection(ctre);
   // test_angleResourceArrange(ctre);
   // test_getWorkableResourceIndexArrangement(ctre);
-  test_getWorkableResourceIndexArrangementForParent(ctre);
+  // test_getWorkableResourceIndexArrangementForParent(ctre);
+  angleResourceDynamicWeight(ctre);
   std::cout << "clst.n = " << clst.n << std::endl;
   // test_newObject(ctre);
 
@@ -1724,6 +1782,7 @@ void test_getWorkableResourceIndexArrangement(Circle_tree& ctre) {
 
 void test_angleResourceArrange(Circle_tree& ctre) {
 
+
   Circle parentCircle;
   Circle_lst childCircles;
   Circle_lst clst1;
@@ -1765,7 +1824,7 @@ void test_angleResourceArrange(Circle_tree& ctre) {
 
   
 
-  // /*
+  
   // 动态权重
   // 储存P2与所有C2的vector
   std::vector<std::vector<std::vector<int>>> i_vec2_resultWeight = {};
@@ -1777,12 +1836,13 @@ void test_angleResourceArrange(Circle_tree& ctre) {
                              P2_vec,
                              i_vec2_resultWeight);
 
+
   clst1.appendCircle(parentCircle);
   clst1.appendCircles(childCircles);
   ctre.appendClst(clst1);
   clst2.appendCircle(parentCircle2);
   clst2.appendCircles(childrenCircles2);
-  // */
+
   ctre.appendClst(clst2);
 }
 
