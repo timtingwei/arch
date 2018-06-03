@@ -149,6 +149,12 @@ bool is_sortedVec(std::vector<int> i_vec);
 void sortedVec(std::vector<int>& i_vec);
 // 从vec1中减去vec2
 void removeVec(std::vector<int> vec1, std::vector<int> vec2, std::vector<int>& vec3);
+// vector中重复元素只保留一个
+void setVector(std::vector<int> vec, std::vector<int>& vec_union);
+// 将双重vec拍平成普通vec
+void flattenDoubleVec(std::vector<std::vector<int>> doubleVec,
+                      std::vector<int>& resultVec);
+void printVector(std::vector<int> vec);
 
 bool is_unboard(Circle c, Circle c1, Circle c2);
 void reviseUnboard(Circle c, Circle c1, Circle& c2);   // 三者若遮挡修改c2位置
@@ -166,8 +172,7 @@ void searchAngleResource(std::vector<std::vector<int>>& restIndex_vec,
                          int resourceCount,
                          std::vector<int > usedAngleIndex_vec);
 
-void flattenDoubleVec(std::vector<std::vector<int>> doubleVec,
-                      std::vector<int>& resultVec);
+
 
 
 // 得到c2对于c1所占用的资源
@@ -1060,7 +1065,7 @@ bool is_sortedVec(std::vector<int> i_vec) {
 
 void sortedVec(std::vector<int>& i_vec) {
   if (!is_sortedVec(i_vec)) {        // vector无序
-    std::cout << "sortedVec() !is_sortedVec(i_vec)" << std::endl;
+    // std::cout << "sortedVec() !is_sortedVec(i_vec)" << std::endl;
     for (int i = 0; i < i_vec.size()-1; i++) {
       for (int j = i + 1; j < i_vec.size(); j++) {
         if (i_vec[j] < i_vec[i]) {
@@ -1072,11 +1077,12 @@ void sortedVec(std::vector<int>& i_vec) {
     }
   }
 
-  // 检测
+  /*// 检测
   for (int i = 0; i < i_vec.size(); i++) {
     std::cout << i_vec[i] << " ";
   }
   std::cout << std::endl;
+  */
 }
 
 void flattenDoubleVec(std::vector<std::vector<int>> doubleVec,
@@ -1395,6 +1401,18 @@ double getAngleFromResourceIndex(Circle c1,
   return angle;
 }
 
+void angleResourceDynamicWeight() {
+  // 动态权重问题
+  std::vector<std::vector<std::vector<int> > > setVec;
+  setVec = {
+    { {0, 1, 2}, {2, 3, 4}, {6, 7, 8} },
+    { {2, 3}, {6, 7}, {8, 9}, {10, 11} },
+    { {3}, {5}, {6}, {10}, {11} }
+  };
+  std::vector<std::vector<std::vector<int> > > workableResouceIndex_3vec = {};
+  getWorkableResourceIndexArrangement(setVec, workableResouceIndex_3vec);
+}
+
 void getWorkableResourceIndexArrangement(
     std::vector<std::vector<std::vector<int> > > setVec,
     std::vector<std::vector<std::vector<int> > >& workableResouceIndex_3vec
@@ -1426,9 +1444,9 @@ void getWorkableResourceIndexArrangement(
       i_vec[--full_i]++;
     }
     if (i_vec[0] < setVec[0].size()) {   // 保证不添加最后一个无效数据
-      // std::cout << i_vec[0] << " "
-      //           << i_vec[1] << " "
-      //           << i_vec[2] << " " <<  std::endl;
+      std::cout << i_vec[0] << " "
+                << i_vec[1] << " "
+                << i_vec[2] << " " <<  std::endl;
       i_2vec.push_back(i_vec);
     }
   }
@@ -1436,18 +1454,17 @@ void getWorkableResourceIndexArrangement(
 
   
   /*将索引对应集合添加到一个集合, 取并集*/
-  std::vector<std::vector<int> > setVec_union = {};
   for (int i = 0; i < i_2vec.size(); i++) {        // 对应索引组合的一种情况
     std::vector<std::vector<int> > vec_added = {};
-    for (int j = 0; j < i_vec_maxIndex; j++) {
-      setVec_added.push_back(setVec[j][i_2vec[i][j]]);
+    for (int j = 0; j < set_b_count; j++) {
+      vec_added.push_back(setVec[j][i_2vec[i][j]]);
     }
 
     // 对添加完毕的索引取并集
     std::vector<int> vec_added_flatten = {};
     flattenDoubleVec(vec_added, vec_added_flatten);
     std::vector<int> vec_union = {};
-    setUnion(vec_added, vec_union);
+    setVector(vec_added_flatten, vec_union);
     if (vec_added_flatten.size() == vec_union.size()) {
       // 运算后没有重复的资源
       // 将当前合集添入到可用结果中
@@ -1455,16 +1472,49 @@ void getWorkableResourceIndexArrangement(
     }
   }
 
-  
+  // test workableresouceindex
+  std::cout << "------ test workableresouceindex ------- " << std::endl;
+  for (int i = 0; i < workableResouceIndex_3vec.size(); i++) {
+    for (int j = 0; j < workableResouceIndex_3vec[i].size(); j++) {
+      for (int x = 0; x < workableResouceIndex_3vec[i][j].size(); x++) {
+        // ..
+        std::cout << workableResouceIndex_3vec[i][j][x] << " ";
+      }
+      std::cout << ", ";
+    }
+    std::cout << std::endl;
+  }
+
 }
 
-void setUnion() {
-  // 多个vector中重复元素只保留一个
+void setVector(std::vector<int> vec, std::vector<int>& vec_union) {
+  // std::cout << "------------ test setVector ------------" << std::endl;
+  // printVector(vec);
+  // vector中重复元素只保留一个
+  // vec = {8, 5, 3, 2, 1, 2, 3, 6, 7, 8, 10, 8, 3};
+  // 对vector排序
+  sortedVec(vec);
+  // 逐一检查, 前后是否有重复
+  vec_union.push_back(vec[0]);
+  for (int i = 1; i < vec.size(); i++) {
+    if (vec[i] != vec[i-1]) {
+      vec_union.push_back(vec[i]);
+    }
+  }
+  // printVector(vec_union);
+  // std::cout << "------------ end test setVector ------------" << std::endl;
 }
 
-void addVector(std::vector<int>& vec1, std::vector<int> vec2) {
-  // vec2添加到vec1之后
+void printVector(std::vector<int> vec) {
+  std::cout << "--------print vector -------" << std::endl;
+  for (int i = 0; i < vec.size(); i++)
+    std::cout << vec[i] << " ";
+  std::cout << std::endl;
 }
+
+// void addVector(std::vector<int>& vec1, std::vector<int> vec2) {
+//   // vec2添加到vec1之后
+// }
 
 
 
