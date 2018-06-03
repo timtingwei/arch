@@ -205,6 +205,10 @@ void angleResourceDynamicWeight(Circle& P1, Circle& P2,
                                 std::vector<Circle>& P2_vec,
                                 std::vector<std::vector<std::vector<int>>>& i_vec2_resultWeight);
 
+void getWorkableResourceIndexArrangement(
+    std::vector<std::vector<std::vector<int> > > setVec,
+    std::vector<std::vector<std::vector<int> > >& workableResouceIndex_3vec);
+
 
 void test_surround(Circle_lst& clst);
 void test_shareDegree(Circle_lst &clst);
@@ -219,6 +223,7 @@ void test_moveCircles(Circle_lst& clst);
 void test_clusterConnection(Circle_tree& ctre);
 void test_angleResourceArrange(Circle_tree& ctre);
 void test_newObject(Circle_tree& ctre);
+void test_getWorkableResourceIndexArrangement(Circle_tree& ctre);
 
 void drawPoint();
 void drawLine();
@@ -1390,6 +1395,77 @@ double getAngleFromResourceIndex(Circle c1,
   return angle;
 }
 
+void getWorkableResourceIndexArrangement(
+    std::vector<std::vector<std::vector<int> > > setVec,
+    std::vector<std::vector<std::vector<int> > >& workableResouceIndex_3vec
+                                         ) {
+  // ..
+  setVec = {
+    { {0, 1, 2}, {2, 3, 4}, {6, 7, 8} },
+    { {2, 3}, {6, 7}, {8, 9}, {10, 11} },
+    { {3}, {5}, {6}, {10}, {11} }
+  };
+  int set_b_count = setVec.size();
+  /* 得到集合运算的全部索引 */
+  std::vector<std::vector<int> > i_2vec = {};
+  // 从全部为0开始, 从最后一位向上递增
+  std::vector<int> i_vec(set_b_count, 0);
+  // 添加入第一个索引
+  i_2vec.push_back(i_vec);
+  int i_vec_maxIndex = set_b_count - 1;
+  std::cout << "------- into while-----" << std::endl;
+  while (i_vec[0] < setVec[0].size()) {
+    // 最后一位向上递增
+    i_vec[i_vec_maxIndex]++;
+    int full_i = i_vec_maxIndex;
+    while ( (full_i > 0)&&(i_vec[full_i] >
+                          setVec[full_i].size()-1) ) {   // 索引溢出
+      // 当前位置换成0
+      i_vec[full_i] = 0;
+      // 向前进一位
+      i_vec[--full_i]++;
+    }
+    if (i_vec[0] < setVec[0].size()) {   // 保证不添加最后一个无效数据
+      // std::cout << i_vec[0] << " "
+      //           << i_vec[1] << " "
+      //           << i_vec[2] << " " <<  std::endl;
+      i_2vec.push_back(i_vec);
+    }
+  }
+  std::cout << "------- quit while-----" << std::endl;
+
+  
+  /*将索引对应集合添加到一个集合, 取并集*/
+  std::vector<std::vector<int> > setVec_union = {};
+  for (int i = 0; i < i_2vec.size(); i++) {        // 对应索引组合的一种情况
+    std::vector<std::vector<int> > vec_added = {};
+    for (int j = 0; j < i_vec_maxIndex; j++) {
+      setVec_added.push_back(setVec[j][i_2vec[i][j]]);
+    }
+
+    // 对添加完毕的索引取并集
+    std::vector<int> vec_added_flatten = {};
+    flattenDoubleVec(vec_added, vec_added_flatten);
+    std::vector<int> vec_union = {};
+    setUnion(vec_added, vec_union);
+    if (vec_added_flatten.size() == vec_union.size()) {
+      // 运算后没有重复的资源
+      // 将当前合集添入到可用结果中
+      workableResouceIndex_3vec.push_back(vec_added);
+    }
+  }
+
+  
+}
+
+void setUnion() {
+  // 多个vector中重复元素只保留一个
+}
+
+void addVector(std::vector<int>& vec1, std::vector<int> vec2) {
+  // vec2添加到vec1之后
+}
+
 
 
 // */
@@ -1408,7 +1484,8 @@ int main() {
   // test_collide(clst);
   // test_moveCircles(clst);
   // test_clusterConnection(ctre);
-  test_angleResourceArrange(ctre);
+  // test_angleResourceArrange(ctre);
+  test_getWorkableResourceIndexArrangement(ctre);
   std::cout << "clst.n = " << clst.n << std::endl;
   // test_newObject(ctre);
 
@@ -1421,6 +1498,17 @@ int main() {
   main_draw(draw_ctre);
 
   return 0;
+}
+
+void test_getWorkableResourceIndexArrangement(Circle_tree& ctre) {
+  std::vector<std::vector<std::vector<int> > > setVec;
+  setVec = {
+    { {0, 1, 2}, {2, 3, 4}, {6, 7, 8} },
+    { {2, 3}, {6, 7}, {8, 9}, {10, 11} },
+    { {3}, {5}, {6}, {10}, {11} }
+  };
+  std::vector<std::vector<std::vector<int> > > workableResouceIndex_3vec = {};
+  getWorkableResourceIndexArrangement(setVec, workableResouceIndex_3vec);
 }
 
 
