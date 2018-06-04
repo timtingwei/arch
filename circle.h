@@ -133,6 +133,7 @@ class ParentCircle : public Circle {
   std::vector<std::vector<int> > getResourceOccupy_2vec();
   
 
+
   // 每个资源对应圆的索引列表
   std::vector<std::vector<int> > resourceOccupy_2vec = {};
   ChildrenCircle_lst childrenClst;                  // 对应的所有的子空间
@@ -177,6 +178,15 @@ class ChildCircle : public Circle {
     // parentCircle = P;
     initResourceIndex();
     x = p_x, y = p_y, r = p_r;
+  }
+  // 通过parentCircle, rsrcIndex_vec, area, dist生成childCircle
+  ChildCircle(ParentCircle P, std::vector<int> r_i_v, double area, double d)
+      : parentCircle(P), rsrcIndex_vec(r_i_v) {
+    this->r = (sqrt(area/PI));
+    this->dist = d;
+
+    // 得到坐标
+    reviseCircleFromRsrcIndex(r_i_v);
   }
 
   // 根据当前数据, 更新子空间
@@ -240,19 +250,19 @@ double ChildCircle::getPointAngle() {
 
 // 根据ParentCircle, rsrcIndex_vec, dist, 得到当前circle
 void ChildCircle::reviseCircleFromRsrcIndex(std::vector<int>& vec) {
-  vec = {0, 1, 2};
-  rsrcIndex_vec = vec;
+  // vec = {0, 1, 2};
+  this->rsrcIndex_vec = vec;
   double angle = getPointAngle();
   // std::cout << "angle = " << angle << std::endl;
   // std::cout << this->x << " " << this->y << " " << this->r << std::endl;
-  moveCircle(angle, this->dist);
+  this->x = this->parentCircle.x + cos(angle) * dist;
+  this->y = this->parentCircle.y + sin(angle) * dist;
   // std::cout << this->x << " " << this->y << " " << this->r << std::endl;
 }
 
 // 根据当前Circle位置, parentCircle 得到当前rsrcIndex_vec, dist
 void ChildCircle::getCircleDataFromParent(ParentCircle new_P) {
-  std::cout << "---- into getCircleDataFromParent() ----" << std::endl;
-  new_P.x = -5e3, new_P.y = 18e3, new_P.r = 4e3;
+  // std::cout << "---- into getCircleDataFromParent() ----" << std::endl;
   // 当前P修改为新父空间
   this->parentCircle = new_P;
 
@@ -260,16 +270,17 @@ void ChildCircle::getCircleDataFromParent(ParentCircle new_P) {
   double angle = getDirection(this->parentCircle, false);
   int first_i = angle / this->unitRadian;
   for (int i = 0; i < this->resourceOccupyCount; i++) {
-    // std::cout << "first_i = " << first_i << std::endl;
+    // std::cout << first_i << " ";
     new_rsrcVec.push_back(first_i++);
   }
+  // std::cout << std::endl;
   // 更新资源列表
   this->rsrcIndex_vec = new_rsrcVec;
   // 修改距离
 
   this->dist = getDistance(parentCircle);
-  std::cout << "dist = " << this->dist << std::endl;
-  std::cout << "---- end getCircleDataFromParent() ----" << std::endl;
+  // std::cout << "dist = " << this->dist << std::endl;
+  // std::cout << "---- end getCircleDataFromParent() ----" << std::endl;
 }
 
 

@@ -155,6 +155,8 @@ void setVector(std::vector<int> vec, std::vector<int>& vec_union);
 void flattenDoubleVec(std::vector<std::vector<int>> doubleVec,
                       std::vector<int>& resultVec);
 void printVector(std::vector<int> vec);
+// 两个向量相加得到第三个向量
+void addVector(const std::vector<int>& vec1, const std::vector<int>& vec2, std::vector<int>& vec_added);
 
 bool is_unboard(Circle c, Circle c1, Circle c2);
 void reviseUnboard(Circle c, Circle c1, Circle& c2);   // 三者若遮挡修改c2位置
@@ -852,14 +854,15 @@ void angleResourceArrange(std::vector<std::vector<int> >& i_vec,
   }
 
   // 检测
-  std::cout << "==== print i_vec ================ " << "\n";
-  for (int i = 0; i < i_vec.size(); i++) {
-    for (int j = 0; j < i_vec[i].size(); j++) {
-      std::cout << i_vec[i][j] << ", ";
-    }
-    std::cout << "\n";
-  }
-  std::cout << "================================= " << std::endl;
+  
+  // std::cout << "==== print i_vec ================ " << "\n";
+  // for (int i = 0; i < i_vec.size(); i++) {
+  //   for (int j = 0; j < i_vec[i].size(); j++) {
+  //     std::cout << i_vec[i][j] << ", ";
+  //   }
+  //   std::cout << "\n";
+  // }
+  // std::cout << "================================= " << std::endl;
 
 
   // 得到每个资源序号对应的初始角度
@@ -869,20 +872,20 @@ void angleResourceArrange(std::vector<std::vector<int> >& i_vec,
   }
 
   // 根据所占资源序号得到子空间
-  std::cout << "========= print circle kernel point angle ======" << std::endl;
+  // std::cout << "========= print circle kernel point angle ======" << std::endl;
   for (int i = 0; i < arr_n; i++) {
     Circle childCircle;
     // 得到圆心对应角度
     double angle = i_vec[i][0] * unitRadian + radian_vec[i] / 2;
-    std::cout << i << " ,angle = " << angle
-              << ",  i_vec[i][0] = "
-              << i_vec[i][0]  << std::endl;
+    // std::cout << i << " ,angle = " << angle
+    //           << ",  i_vec[i][0] = "
+    //           << i_vec[i][0]  << std::endl;
     getPosition(parentCircle, childCircle, angle, dist_arr[i]);
     // 得到对应半径
     childCircle.r = sqrt(area_arr[i]/(2*PI));
     childCircles.appendCircle(childCircle);
   }
-  std::cout << "================================================ " << std::endl;
+  // std::cout << "================================================ " << std::endl;
   /*
   // test searchAngleResource()
   std::vector<std::vector<int>> restAngleIndex_vec = {};
@@ -1419,9 +1422,16 @@ void angleResourceDynamicWeight(Circle_tree& ctre) {
   angleResourceArrange(i_vec1, parentCircle1, childCircles1,
                        area_arr1, dist_arr1, arr_n1);
 
-  printVector(i_vec1[0]);
 
+  
+  std::vector<double> dist_vec = {};
+  for (int i = 0; i < arr_n1; i++) {
+    dist_vec.push_back(dist_arr1[i]);
+  }
+  parentCircle1.resourceOccupy_2vec = i_vec1;
+  parentCircle1.dist_vec = dist_vec;
 
+  
   ParentCircle parentCircle2;
   Circle_lst childCircles2;
   parentCircle2.x = 3e3, parentCircle2.y = 5e3, parentCircle2.r = 3e3;
@@ -1432,15 +1442,15 @@ void angleResourceDynamicWeight(Circle_tree& ctre) {
                           13.2e3, 10.2e3, 5.2e3};
   int arr_n2 = 6;
 
-  /* 得到子空间C2对于P1可以放的所有位置*/
+  // 得到子空间C2对于P1可以放的所有位置
 
   std::vector<std::vector<std::vector<int> > > set_vec3;
   int c2_count = arr_n2;
   for (int i = 0; i < c2_count; i++) {
+    std::cout << "------- into for each c2 ------- " << std::endl;
     std::vector<std::vector<int> > set_vec2;
-    // ..
     ChildCircle C;
-    C.r = sqrt(area_arr1[i]/PI), C.dist = dist_arr1[i];
+    C.r = sqrt(area_arr2[i]/PI), C.dist = dist_arr2[i];
     getWorkableResourceIndexArrangementForParent(
         parentCircle1, parentCircle2,
         C,
@@ -1448,9 +1458,21 @@ void angleResourceDynamicWeight(Circle_tree& ctre) {
 
     set_vec3.push_back(set_vec2);
   }
+  /*
+  std::cout << "====== test set_vec3 =====" << std::endl;
+  for (int i = 0; i < set_vec3.size(); i++) {
+    for (int j = 0; j < set_vec3[i].size(); j++) {
+      for (int x = 0; x < set_vec3[i][j].size(); x++) {
+        std::cout << set_vec3[i][j][x] << " ";
+      }
+      std::cout << ", ";
+    }
+    std::cout << "|" << std::endl;
+  }
+  */
 
 
-  /* 对子空间C2对于P1可以放的所有资源位置进行运算, 得到对于P2也成立的资源组合 */
+  // 对子空间C2对于P1可以放的所有资源位置进行运算, 得到对于P2也成立的资源组合 
   /*
   set_vec3 = {
     { {0, 1, 2}, {2, 3, 4}, {6, 7, 8} },
@@ -1458,13 +1480,21 @@ void angleResourceDynamicWeight(Circle_tree& ctre) {
     { {3}, {5}, {6}, {10}, {11} }
   };
   */
+
   std::vector<std::vector<std::vector<int> > > workableResouceIndex_3vec = {};
-  getWorkableResourceIndexArrangement(set_vec3, workableResouceIndex_3vec);
-
-  std::vector<std::vector<int> > final_vec2 = workableResouceIndex_3vec[0];
-    angleResourceArrange(final_vec2, parentCircle2, childCircles2,
-                       area_arr2, dist_arr2, arr_n2);
-
+  // getWorkableResourceIndexArrangement(set_vec3, workableResouceIndex_3vec);
+  std::vector<std::vector<int> > final_vec2;
+  // std::vector<std::vector<int> > final_vec2 = workableResouceIndex_3vec[0];
+  final_vec2 = { {18, 19}, {13, 14, 15}, {6, 7, 8},
+                 {0, 1}, {2, 3, 4, 5}, {16, 17} };
+  std::cout << "final_vec2.size() = " << final_vec2.size() << std::endl;
+  
+  
+  for (int i = 0; i < final_vec2.size(); i++) {
+    ChildCircle C(parentCircle2, final_vec2[i], area_arr2[i], dist_arr2[i]);
+    childCircles2.appendCircle(C);
+  }
+  
   Circle_lst clst1, clst2;
 
   clst1.appendCircle(parentCircle1);
@@ -1472,8 +1502,9 @@ void angleResourceDynamicWeight(Circle_tree& ctre) {
   ctre.appendClst(clst1);
   clst2.appendCircle(parentCircle2);
   clst2.appendCircles(childCircles2);
-  // */
+  
   ctre.appendClst(clst2);
+  
 
 }
 
@@ -1482,31 +1513,19 @@ void getWorkableResourceIndexArrangementForParent(
     ParentCircle& P1, ParentCircle& P2,
     ChildCircle& C,
     std::vector<std::vector<int> >& workableResouceIndex_2vec) {
+  /*
   P1.x = 0, P1.y = 0, P1.r = 2e3;
   P2.x = 3e3, P2.y = 5e3, P2.r = 3e3;
   double area = 15e6, dist = 5e3;
   C.r = sqrt(area/PI), C.dist = dist;
-  // ChildCircle C1_1, C1_2, C1_3;
-  // C1_1.x = 2e3, C1_1.y = 3e3, C1_1.r = 3e3, C1_1.parentCircle = P1;
-  // C1_2.x = -3e3, C1_2.y = 3e3, C1_2.r = 3e3, C1_2.parentCircle = P1;
-  // C1_3.x = -8e3, C1_3.y = -6e3, C1_3.r = 3e3, C1_3.parentCircle = P1;
-  // ChildrenCircle_lst childrenClst;
-  // childrenClst.childCircles[0] = C1_1;
-  // childrenClst.childCircles[1] = C1_2;
-  // childrenClst.childCircles[2] = C1_3;
-  // C1_1.getCircleDataFromParent(P1);
-  // C1_2.getCircleDataFromParent(P1);
-  // C1_3.getCircleDataFromParent(P1);
-  // P1.resourceOccupy_2vec.push_back(const value_type& __x)
-  // std::vector<std::vector<int> > parentOccupy_2vec = P1.getResourceOccupy_2vec();
-  // std::cout << "parentOccupy_2vec.size()" << parentOccupy_2vec.size() << std::endl;
-  std::vector<std::vector<int> > p1_Occupy_2vec = {
+
+  std::vector<std::vector<int> > P1.resourceOccupy_2vec = {
         {0, 1, 2},
         {5, 6},
         {9, 10, 11},
         {13, 14, 15},
         {17} };
-  std::vector<double> p1_dist_vec = {
+  std::vector<double> P1.dist_vec = {
     20e3,
     35e3,
     44e3,
@@ -1514,103 +1533,79 @@ void getWorkableResourceIndexArrangementForParent(
     16e3
   };
 
+  */
+
+  if ((!P1.resourceOccupy_2vec.size()) || (!P1.dist_vec.size())) {
+    std::cout << "parentcircle1 have not resourceOccupy or dist_vec!"
+             << std::endl;
+    return;
+  }
+
 
   // C对于P2进行计算
   C.parentCircle = P2;
   int resourceOccupyCount = C.getResourceOccupyCount();
-  std::cout << "resourceOccupyCount = " << resourceOccupyCount << std::endl;
+  // std::cout << "resourceOccupyCount = " << resourceOccupyCount << std::endl;
 
-  std::cout << "C.resourceCount = " << C.resourceCount << std::endl;
+  // std::cout << "C.resourceCount = " << C.resourceCount << std::endl;
   // 生成C2对P2, 没有P1限制时所有可能的资源序号
-  std::vector<std::vector<int> > rsrcIndex_2vec = {};
+  // std::vector<std::vector<int> > rsrcIndex_2vec = {};
   for (int i = 0; i < C.resourceCount - resourceOccupyCount + 1; i++) {
-    bool accessible = true;
+    // 对于每一个没有限制时的资源序号
     std::vector<int> rsrcIndex_vec = {};
+    bool accessible = true;
+    
     for (int j = 0; j < resourceOccupyCount; j++) {
       rsrcIndex_vec.push_back(i+j);
       // std::cout << i+j << " ";
     }
-
-    rsrcIndex_2vec.push_back(rsrcIndex_vec);
     // std::cout << std::endl;
+
+    ChildCircle new_C = C;
     // 根据资源序列修改当前圆
-    C.reviseCircleFromRsrcIndex(rsrcIndex_vec);
+    // printVector(rsrcIndex_vec);
+    new_C.reviseCircleFromRsrcIndex(rsrcIndex_vec);
 
-    std::cout << "C.x = " << C.x << " "
-              << "C.y = " << C.y << " "
-              << "C.r = " << C.r << std::endl;
-
+    // std::cout << "new_C.x = " << new_C.x << " "
+    //           << "new_C.y = " << new_C.y << " "
+    //           << "new_C.r = " << new_C.r << std::endl;
+    
     // 使得当前圆按照P1的子空间进行性计算,
-    // 得到当前圆对于P1所占的资源和距离
-    C.getCircleDataFromParent(P1);
-
-    // /*
+    // 得到当前圆对于P1所占的资源new_rsrcInde_vec和距离dist_vec
+    new_C.getCircleDataFromParent(P1);
     
-    std::vector<std::vector<int> > vec2_added = {};
-    // 此时占用资源与P1的子空间所占用的资源和距离进行计算
-    for (int x = 0; x < p1_Occupy_2vec.size(); x++) {
-      std::vector<int> vec_added = C.rsrcIndex_vec;
+
+    
+    // 此时占用的资源与P1的子空间所占用的资源和距离进行计算
+    for (int x = 0; x < P1.resourceOccupy_2vec.size(); x++) {
+      std::vector<int> vec_added = new_C.rsrcIndex_vec;
       // printVector(vec_added);
-      
-      for (int y = 0; y < p1_Occupy_2vec[x].size(); y++) {
-        vec_added.push_back(p1_Occupy_2vec[x][y]);
-      }
-      printVector(vec_added);
-      vec2_added.push_back(vec_added);
-    }
-
-    
-    for (int x = 0; x < vec2_added.size(); x++) {
-      std::vector<int> vec_added = vec2_added[x];
+      // std::cout << "|| print P1 C2 rsrcIndex_vec ||" << std::endl;
+      // printVector(P1.resourceOccupy_2vec[x]);
+      // printVector(new_C.rsrcIndex_vec);
+      addVector(P1.resourceOccupy_2vec[x], new_C.rsrcIndex_vec, vec_added);
       std::vector<int> vec_union = {};
-      // printVector(vec_added);
       setVector(vec_added, vec_union);
-      // std::cout << "vec_added.size() = " << vec_added.size()
-      //           << "vec_union.size() = " << vec_union.size()
-      //           << std::endl;
-      
       // printVector(vec_union);
-      std::cout << "C.dist = " << C.dist
-                << "p1_dist_vec[x] = " << p1_dist_vec[x]
-                << std::endl;
-      
+
       if (
               (vec_added.size() != vec_union.size() &&
-               (C.dist < p1_dist_vec[x]))
+               (new_C.dist < P1.dist_vec[x]))
           ) {   // 在这个圆距离之内 以及 资源有重合
-        // printVector(vec_added);
-        // printVector(C.rsrcIndex_vec);
         accessible = false;
+        // std::cout << "break" << std::endl;
         break;
-        std::cout << "break" << std::endl;
-        
-        // workableResouceIndex_2vec.push_back(rsrcIndex_vec);
       }
     }
+    // std::cout << "acccessible = " << accessible << std::endl;
 
+    
     if (accessible) {
-      std::cout << "workableResouceIndex_2vec.push_back(rsrcIndex_vec)" << std::endl;
+      // std::cout << "workableResouceIndex_2vec.push_back(rsrcIndex_vec)"
+      //          << std::endl;
       workableResouceIndex_2vec.push_back(rsrcIndex_vec);
     }
-
-      // /*
-      
-      
-      // */
   }
-   // 留下满足条件, C对于P2的rsrcIndex_vec
-  // if (false) {
-  //    workableResouceIndex_2vec.push_back(rsrcIndex_vec);
-  //  }
-  /*
-  std::vector<int> rsrcIndex_vec = {};
-  C.rsrcIndex_vec = rsrcIndex_vec;
-  C.reviseCircleFromRsrcIndex(rsrcIndex_vec);
-  printVector(C.rsrcIndex_vec);
-
-  C.getCircleDataFromParent(P1);
-  printVector(C.rsrcIndex_vec);
-  */
 }
 
 
@@ -1619,11 +1614,13 @@ void getWorkableResourceIndexArrangement(
     std::vector<std::vector<std::vector<int> > >& workableResouceIndex_3vec
                                          ) {
   // ..
+  /*
   setVec = {
     { {0, 1, 2}, {2, 3, 4}, {6, 7, 8} },
     { {2, 3}, {6, 7}, {8, 9}, {10, 11} },
     { {3}, {5}, {6}, {10}, {11} }
   };
+  */
   int set_b_count = setVec.size();
   /* 得到集合运算的全部索引 */
   std::vector<std::vector<int> > i_2vec = {};
@@ -1637,6 +1634,7 @@ void getWorkableResourceIndexArrangement(
     // 最后一位向上递增
     i_vec[i_vec_maxIndex]++;
     int full_i = i_vec_maxIndex;
+    std::cout << "i_vec[i_vec_maxIndex] = " << i_vec[i_vec_maxIndex] << std::endl;
     while ( (full_i > 0)&&(i_vec[full_i] >
                           setVec[full_i].size()-1) ) {   // 索引溢出
       // 当前位置换成0
@@ -1686,6 +1684,13 @@ void getWorkableResourceIndexArrangement(
     std::cout << std::endl;
   }
 
+}
+
+void addVector(const std::vector<int>& vec1, const std::vector<int>& vec2, std::vector<int>& vec_added) {
+  vec_added = vec1;
+  for (int i = 0; i < vec2.size(); i++) {
+    vec_added.push_back(vec2[i]);
+  }
 }
 
 void setVector(std::vector<int> vec, std::vector<int>& vec_union) {
