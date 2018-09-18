@@ -1,5 +1,0 @@
-from PIL import Image
-
-dir = "~/Desktop/maxSubseqSum01.png"
-img = Image.open(dir)
-img.show()
