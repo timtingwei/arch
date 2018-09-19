@@ -31,7 +31,8 @@ def viewPic(prevPath):
 	L = []
 	for root, dirs, files in os.walk(prevPath):
 		for file in files:
-			if os.path.splitext(file)[1] == '.png':					L.append(os.path.join(root, file))
+			if suffix == '.png' or suffix == '.jpg' or suffix == 'jpeg':
+			    L.append(os.path.join(root, file))
 	# join中间添加空格
 	open_sh = 'open'
 	for fpath in L:
