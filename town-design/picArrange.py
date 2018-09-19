@@ -12,18 +12,25 @@ import os
 import shutil
 
 # 提取该物件的图层名字(放在数组中)
-def getObjectLayerName():
-	id = rs.GetObject("Please select a object")
-	if id: return rs.ObjectLayer(id)
+def getObjectsLayerNames():
+        # 可选择多点, 只能选择点物件, 可预先选择
+	obj_ids = rs.GetObjects("Please select points", rs.filter.point, False, True)
+	names = []
+	for id in obj_ids:
+		names.append(rs.ObjectLayer(id))
+	return names
 
 # 图层名字转换成路径
-def layerNameToPath(rootPath, layerName):
-	s_lst = layerName.split('::')
-	finalPath =rootPath
-	print(finalPath)
-	for i in range(1, len(s_lst)):
-		finalPath = os.path.join(finalPath, s_lst[i])
-	return finalPath
+def layerNamesToPaths(rootPath, layerNames):
+	finalPaths_lst = []
+	for layerName in layerNames:
+		s_lst = layerName.split('::')
+		finalPath = rootPath
+		for i in range(1, len(s_lst)):
+			finalPath = os.path.join(finalPath, s_lst[i])
+		finalPaths_lst.append(finalPath)
+		print("finalPath = " + finalPath)
+	return finalPaths_lst
 
 # 通过路径打开多个文件
 def viewPic(prevPath):
@@ -31,8 +38,9 @@ def viewPic(prevPath):
 	L = []
 	for root, dirs, files in os.walk(prevPath):
 		for file in files:
+			suffix = os.path.splitext(file)[1]
 			if suffix == '.png' or suffix == '.jpg' or suffix == 'jpeg':
-			    L.append(os.path.join(root, file))
+				L.append(os.path.join(root, file))
 	# join中间添加空格
 	open_sh = 'open'
 	for fpath in L:
@@ -40,14 +48,20 @@ def viewPic(prevPath):
 		#appendPath = os.path.join(prevPath, cnt+1)
 		open_sh += ' ' + fpath
 		#os.system('open /Users/htwt/timspace/arch/town-design/CY/M-08/01/01.png /Users/htwt/timspace/arch/town-design/CY/M-08/01/02.png')
-	print(open_sh)
+	print("open_sh = " + open_sh)
 	os.system(open_sh)
 
 
+#调用多个路径, 每个路径打开对应的多张照片
+def viewMorePathPic(prevPaths_lst):
+	for prevPath in prevPaths_lst:
+		viewPic(prevPath)
+
 if (flag):
-	layerNames = getObjectLayerName()
-	a = layerNames
-	print(a)
-	finalPath = layerNameToPath(rootPath, layerNames)
-	a = finalPath
-	viewPic(finalPath)
+	layerNames = getObjectsLayerNames()
+	#a = layerNames
+	#print(a)
+	finalPaths_lst = layerNamesToPaths(rootPath, layerNames)
+	#a = finalPath
+	#viewPic(finalPath)
+	viewMorePathPic(finalPaths_lst)
