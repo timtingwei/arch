@@ -1,4 +1,5 @@
-# 用于浏览结点照片的代码
+"""
+# -*- coding: UTF-8 -*-
 from PIL import Image
 
 
@@ -8,3 +9,16 @@ img1 = Image.open(dir1);
 img2 = Image.open(dir2);
 img1.show()
 img2.show()
+"""
+
+import os
+
+apath = os.path.abspath('.')
+syspath = os.name
+
+cypath = os.path.join(apath, 'CY')
+
+print(apath)
+print(syspath)
+
+print(cypath)
