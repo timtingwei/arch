@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+
 """Provides a scripting component.
     Inputs:
         flag: The x script variable
@@ -6,7 +6,7 @@
     Output:
         a: The a output variable"""
 __author__ = "htwt"
-
+# -*- coding: UTF-8 -*-
 
 import os
 import shutil
@@ -37,12 +37,13 @@ def layerNamesToPaths(rootPath, layerNames):
 
 # 通过路径打开多个文件
 def viewPic(prevPath):
+	print("prevPath = " + prevPath)
 	# 得到文件夹下照片数量cnt
 	L = []
 	for root, dirs, files in os.walk(prevPath):
 		for file in files:
 			suffix = os.path.splitext(file)[1]
-			if suffix == '.png' or suffix == '.jpg' or suffix == 'jpeg':
+			if suffix == '.png' or suffix == '.jpg' or suffix == '.jpeg' or suffix == '.JPG':
 				L.append(os.path.join(root, file))
 	# join中间添加空格
 	open_sh = 'open'
