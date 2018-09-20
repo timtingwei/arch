@@ -48,3 +48,6 @@ test.cpp
 
 # DS_Store
 *.DS_Store
+
+# phote files
+town-design/collection/*
