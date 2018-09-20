@@ -13,7 +13,7 @@ import shutil
 
 # 提取该物件的图层名字(放在数组中)
 def getObjectsLayerNames():
-        # 可选择多点, 只能选择点物件, 可预先选择
+	# 可选择多点, 只能选择点物件, 可预先选择
 	obj_ids = rs.GetObjects("Please select points", rs.filter.point, False, True)
 	names = []
 	for id in obj_ids:
@@ -65,3 +65,33 @@ if (flag):
 	#a = finalPath
 	#viewPic(finalPath)
 	viewMorePathPic(finalPaths_lst)
+
+
+# 修改交通组图片编号
+# para:
+# @input:rootPath
+# @output:
+
+def reviseJTfilesNames(rootPath):
+    jtPath = os.path.join(rootPath, 'JT')
+    for root, dirs, files in os.walk(jtPath):
+        for name in files:
+            s_lst = os.path.splitext(name)
+            if (s_lst[1] == '.jpg'):
+                print("name = " + name)
+                orig_name = os.path.join(root, name)
+                if (int(s_lst[0]) % 3 == 1):
+                    os.rename(orig_name, os.path.join(root, '01-前.jpg'))
+                elif (int(s_lst[0]) % 3 == 2):
+                    os.rename(orig_name, os.path.join(root, '02-右.jpg'))
+                elif (int(s_lst[0]) % 3 == 0):
+                    os.rename(orig_name, os.path.join(root, '03-左.jpg'))
+#reviseJTfilesNames(rootPath)
+
+
+
+
+
+
+
+
