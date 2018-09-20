@@ -1,15 +1,18 @@
+# -*- coding: UTF-8 -*-
 """Provides a scripting component.
     Inputs:
         flag: The x script variable
         rootpath: The y script variable
     Output:
         a: The a output variable"""
-# -*- coding: UTF-8 -*-
 __author__ = "htwt"
 
-import rhinoscriptsyntax as rs
+
 import os
 import shutil
+
+import rhinoscriptsyntax as rs
+
 
 # 提取该物件的图层名字(放在数组中)
 def getObjectsLayerNames():
@@ -86,12 +89,41 @@ def reviseJTfilesNames(rootPath):
                     os.rename(orig_name, os.path.join(root, '02-右.jpg'))
                 elif (int(s_lst[0]) % 3 == 0):
                     os.rename(orig_name, os.path.join(root, '03-左.jpg'))
-#reviseJTfilesNames(rootPath)
 
 
+def reviseJTfileContents(rootPath):
+    jtPath = os.path.join(rootPath, 'JT')
+    
+    #for root, dirs, files in os.walk(jtPath):
+    #    for name in dirs:
+    #        print(name)
+    
+    #for x in os.listdir('.'):
+    #    print("file = " + x)
+
+    print(jtPath)
+    for fileName in os.listdir(jtPath):
+        nextPath = os.path.join(jtPath, fileName)
+        # 忽略隐藏文件夹
+        if not (fileName.startswith('.')):
+            # 该层文件夹需要用一个新文件夹来放照片
+            wrong_pic = [x for x in os.listdir(nextPath) if os.path.splitext(x)[1]=='.jpg']
+            for pic in wrong_pic:
+                print("pic = " + pic)
+            if (len(wrong_pic) != 0):
+                dirPath = os.path.join(nextPath, "01")
+                if (not os.path.exists(dirPath)):
+                    os.mkdir(dirPath)
+                for pic in wrong_pic:
+                    shutil.copyfile(os.path.join(nextPath, pic), os.path.join(dirPath, pic))
+                    os.remove(os.path.join(nextPath, pic))
 
 
+def reviseMain():
+    #reviseJTfilesNames(rootPath)
+    rootPath = '/Users/htwt/timspace/arch/town-design/collection/'
+    reviseJTfileContents(rootPath)
 
-
+# reviseMain()
 
 
