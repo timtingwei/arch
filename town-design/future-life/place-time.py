@@ -16,7 +16,6 @@ def excel_op():
     job_dict = {}
     place_dict = {}
     gene_str_lst = []
-
     with open_workbook(input_file) as workbook:
         worksheet = workbook.sheet_by_name('Sheet1')
         # 不计第一行的变量名
@@ -55,7 +54,6 @@ def excel_op():
         for key in place_dict.keys():
             output_worksheet.write(place_dict[key], worksheet.ncols+2, key)
     output_workbook.save(output_file)
-
     #return gene_str_lst
 
 def getDataFromExcel():
@@ -64,7 +62,7 @@ def getDataFromExcel():
     scale_lst = []
     sumCnt = 0
     arr1 = {}
-    #n = 0     # 地块个数
+    m = 0     # 时段个数
     n = 15     # 直接给了地块个数, 后面改回来
     hash_n = {}  # 用于求地块个数的Hash表, 也可以在表中直接写
 
@@ -98,21 +96,14 @@ def getDataFromExcel():
         for row_index in range(1, worksheet.nrows):
             value = worksheet.cell_value(row_index, col_gene)
             if (value == ''): continue
+            if (m == 0):    # 时段个数未被计算
+                m = len(value.split('/', 1)[1].split('-'))
             gene_str_lst.append(value)
 
     
-    
-    return gene_str_lst, scale_lst, sumCnt, arr1, n
 
-def generateGeneLst(gene_str_basic_lst, scale_lst, sumCnt):
-    gene_str_lst = []
-    sum = 0
-    for x in scale_lst:
-        sum += x
-    for i in range(len(scale_lst)):
-        for j in range(int(scale_lst[i]/sum*sumCnt)):
-            gene_str_lst.append(gene_str_basic_lst[i])
-    return gene_str_lst
+    return gene_str_lst, scale_lst, sumCnt, arr1, m, n
+
     
 
 def Hash(key, arr1):
@@ -129,22 +120,75 @@ def hash2(key, arr2):
     lst = arr2[key]
     return lst[random.randrange(0, len(lst))]
 
+
+def getDkrs(gene_str_basic_lst, scale_lst, sumCnt, m, n, arr1):
+    # m是地块数
+    # n是时段个数, (修改成从excel中读入的参数)
+    # n = 8;
+    dict_rs = {}
+    for i in range(1, m+1):
+        dict_rs[i] = {}
+        for j in range(0, n):
+            dict_rs[i][j] = 0
+    
+    # 计算各个职业对应人数
+    lstSum = sum(scale_lst)
+    #sum += x for x in scale_lst;
+    cnt_lst = [int(scale/lstSum*sumCnt) for scale in scale_lst]
+    # 得到地块-时段字典
+    for i in range(len(gene_str_basic_lst)):
+        gene_str = gene_str_basic_lst[i]
+        place_lst = gene_str.split('/', 1)[1].split('-')
+        for time in range(n):
+            dk = Hash(int(place_lst[time]), arr1)
+            if not dk in dict_rs:
+                print("error not dk in dict_rs")
+                continue
+            #if not dk in dict_rs:
+            #    dict_rs[dk] = {}
+            if not time in dict_rs[dk]:
+                dict_rs[dk][time] = 0
+            dict_rs[dk][time] += cnt_lst[i]
+    return dict_rs    # 返回地块-时段Hash表
+
+def printDkrs(dict_rs, m, n):
+    # 打印地块-时段表, m是地块数, n是时段数
+    fo = open("dk-data_output.txt", "w")
+    for dk in range(1, m+1):
+        p_str = ''
+        for time in range(0, n):
+            if (time): p_str += ','
+            #print(str(dict_rs[dk][time]))
+            p_str += str(dict_rs[dk][time])
+        print(p_str)
+        fo.write(p_str+'\n')
+    fo.close()
+
+"""
+# 根据职业人数拷贝基因条
+def generateGeneLst(gene_str_basic_lst, scale_lst, sumCnt):
+    gene_str_lst = []
+    sum = 0
+    for x in scale_lst:
+        sum += x
+    for i in range(len(scale_lst)):
+        for j in range(int(scale_lst[i]/sum*sumCnt)):
+            gene_str_lst.append(gene_str_basic_lst[i])
+    return gene_str_lst
+
 # 将所有基因条中时段-场所数据存入dict_place, 计算时段-地块存入dict-dk
 def getGeneDict(gene_str_lst, arr1):
     dict_place = {}
-    n = 0      # 时段个数
     dict_dk = {}
     for gene_str in gene_str_lst:
         #print(gene_str.split('/', 1))
         place_lst = gene_str.split('/', 1)[1].split('-')
-        
-        n = len(place_lst)
-        for i in range(n):
+        for i in range(len(place_lst)):
             if i in dict_dk:
                 dict_dk[i].append(Hash(int(place_lst[i]), arr1))
             else:
                 dict_dk[i] = [Hash(int(place_lst[i]), arr1)]
-    return dict_dk, n
+    return dict_dk
 
 # 选择不同时段统计该时段各地块人数
 # O(n)
@@ -175,34 +219,30 @@ def getMoreCount(dict_dk, n, m):
         for j in range(len(dict_dkrs[i])):
             if (j): p_str += ','
             p_str += str(dict_dkrs[i][j])
-        p_str += '\n'
         print(p_str)
-        fo.write(p_str)
+        fo.write(p_str+'\n')
     fo.close()
-
-"""
-gene_str_lst = ["01/01-02-03-04-05-06-06-06",
-                "02/07-07-08-08-05-09-09-07"]
-arr1 = [1, 2]           # 场所->场所分类映射
-arr2 = [[3, 4],  [5, 7], [3, 4, 6]]   # 场所分类->地块映射
-time = 2
-n = 7
-dict_dk = getGeneDict(gene_str_lst, arr1, arr2)
-count(dict_dk, time, n)
 """
 
-"""
-dict_tmp = {"tim":1, "a":2, "胡廷威":3}
-print(dict_tmp["胡廷威"])
-print(dict_tmp.keys())
-"""
-def main():
+def main1():
     excel_op()
     n = 0; m = 0   # n是地块个数, m是时段个数
-    gene_str_basic_lst, scale_lst, sumCnt, arr1, n = getDataFromExcel()
+    gene_str_basic_lst, scale_lst, sumCnt, arr1, m, n = getDataFromExcel()
     gene_str_lst = generateGeneLst(gene_str_basic_lst, scale_lst, sumCnt)
-    dict_dk, m = getGeneDict(gene_str_lst, arr1)
+    dict_dk = getGeneDict(gene_str_lst, arr1)
     #print(m, n)
     getMoreCount(dict_dk, n, m)
 
-main()
+
+
+def main2():
+    excel_op()
+    n = 0; m = 0   # n是地块个数, m是时段个数
+    gene_str_basic_lst, scale_lst, sumCnt, arr1, m, n = getDataFromExcel()
+    dict_dkrs = getDkrs(gene_str_basic_lst, scale_lst, sumCnt, n, m, arr1)
+    #dict_dk, m = getGeneDict(gene_str_lst, arr1)
+    #print(m, n)
+    #getMoreCount(dict_dk, n, m)
+    printDkrs(dict_dkrs, n, m)
+
+main2()
