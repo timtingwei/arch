@@ -164,7 +164,7 @@ def printDkrs(dict_rs, m, n):
         fo.write(p_str+'\n')
     fo.close()
 
-"""
+
 # 根据职业人数拷贝基因条
 def generateGeneLst(gene_str_basic_lst, scale_lst, sumCnt):
     gene_str_lst = []
@@ -222,7 +222,7 @@ def getMoreCount(dict_dk, n, m):
         print(p_str)
         fo.write(p_str+'\n')
     fo.close()
-"""
+
 
 def main1():
     excel_op()
