@@ -1,8 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 """Provides a scripting component.
-    依赖xlrd和xlwt, 确认~\Rhino 6\Plug-ins\IronPython\Lib中存在他们
+    在已经存在的excel中写入
+    依赖xlrd和xlutils, 确认~\Rhino 6\Plug-ins\IronPython\Lib中存在他们
     Inputs:
         Write: 
+        Table:
+        Data:
         FilepPath: 
         WorkSheetName:
         Column:
@@ -38,10 +41,12 @@ def main():
     worksheet = workbook.get_sheet(sheet_i)
     worksheet.write(StartRow-1, Column-1, Table)
     DataStartRow = StartRow + 1
+    i = DataStartRow
     for row_index in range(DataStartRow, DataStartRow+len(Data)):
         value = Data[row_index-DataStartRow]
         if (not IsStructed and value == ''):continue;
-        worksheet.write(row_index-1, Column-1, value)
+        worksheet.write(i-1, Column-1, value)
+        i+=1
     workbook.save(FilePath)
     print("Ok")
 
