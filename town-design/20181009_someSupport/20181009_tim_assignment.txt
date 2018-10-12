@@ -1,0 +1,35 @@
+1:
+人员在不同时段与建筑类型对应
+图?
+
+2:
+区块位置?
+道路载量，远近，增加事件，出行方式
+
+路网转换成结点关系运算
+图中两个结点路径运算
+
+胡廷威:
+一：ghVb/C#读写excel  ExcelReadAndWrite.gh
+二：gh导出数据        mergeParamsData
+三：rhino模型和数据对应导入 ModelImport.gh
+
+三：rhino模型和数据对应导入
+导入
+清除
+文件路径  FilePath
+位点      Corr
+角度      angle
+图层名称  LayerType
+
+二：gh导出数据
+1，
+运算器名称
+输入/输出选择
+接口序号
+2，
+选中的运算器
+输入/输出选择
+接口序号
+
+0.3: 1,修改可实现矩形(所有)数据类型;2,按照cluster名称选择 
