@@ -1,6 +1,6 @@
 #-*- coding=utf-8 -*-
 
-# 基因条构造
+# 基因条对象构造
 class Node:
     def __init__(self):
         activity = [0]*10
@@ -21,6 +21,21 @@ class Person:
         breakup = []
         transType = []
 
+# 由基因条字符串初始化基因条对象:
+def CreatePersonFromStr(genicStr):
+    person = Person()
+    return person
+
+# 由数值列表初始化基因条对象:
+def CreatePersonFromValue(lst1, lst2, lst3, lst4):
+    person = Person()
+    return person
+
+# 获得职业, 区间, 地点, 出行方式的中文->序号映射字典
+
+# 获得职业, 区间, 地点, 出行方式的序号->中文映射字典
+
+# 将整数转化成指定长度的字符串
 def iToLenStr(int_v, length):
     temp = str(int_v)
     delta = length - len(temp)
