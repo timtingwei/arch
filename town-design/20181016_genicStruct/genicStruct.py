@@ -10,51 +10,19 @@ class Node():
         self.isDup = []
     def __init__(self, subGenicDataLst):
         n = len(subGenicDataLst[0])
-        self.activity = [0]*n  # 事件     string   [a1, a2]
-        self.domain = [0]*n    # 时间区间  double   [(d1, d2), (d3,d4)]
-        self.place = [0]*n     # 地点     string  [[p1, p2], [p3, p4, p5]]
+        self.activity = ['']*n  # 事件     string   [a1, a2]
+        self.domain = [0.0]*n    # 时间区间  double   [(d1, d2), (d3,d4)]
+        self.place = ['']*n     # 地点     string  [[p1, p2], [p3, p4, p5]]
         self.isDup = [0]*n     # 是否关联  int      [0, 1]
         for i in range(n):
             self.activity[i] = (subGenicDataLst[0][i])
-            self.domain[i] = (tuple(subGenicDataLst[1][i].split('~')))
+            self.domain[i] = tuple([float(d) for d in subGenicDataLst[1][i].split('~')])
             self.place[i] = subGenicDataLst[2][i].split('~')
             self.isDup[i] = 0 if cmp(subGenicDataLst[3][i], '否') == 0 else 1
 
 class Parent():
     ' 基因库中一条基因对应的基类 '
-    """
-    def __init__(self, genicStr):
-        # 父类的构造函数
-        self.job = Node(subStr1)
-        self.hobby = Node(subStr2)
-        self.eat = Node(subStr3)
-        self.sleep = Node(subStr4)
-        self.breakup = stoi(subStr5)
-        self.transType = stoi(subStr6)
-    """
     def __init__(self, genicDataLst):
-        """
-        #genicDataLst = [  [],  [],  [],  [], [], [], []]
-        genicDataLst = [ ['政府官员'],
-                         [['处理文件', '接待上访', '走访民众', '会议'],
-                          ['3~6', '2~4', '2~4', '0.5~5'],
-                          ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'],
-                          ['是', '是', '否', '是']],
-                         [['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'],
-                          ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'],
-                          ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'],
-                          ['否', '是', '否', '否', '否']],
-                         [['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'],
-                          ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'],
-                          ['小饭馆', '政府', '小饭馆', '别墅'],
-                          ['是', '是', '否', '是']],
-                         [['回家睡觉', '暂住宾馆', '夜总会玩乐'],
-                          ['7~10', '7~11', '7~11'],
-                          ['别墅', '宾馆', '洗浴中心'],
-                          ['是', '是', '是']],
-                         ['6:00-9:30'],
-                         ['走路', '班车', '汽车']]
-        """
         self.name = genicDataLst[0][0]      #职业名字
         #obj_lst = self.getNodeToList()
         #for i in range(1, 5):
@@ -69,7 +37,7 @@ class Parent():
     def convertTimeFormat(self, s):
         # convert 6:30 to 6.5
         lst = s.split(':')
-        return int(lst[0]) + int(lst[1])/60
+        return float(lst[0]) + float(lst[1])/60
     def getNodeToList(self):
         return [self.job, self.hobby, self.eat, self.sleep]
 
@@ -83,8 +51,31 @@ class Child():
         #self.getActivityTimeSeq()
 
     def getActivityTimeSeq():
+        # 学长的接口
         # 得到每个人的事件时长地点, 三个列表
         return
+
+def testNode(node):
+    print('testNode:')
+    print(node.activity)
+    print(node.domain)
+    print(node.place)
+    print(node.isDup)
+
+def testParent(parent):
+    print(parent.name)
+    testNode(parent.job)
+    testNode(parent.hobby)
+    testNode(parent.eat)
+    testNode(parent.sleep)
+    print(parent.breakup)
+    print(parent.transType)
+
+def testChild(child):
+    print('parentName = ' + child.parent.name)
+    print(child.sequence)
+    print(child.time)
+    print(child.place)
 
 if __name__ == "__main__":
     genicDataLst = [ ['政府官员'],
@@ -107,7 +98,10 @@ if __name__ == "__main__":
                      ['6:00-9:30'],
                      ['走路', '班车', '汽车']]
     parent = Parent(genicDataLst)
+    # testParent(parent)
     child = Child(parent)
+    # testChild(child)
+
 """
 if __name__ == "__main__":
 
