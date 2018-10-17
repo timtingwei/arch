@@ -7,10 +7,10 @@ class Node():
         self.domain = []
         self.place = []
         self.isDup = []
-    activity = []  # 工作, 爱好, 吃饭, 睡觉的事件
-    domain = []    # 时间区间
-    place = []     # 地点
-    isDup = []     # 是否关联
+    activity = []  # 事件     string   [a1, a2]
+    domain = []    # 时间区间  double   [(d1, d2), (d3,d4)]
+    place = []     # 地点     string  [[p1, p2], [p3, p4, p5]]
+    isDup = []     # 是否关联  int      [0, 1]
 class Parent():
     ' 基因库中一条基因对应的基类 '
     name = ''
@@ -28,16 +28,17 @@ class Parent():
         self.sleep = Node(subStr4)
         self.breakup = stoi(subStr5)
         self.transType = stoi(subStr6)
+    def __init__(self, )
 
 class Child():
     parent = Object()
     #seqClassify = []
-    sequence = []  # 事件序列
-    time = []      # 事件对应的时段值
-    place = []     # 事件对应的建筑类型序号, 建筑序号
+    sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
+    time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
+    place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
     def __init__(self, parent):
         self.parent = parent
-        self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 睡觉
+        #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 睡觉
         self.getActivityTimeSeq()
 
     def getActivityTimeSeq():
@@ -55,7 +56,7 @@ if __name == "__main__":
     children_dict = {}   # 职业序号为key的所有人对象
     for i in range(len(parent_lst)):
        parent = parent_lst[i]
-       child_lst = [Child(parent) for num in num_lst]
+       child_lst = [Child(parent) for num in num_lst]   # error
        children_dict[i] = child_lst
     # 索引得到每个实例人的事件-时长-地点列表
     for key in children_dict:
