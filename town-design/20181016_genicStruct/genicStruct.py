@@ -7,10 +7,18 @@ class Node():
         self.domain = []
         self.place = []
         self.isDup = []
-    activity = []  # 事件     string   [a1, a2]
-    domain = []    # 时间区间  double   [(d1, d2), (d3,d4)]
-    place = []     # 地点     string  [[p1, p2], [p3, p4, p5]]
-    isDup = []     # 是否关联  int      [0, 1]
+    def __init__(self, subGenicDataLst):
+        self.activity = []  # 事件     string   [a1, a2]
+        self.domain = []    # 时间区间  double   [(d1, d2), (d3,d4)]
+        self.place = []     # 地点     string  [[p1, p2], [p3, p4, p5]]
+        self.isDup = []     # 是否关联  int      [0, 1]
+        n = len(subGenicDataLst[0])
+        for i in range(n):
+            self.activity[i] = subGenicDataLst[0][i]
+            self.domain[i] = tuple(subGenicDataLst[1][i].split('~'))
+            self.place[i] = subGenicDataLst[2][i].split('~')
+            self.isDup[i] = 0 if cmp(subGenicDataLst[3][i]) "否" else 1
+
 class Parent():
     ' 基因库中一条基因对应的基类 '
     name = ''
@@ -28,7 +36,40 @@ class Parent():
         self.sleep = Node(subStr4)
         self.breakup = stoi(subStr5)
         self.transType = stoi(subStr6)
-    def __init__(self, )
+    def __init__(self, genicDataLst):
+        #genicDataLst = [  [],  [],  [],  [], [], [], []]
+        genicDataLst = [ ['政府官员'],
+                         [['处理文件', '接待上访', '走访民众', '会议'],
+                          ['3~6', '2~4', '2~4', '0.5~5'],
+                          ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'],
+                          ['是', '是', '否', '是']],
+                         [['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'],
+                          ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'],
+                          ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'],
+                          ['否', '是', '否', '否', '否']],
+                         [['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'],
+                          ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'],
+                          ['小饭馆', '政府', '小饭馆', '别墅'],
+                          ['是', '是', '否', '是']],
+                         [['回家睡觉', '暂住宾馆', '夜总会玩乐'],
+                          ['7~10', '7~11', '7~11'],
+                          ['别墅', '宾馆', '洗浴中心'],
+                          ['是', '是', '是']],
+                         ['6:00-9:30'],
+                         ['走路', '班车', '汽车']]
+        self.name = genicDataLst[0][0]
+        obj_lst = [self.job, self.hobby, self.eat, self.sleep]
+        #self.job = Node(genicDataLst[1])
+        #self.hobby = Node(genicDataLst[2])
+        #self.eat = Node(genicDataLst[3])
+        #self.sleep = Node(genicDataLst[4])
+        for i in range(1, 5):
+            obj_lst[i-1] = Node(genicDataLst[i])
+        
+                                     
+        
+
+
 
 class Child():
     parent = Object()
@@ -44,7 +85,30 @@ class Child():
     def getActivityTimeSeq():
         # 得到每个人的事件时长地点, 三个列表
 
-if __name == "__main__":
+if __name__ == "__main__":
+    genicDataLst = [ ['政府官员'],
+                     [['处理文件', '接待上访', '走访民众', '会议'],
+                      ['3~6', '2~4', '2~4', '0.5~5'],
+                      ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'],
+                      ['是', '是', '否', '是']],
+                     [['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'],
+                      ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'],
+                      ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'],
+                      ['否', '是', '否', '否', '否']],
+                     [['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'],
+                      ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'],
+                      ['小饭馆', '政府', '小饭馆', '别墅'],
+                      ['是', '是', '否', '是']],
+                     [['回家睡觉', '暂住宾馆', '夜总会玩乐'],
+                      ['7~10', '7~11', '7~11'],
+                      ['别墅', '宾馆', '洗浴中心'],
+                      ['是', '是', '是']],
+                     ['6:00-9:30'],
+                     ['走路', '班车', '汽车']]
+    parent = Parent(genicDataLst)
+"""
+if __name__ == "__main__":
+
     genicStr_lst = []    # 所有职业基因条
     tot_num = 1000       # 总人数
     num_scale_lst = []   # 各职业对应的人数比例
@@ -67,7 +131,8 @@ if __name == "__main__":
             print("sequence : " + person.sequence)
             print("time: " + person.time)
             print("place: " + person.space)
-        
+"""
+
     
 
 """
@@ -134,4 +199,10 @@ def flodPersonToGenicStr(person):
         temp += iToLenStr(person.transType[i], 1)
     temp += ' '*(10-n_transType)
     return temp
+"""
+
+
+"""
+[['政府官员'], ['处理文件', '接待上访', '走访民众', '会议'], ['3~6', '2~4', '2~4', '0.5~5'], ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'], ['是', '是', '否', '是'],
+['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'], ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'], ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'], ['否', '是', '否', '否', '否'], ['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'], ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'], ['小饭馆', '政府', '小饭馆', '别墅'], ['是', '是', '否', '是'], ['回家睡觉', '暂住宾馆', '夜总会玩乐'], ['7~10', '7~11', '7~11'], ['别墅', '宾馆', '洗浴中心'], ['是', '是', '是'], ['6:00-9:30'], ['走路', '班车', '汽车']]
 """
