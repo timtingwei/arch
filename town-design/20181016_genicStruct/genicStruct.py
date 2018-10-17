@@ -2,32 +2,27 @@
 # 基因条构造
 # 工作-爱好-吃饭-睡觉构造
 class Node():
+
     def __init__(self, subStr):
         self.activity = []
         self.domain = []
         self.place = []
         self.isDup = []
     def __init__(self, subGenicDataLst):
-        self.activity = []  # 事件     string   [a1, a2]
-        self.domain = []    # 时间区间  double   [(d1, d2), (d3,d4)]
-        self.place = []     # 地点     string  [[p1, p2], [p3, p4, p5]]
-        self.isDup = []     # 是否关联  int      [0, 1]
         n = len(subGenicDataLst[0])
+        self.activity = [0]*n  # 事件     string   [a1, a2]
+        self.domain = [0]*n    # 时间区间  double   [(d1, d2), (d3,d4)]
+        self.place = [0]*n     # 地点     string  [[p1, p2], [p3, p4, p5]]
+        self.isDup = [0]*n     # 是否关联  int      [0, 1]
         for i in range(n):
-            self.activity[i] = subGenicDataLst[0][i]
-            self.domain[i] = tuple(subGenicDataLst[1][i].split('~'))
+            self.activity[i] = (subGenicDataLst[0][i])
+            self.domain[i] = (tuple(subGenicDataLst[1][i].split('~')))
             self.place[i] = subGenicDataLst[2][i].split('~')
-            self.isDup[i] = 0 if cmp(subGenicDataLst[3][i]) "否" else 1
+            self.isDup[i] = 0 if cmp(subGenicDataLst[3][i], '否') == 0 else 1
 
 class Parent():
     ' 基因库中一条基因对应的基类 '
-    name = ''
-    job = Object()
-    hobby = Object()
-    eat = Object()
-    sleep = Object()
-    breakup = []    # 起床点时间点区间
-    transType = []  # 出行方式
+    """
     def __init__(self, genicStr):
         # 父类的构造函数
         self.job = Node(subStr1)
@@ -36,6 +31,7 @@ class Parent():
         self.sleep = Node(subStr4)
         self.breakup = stoi(subStr5)
         self.transType = stoi(subStr6)
+    """
     def __init__(self, genicDataLst):
         """
         #genicDataLst = [  [],  [],  [],  [], [], [], []]
@@ -59,35 +55,36 @@ class Parent():
                          ['6:00-9:30'],
                          ['走路', '班车', '汽车']]
         """
-        self.name = genicDataLst[0][0]
-        obj_lst = [self.job, self.hobby, self.eat, self.sleep]
-        #self.job = Node(genicDataLst[1])
-        #self.hobby = Node(genicDataLst[2])
-        #self.eat = Node(genicDataLst[3])
-        #self.sleep = Node(genicDataLst[4])
-        for i in range(1, 5):
-            obj_lst[i-1] = Node(genicDataLst[i])
-        self.breakup = [convertTimeFormat(time) for time in genicDataLst[5].split('-')]
-        self.transType = genicDataLst[6]
+        self.name = genicDataLst[0][0]      #职业名字
+        #obj_lst = self.getNodeToList()
+        #for i in range(1, 5):
+        #    obj_lst[i-1] = Node(genicDataLst[i])
+        self.job = Node(genicDataLst[1])    # 工作
+        self.hobby = Node(genicDataLst[2])  # 爱好
+        self.eat = Node(genicDataLst[3])    # 吃饭
+        self.sleep = Node(genicDataLst[4])  # 睡觉
+        self.breakup = [self.convertTimeFormat(time) for time in genicDataLst[5][0].split('-')]  # 起床时间点
+        self.transType = genicDataLst[6]  # 出行方式
 
-    def convertTimeFormat(s):
+    def convertTimeFormat(self, s):
         # convert 6:30 to 6.5
         lst = s.split(':')
         return int(lst[0]) + int(lst[1])/60
+    def getNodeToList(self):
+        return [self.job, self.hobby, self.eat, self.sleep]
 
 class Child():
-    parent = Object()
-    #seqClassify = []
-    sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
-    time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
-    place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
     def __init__(self, parent):
         self.parent = parent
+        self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
+        self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
+        self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
         #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 睡觉
-        self.getActivityTimeSeq()
+        #self.getActivityTimeSeq()
 
     def getActivityTimeSeq():
         # 得到每个人的事件时长地点, 三个列表
+        return
 
 if __name__ == "__main__":
     genicDataLst = [ ['政府官员'],
