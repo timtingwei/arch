@@ -37,6 +37,7 @@ class Parent():
         self.breakup = stoi(subStr5)
         self.transType = stoi(subStr6)
     def __init__(self, genicDataLst):
+        """
         #genicDataLst = [  [],  [],  [],  [], [], [], []]
         genicDataLst = [ ['政府官员'],
                          [['处理文件', '接待上访', '走访民众', '会议'],
@@ -57,6 +58,7 @@ class Parent():
                           ['是', '是', '是']],
                          ['6:00-9:30'],
                          ['走路', '班车', '汽车']]
+        """
         self.name = genicDataLst[0][0]
         obj_lst = [self.job, self.hobby, self.eat, self.sleep]
         #self.job = Node(genicDataLst[1])
@@ -65,11 +67,13 @@ class Parent():
         #self.sleep = Node(genicDataLst[4])
         for i in range(1, 5):
             obj_lst[i-1] = Node(genicDataLst[i])
-        
-                                     
-        
+        self.breakup = [convertTimeFormat(time) for time in genicDataLst[5].split('-')]
+        self.transType = genicDataLst[6]
 
-
+    def convertTimeFormat(s):
+        # convert 6:30 to 6.5
+        lst = s.split(':')
+        return int(lst[0]) + int(lst[1])/60
 
 class Child():
     parent = Object()
@@ -106,6 +110,7 @@ if __name__ == "__main__":
                      ['6:00-9:30'],
                      ['走路', '班车', '汽车']]
     parent = Parent(genicDataLst)
+    child = Child(parent)
 """
 if __name__ == "__main__":
 
