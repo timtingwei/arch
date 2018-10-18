@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import random
+import Queue
 # 基因条构造
 # 工作-爱好-吃饭-睡觉构造
 class Node():
@@ -39,6 +40,17 @@ class Parent():
     def getNodeToList(self):
         return [self.job, self.hobby, self.eat, self.sleep]
 
+class DeltaNode(object):
+    '压缩事件时间区间的优先队列的结点构造'
+    def __init__(self, index, d, weight):
+        self.index = index
+        self.weight = weight
+        self.d = d
+    def __lt__(self, other):
+        return self.weight < other.weight
+    def __str__(self):
+        return '(' + str(self.index)+',\'' + str(self.d)+',\'' + str(self.weight) + '\')'
+
 class Child():
     ' 每个职业下不同人的事件安排结构 '
     def __init__(self, parent):
@@ -54,7 +66,7 @@ class Child():
         # 按照的分配事件类序, 人的一日三餐保证睡眠, 粗略分配事件时刻地点表
         # self.arrangeActivityTimeSeq(num_lst)
         self.arrangeActivityTimeSeq()
-        # 根据事件发生的地点, 安排交通事件
+        # 根据事件发生的地点, 安排交通事件, 得到总时间后压缩或者扩展区间
         self.arrangeTransActivity(self.parent.path_obj)
         # 计算事件总和, 与24小时比较, 剩余时间是否满足睡眠区间, 压缩或者延伸时间长度
     def display(self):
@@ -152,25 +164,24 @@ class Child():
         sleep_d1, sleep_d2 = domain_lst[-1][0], domain_lst[-1][1]
         delta, flag = 0, 0
         q_node_lst = [0]*(seq_n-1)    # 用于构造优先队列 [[0, d0, weight0], [1, d1, weight1]]
+        que = Queue.PriorityQueue()
         if 24-update_total_time < sleep_d1:   # 睡眠不足
             self.time[-1] = sleep_d1          # 保证最必要的睡眠
             flag = -1
             delta = sleep_d1 - (24-update_total_time)
+            # 压缩优先队列,  权重小的差值在前
             for i in range(seq_n-1):
                 # 当前时间和区间左端点的差, 事件权重
-                lst = [self.time[i] - domain_lst[i][0], self.weight_data[i]]
-                q_node_lst[i] = lst
-            # 压缩优先队列,  权重小的差值在前
-            q = priority_queue()
+                que.put(DeltaNode(i, self.time[i] - domain_lst[i][0], self.weight_data[i]))
+            
         elif 24 - update_total_time > d2:    # 睡眠过多
             self.time[-1] = sleep_d2          # 保证最必要的睡眠
             flag = 1
             delta = 24 - update_total_time - sleep_d2
+            # 扩展优先队列, 权重大的事件差值在前
             for i in range(seq_n-1):
                 # 当前时间和区间右端点的差, 事件权重
-                q_dict[i] = [domain_lst[i][1] - self.time[i], self.weight_data[i]]
-            # 扩展优先队列, 权重大的事件差值在前
-            q = priority_queue()
+                que.put(DeltaNode(i, domain_lst[i][1] - self.time[i], self.weight_data[i]))
         else:
             self.time[-1] = 24 - update_total_time   # 睡眠区间合理, 剩余时间睡觉
             # 分配交通时间(还没写)
@@ -178,16 +189,16 @@ class Child():
             return 
                 
 
-        while delta != 0 and not q.empty():
-            if q.front()[1] <= delta:
-                delta = delta - q.front()[1]
+        while delta != 0 and not que.empty():
+            qNode = que.get()  # 队首出队
+            if qNode.d <= delta:
+                delta = delta - qNode.d
                 if flag == 1:
-                    this.time[q.front()[0]] = domain_lst[q.front()[0]][1]  # 扩展取右端点
+                    this.time[qNode.index] = domain_lst[qNode.index][1]  # 扩展取右端点
                 else:
-                    this.time[q.front()[0]] = domain_lst[q.front()[0]][0]  # 压缩取左端点
-                q.dequeue()    # 队首出队
+                    this.time[qNode.index] = domain_lst[qNode.index][0]  # 压缩取左端点
             else:   # 队首差值大于剩余delta
-                this.time[q.front()[0]] = this.time[q.front()[0]] + delta * flag  # 1加-1减
+                this.time[qNode.index] = this.time[qNode.index] + delta * flag  # 1加-1减
                 delta = 0
         if delta != 0:   # 所有可扩展或者压缩的区间分配完后, 仍旧不足
             self.isArrangeValid = False
