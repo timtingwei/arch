@@ -43,6 +43,7 @@ class Parent():
         return [self.job, self.hobby, self.eat, self.sleep]
 
 class Child():
+    ' 每个职业下不同人的事件安排结构 '
     def __init__(self, parent):
         self.parent = parent
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
@@ -55,7 +56,13 @@ class Child():
         self.getActivityTimeSeq()
         # 计算事件总和, 与24小时比较, 剩余时间是否满足睡眠区间, 压缩或者延伸时间长度
     def getSeqClassify(self):
-        return
+        self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
+        # 暂时: 吃饭和睡觉不变, 事件中工作和爱好分配权重
+        weight_data = {0: 5, 1: 5}
+        # 在数组中选择某个数来代替权重的运算
+        i_lst = [1, 3, 5]
+        for i in i_lst:
+            self.seqClassify[i] = self.random_weight(weight_data)
 
     def arrangeActivityTimeSeq(self, num_lst):
         # 学长的接口
@@ -97,6 +104,21 @@ class Child():
             sum_t += t
         return sum_t
 
+    def random_weight(weight_data):
+        total = sum(weight_data.values())    # 权重求和
+        ra = random.uniform(0, total)        # 在0与权重和之前获取一个随机数
+        curr_sum = 0
+        ret = None
+        keys = weight_data.iterkeys()
+        for k in keys:
+            curr_sum += weight_data[k]       # 在遍历重累加当前权重
+            if ra <= curr_sum:               # 当随机数<=当前权重和时, 返回权重key
+                ret = k
+                break
+        return ret
+
+
+    
 def testNode(node):
     print('testNode:')
     print(node.activity)
