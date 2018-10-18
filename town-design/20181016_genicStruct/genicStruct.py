@@ -23,7 +23,7 @@ class Node():
 
 class Parent():
     ' 基因库中一条基因对应的基类 '
-    def __init__(self, genicDataLst):
+    def __init__(self, genicDataLst, mappingObj):
         self.name = genicDataLst[0][0]      #职业名字
         #obj_lst = self.getNodeToList()
         #for i in range(1, 5):
@@ -34,6 +34,7 @@ class Parent():
         self.sleep = Node(genicDataLst[4])  # 睡觉
         self.breakup = [self.convertTimeFormat(time) for time in genicDataLst[5][0].split('-')]  # 起床时间点
         self.transType = genicDataLst[6]  # 出行方式
+        self.typeMapping = mappingObj     # 类型映射属性
 
     def convertTimeFormat(self, s):
         # convert 6:30 to 6.5
@@ -50,30 +51,39 @@ class Child():
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
         # 分配事件对应的分类
-        # getSeqClassify()
-        self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
+        self.getSeqClassify()
+        #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
         # 按照的分配事件类序, 人的一日三餐保证睡眠, 粗略分配事件时刻地点表
-        self.getActivityTimeSeq()
+        # self.arrangeActivityTimeSeq(num_lst)
+        self.arrangeActivityTimeSeq()
         # 计算事件总和, 与24小时比较, 剩余时间是否满足睡眠区间, 压缩或者延伸时间长度
+    def display(self):
+        return
+
     def getSeqClassify(self):
         self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
         # 暂时: 吃饭和睡觉不变, 事件中工作和爱好分配权重
-        weight_data = {0: 5, 1: 5}
+        weight_data = {0: 1, 1: 9}   # 平均分配
         # 在数组中选择某个数来代替权重的运算
         i_lst = [1, 3, 5]
         for i in i_lst:
             self.seqClassify[i] = self.random_weight(weight_data)
 
-    def arrangeActivityTimeSeq(self, num_lst):
+    def arrangeActivityTimeSeq(self):
         # 学长的接口
-        # num_lst: 建筑类型中实际的建筑数量
+        # 测试: 每个都是20
+        num_lst = [20]*(len(self.parent.typeMapping.arch_dict.keys()))
+        # num_lst: 建筑类型中实际的区块数量
         # 得到每个人的事件时长地点, 三个列表
+        self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
+        self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
+        self.place = []     # 事件对应的建筑类型序号, 区块序号  # int,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
         # eat, job/hobby, eat, job/hobby, eat, job/hobby, sleep
         mp = {0:{}, 1:{}, 2:{}, 3:{}}   # key=事件, value = (建筑类型, 建筑序号)
         node_lst = self.parent.getNodeToList()
         for classify in self.seqClassify:
             # 选择事件为序号
-            activity_len = node_lst[classify.activity]
+            activity_len = len(node_lst[classify].activity)
             activity_i = random.choice(range(activity_len))
             #activity_i = random.randint(0, activity_len-1)
             # 得到该事件的横向列表
@@ -88,9 +98,10 @@ class Child():
                 arch_index = mp[classify][activity_i][1]
             else:
                 arch_type = random.choice(activity_lst[2])
-                arch_index = random.randint(0, num_lst[arch_type])
+                arch_index = random.randint(0, num_lst[self.parent.typeMapping.archToIndex(arch_type)])
+                mp[classify][activity_i] = (arch_type, arch_index)
             if classify <> 3:   # 先不计算睡觉时间
-                time = random.random(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
+                time = random.uniform(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
             else:
                 time = 0
             self.sequence.append(activity_i)
@@ -104,7 +115,7 @@ class Child():
             sum_t += t
         return sum_t
 
-    def random_weight(weight_data):
+    def random_weight(self, weight_data):
         total = sum(weight_data.values())    # 权重求和
         ra = random.uniform(0, total)        # 在0与权重和之前获取一个随机数
         curr_sum = 0
@@ -116,7 +127,20 @@ class Child():
                 ret = k
                 break
         return ret
+    def getSeqTimePlaceList(self):
+        return [self.seqClassify, self.sequence, self.time, self.place]
 
+class TypeMapping():
+    # 关系映射对象
+    def __init__(self, tot_arch_type):
+        self.arch_dict = {}
+        for i in range(len(tot_arch_type)):
+            # f(建筑类型) = 建筑类型编号
+            self.arch_dict[tot_arch_type[i]] = i
+        return
+
+    def archToIndex(self, archType):
+        return self.arch_dict[archType]
 
     
 def testNode(node):
@@ -136,11 +160,23 @@ def testParent(parent):
     print(parent.transType)
 
 def testChild(child):
+    """
     print('parentName = ' + child.parent.name)
     print(child.sequence)
     print(child.time)
     print(child.place)
-    print(child.parent.getNodeToList())
+    """
+    seqTimePlace_lst = child.getSeqTimePlaceList()
+    print("seqClassify:")
+    print(seqTimePlace_lst[0])
+    print("sequence:")
+    print(seqTimePlace_lst[1])
+    print("time:")
+    print(seqTimePlace_lst[2])
+    print("place:")
+    print(seqTimePlace_lst[3])
+    print("total time = " + str(child.getTotalTime()))
+
 
 if __name__ == "__main__":
     genicDataLst = [ ['政府官员'],
@@ -162,11 +198,14 @@ if __name__ == "__main__":
                       ['是', '是', '是']],
                      ['6:00-9:30'],
                      ['走路', '班车', '汽车']]
-    parent = Parent(genicDataLst)
-    testParent(parent)
+    tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
+                     '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
+                     '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
+    mapping = TypeMapping(tot_arch_type)
+    parent = Parent(genicDataLst, mapping)
+    # testParent(parent)
     child = Child(parent)
-    # testChild(child)
-    print (unicode("学习", encoding="utf-8"))
+    testChild(child)
 
 """
 if __name__ == "__main__":
