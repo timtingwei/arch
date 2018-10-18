@@ -1,8 +1,9 @@
-#-*- coding=utf-8 -*-
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+import random
 # 基因条构造
 # 工作-爱好-吃饭-睡觉构造
 class Node():
-
     def __init__(self, subStr):
         self.activity = []
         self.domain = []
@@ -47,19 +48,60 @@ class Child():
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
-        #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 睡觉
-        #self.getActivityTimeSeq()
-
-    def getActivityTimeSeq():
-        # 学长的接口
-        # 得到每个人的事件时长地点, 三个列表
+        # 分配事件对应的分类
+        # getSeqClassify()
+        self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
+        # 按照的分配事件类序, 人的一日三餐保证睡眠, 粗略分配事件时刻地点表
+        self.getActivityTimeSeq()
+        # 计算事件总和, 与24小时比较, 剩余时间是否满足睡眠区间, 压缩或者延伸时间长度
+    def getSeqClassify(self):
         return
+
+    def arrangeActivityTimeSeq(self, num_lst):
+        # 学长的接口
+        # num_lst: 建筑类型中实际的建筑数量
+        # 得到每个人的事件时长地点, 三个列表
+        # eat, job/hobby, eat, job/hobby, eat, job/hobby, sleep
+        mp = {0:{}, 1:{}, 2:{}, 3:{}}   # key=事件, value = (建筑类型, 建筑序号)
+        node_lst = self.parent.getNodeToList()
+        for classify in self.seqClassify:
+            # 选择事件为序号
+            activity_len = node_lst[classify.activity]
+            activity_i = random.choice(range(activity_len))
+            #activity_i = random.randint(0, activity_len-1)
+            # 得到该事件的横向列表
+            activity_lst = [activity_i,
+                            node_lst[classify].domain[activity_i],
+                            node_lst[classify].place[activity_i],
+                            node_lst[classify].isDup[activity_i]]
+            # 为事件选择发生地点和建筑类型
+            if activity_i in mp[classify] and activity_lst[3] == 1:
+                # 重复且关联
+                arch_type = mp[classify][activity_i][0]
+                arch_index = mp[classify][activity_i][1]
+            else:
+                arch_type = random.choice(activity_lst[2])
+                arch_index = random.randint(0, num_lst[arch_type])
+            if classify <> 3:   # 先不计算睡觉时间
+                time = random.random(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
+            else:
+                time = 0
+            self.sequence.append(activity_i)
+            self.time.append(time)
+            self.place.append((arch_type, arch_index))
+        return
+
+    def getTotalTime(self):
+        sum_t = 0
+        for t in self.time:
+            sum_t += t
+        return sum_t
 
 def testNode(node):
     print('testNode:')
     print(node.activity)
     print(node.domain)
-    print(node.place)
+    print([p for p in node.place])
     print(node.isDup)
 
 def testParent(parent):
@@ -76,6 +118,7 @@ def testChild(child):
     print(child.sequence)
     print(child.time)
     print(child.place)
+    print(child.parent.getNodeToList())
 
 if __name__ == "__main__":
     genicDataLst = [ ['政府官员'],
@@ -98,9 +141,10 @@ if __name__ == "__main__":
                      ['6:00-9:30'],
                      ['走路', '班车', '汽车']]
     parent = Parent(genicDataLst)
-    # testParent(parent)
+    testParent(parent)
     child = Child(parent)
     # testChild(child)
+    print (unicode("学习", encoding="utf-8"))
 
 """
 if __name__ == "__main__":
