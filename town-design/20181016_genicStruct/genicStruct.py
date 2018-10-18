@@ -4,11 +4,7 @@ import random
 # 基因条构造
 # 工作-爱好-吃饭-睡觉构造
 class Node():
-    def __init__(self, subStr):
-        self.activity = []
-        self.domain = []
-        self.place = []
-        self.isDup = []
+    ' 一个分类属性的结构 ' 
     def __init__(self, subGenicDataLst):
         n = len(subGenicDataLst[0])
         self.activity = ['']*n  # 事件     string   [a1, a2]
@@ -23,7 +19,7 @@ class Node():
 
 class Parent():
     ' 基因库中一条基因对应的基类 '
-    def __init__(self, genicDataLst, mappingObj):
+    def __init__(self, genicDataLst, mappingObj, path_obj):
         self.name = genicDataLst[0][0]      #职业名字
         #obj_lst = self.getNodeToList()
         #for i in range(1, 5):
@@ -50,12 +46,16 @@ class Child():
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
+        self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
+        self.isArrangeValid = False    # 人的事件时间地点安排表是否合理
         # 分配事件对应的分类
         self.getSeqClassify()
         #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
         # 按照的分配事件类序, 人的一日三餐保证睡眠, 粗略分配事件时刻地点表
         # self.arrangeActivityTimeSeq(num_lst)
         self.arrangeActivityTimeSeq()
+        # 根据事件发生的地点, 安排交通事件
+        self.arrangeTransActivity(self.parent.path_obj)
         # 计算事件总和, 与24小时比较, 剩余时间是否满足睡眠区间, 压缩或者延伸时间长度
     def display(self):
         return
@@ -94,19 +94,21 @@ class Child():
             # 为事件选择发生地点和建筑类型
             if activity_i in mp[classify] and activity_lst[3] == 1:
                 # 重复且关联
-                arch_type = mp[classify][activity_i][0]
+                arch_type = ''
+                arch_type_index = mp[classify][activity_i][0]
                 arch_index = mp[classify][activity_i][1]
             else:
                 arch_type = random.choice(activity_lst[2])
-                arch_index = random.randint(0, num_lst[self.parent.typeMapping.archToIndex(arch_type)])
-                mp[classify][activity_i] = (arch_type, arch_index)
+                arch_type_index = self.parent.typeMapping.archToIndex(arch_type)
+                arch_index = random.randint(0, num_lst[arch_index])
+                mp[classify][activity_i] = (arch_type_index, arch_index)
             if classify <> 3:   # 先不计算睡觉时间
                 time = random.uniform(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
             else:
                 time = 0
             self.sequence.append(activity_i)
             self.time.append(time)
-            self.place.append((arch_type, arch_index))
+            self.place.append((arch_type_index, arch_index))
         return
 
     def getTotalTime(self):
@@ -130,6 +132,79 @@ class Child():
     def getSeqTimePlaceList(self):
         return [self.seqClassify, self.sequence, self.time, self.place]
 
+    def arrangeTransActivity(self.parent.path_obj):
+
+        # 事件的权重, 应该作为类属性
+        self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
+        # 保证睡眠的一天事儿
+        tran_time_lst = []
+        for i range(len(self.place)-1):
+            distance = path_obj.getShortestPathDistance(self.place[i], self.place[i+1])
+            tran_type_int = random.randint(0, len(self.transType))
+            time = distance / speed
+            tran_time_lst.append(time)
+        update_total_time = sum(tran_time_lst) + getTotalTime()
+
+        seq_n = len(self.sequence)
+        node_lst = self.parent.getNodeList()
+        domain_lst = [ node_lst[self.seqClassify[i]].domain[self.sequence[i]]
+                       for i in range(seq_n)]    # 已经存在的每个事件的区间
+        sleep_d1, sleep_d2 = domain_lst[-1][0], domain_lst[-1][1]
+        delta, flag = 0, 0
+        q_node_lst = [0]*(seq_n-1)    # 用于构造优先队列 [[0, d0, weight0], [1, d1, weight1]]
+        if 24-update_total_time < sleep_d1:   # 睡眠不足
+            self.time[-1] = sleep_d1          # 保证最必要的睡眠
+            flag = -1
+            delta = sleep_d1 - (24-update_total_time)
+            for i in range(seq_n-1):
+                # 当前时间和区间左端点的差, 事件权重
+                lst = [self.time[i] - domain_lst[i][0], self.weight_data[i]]
+                q_node_lst[i] = lst
+            # 压缩优先队列,  权重小的差值在前
+            q = priority_queue()
+        elif 24 - update_total_time > d2:    # 睡眠过多
+            self.time[-1] = sleep_d2          # 保证最必要的睡眠
+            flag = 1
+            delta = 24 - update_total_time - sleep_d2
+            for i in range(seq_n-1):
+                # 当前时间和区间右端点的差, 事件权重
+                q_dict[i] = [domain_lst[i][1] - self.time[i], self.weight_data[i]]
+            # 扩展优先队列, 权重大的事件差值在前
+            q = priority_queue()
+        else:
+            self.time[-1] = 24 - update_total_time   # 睡眠区间合理, 剩余时间睡觉
+            # 分配交通时间(还没写)
+
+            return 
+                
+
+        while delta != 0 and not q.empty():
+            if q.front()[1] <= delta:
+                delta = delta - q.front()[1]
+                if flag == 1:
+                    this.time[q.front()[0]] = domain_lst[q.front()[0]][1]  # 扩展取右端点
+                else:
+                    this.time[q.front()[0]] = domain_lst[q.front()[0]][0]  # 压缩取左端点
+                q.dequeue()    # 队首出队
+            else:   # 队首差值大于剩余delta
+                this.time[q.front()[0]] = this.time[q.front()[0]] + delta * flag  # 1加-1减
+                delta = 0
+        if delta != 0:   # 所有可扩展或者压缩的区间分配完后, 仍旧不足
+            self.isArrangeValid = False
+            # 路径选择太远
+            # 建筑位点选择太远
+            # 出行方式不恰当
+            # 城市路网不合理
+            # 城市区块分布有问题
+        else:
+            self.isArrangeValid = True
+
+        # 插入一天的交通时间(还没写)
+
+        return
+        
+            
+
 class TypeMapping():
     # 关系映射对象
     def __init__(self, tot_arch_type):
@@ -142,6 +217,10 @@ class TypeMapping():
     def archToIndex(self, archType):
         return self.arch_dict[archType]
 
+class Path(object):
+    ' 路径对象描述 '
+    def __init__(self):
+        self.shortestPaths = {}
     
 def testNode(node):
     print('testNode:')
@@ -233,76 +312,7 @@ if __name__ == "__main__":
             print("time: " + person.time)
             print("place: " + person.space)
 """
-
     
-
-"""
-# 由基因条字符串初始化基因条对象:
-def CreatePersonFromStr(genicStr):
-    person = Person()
-    return person
-
-# 由数值列表初始化基因条对象:
-def CreatePersonFromValue(lst1, lst2, lst3, lst4):
-    person = Person()
-    return person
-
-# 获得职业, 区间, 地点, 出行方式的中文->序号映射字典
-
-# 获得职业, 区间, 地点, 出行方式的序号->中文映射字典
-
-# 将整数转化成指定长度的字符串
-def iToLenStr(int_v, length):
-    temp = str(int_v)
-    delta = length - len(temp)
-    if delta > 0:
-        return temp + '0'*delta
-    else:
-        print("Error!"); return;
-
-# 把Node实例折叠成基因条
-def flodNodeToGenicStr(node):
-    temp = ''
-    n = len(node.activity)
-    for i in range(n):  # 事件
-        temp += iToLenStr(node.activity[i], 1)
-    temp += ' '*(10-n)*1
-    for i in range(n):  # 时间区间
-        temp += iToLenStr(node.domain[i][0], 2)
-        temp += iToLenStr(node.domain[i][1], 2)
-    temp += ' '*(10-n)*4
-    for i in range(n):  # 地点
-        m = len(n.place[i])
-        for j in range(m):
-            temp += iToLenStr(node.place[i][j], 2)
-        temp += ' '*(10-m)*2
-    temp += ' '*(10-n)*20
-    for i in range(n):
-        temp += iToLenStr(node.isDup[i], 1)
-    temp += ' '*(10-n)*1
-    return temp
-    
-        
-
-# 把类对象实例折叠成基因条
-def flodPersonToGenicStr(person):
-    temp = ''
-    # 职业名字
-    temp += iToLenStr(person.name, 2)
-
-    attr_lst = [person.Job, person.Hobby, person.Eat, person.Sleep]
-    for attr in attr_lst:  # 工作, 爱好, 吃饭, 睡觉
-        temp += flodNodeToGenicStr(attr_lst)
-    for edge in person.breakup:  # 起床区间
-        temp += iToLenStr(edge, 2)
-    n_transType = len(person.transType)  # 出行方式
-    for i in range(n_transType):
-        temp += iToLenStr(person.transType[i], 1)
-    temp += ' '*(10-n_transType)
-    return temp
-"""
-
-
 """
 [['政府官员'], ['处理文件', '接待上访', '走访民众', '会议'], ['3~6', '2~4', '2~4', '0.5~5'], ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'], ['是', '是', '否', '是'],
 ['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'], ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'], ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'], ['否', '是', '否', '否', '否'], ['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'], ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'], ['小饭馆', '政府', '小饭馆', '别墅'], ['是', '是', '否', '是'], ['回家睡觉', '暂住宾馆', '夜总会玩乐'], ['7~10', '7~11', '7~11'], ['别墅', '宾馆', '洗浴中心'], ['是', '是', '是'], ['6:00-9:30'], ['走路', '班车', '汽车']]
