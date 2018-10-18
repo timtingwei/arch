@@ -144,7 +144,7 @@ class Child():
     def getSeqTimePlaceList(self):
         return [self.seqClassify, self.sequence, self.time, self.place]
 
-    def arrangeTransActivity(self.parent.path_obj):
+    def arrangeTransActivity(self):
 
         # 事件的权重, 应该作为类属性
         self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
