@@ -67,9 +67,10 @@ class Child():
         # 按照的分配事件类序, 人的一日三餐保证睡眠, 粗略分配事件时刻地点表
         # self.arrangeActivityTimeSeq(num_lst)
         self.arrangeActivityTimeSeq()
-        # 根据事件发生的地点, 安排交通事件, 得到总时间后压缩或者扩展区间
-        self.arrangeTransActivity(self.parent.path_obj)
-        # 计算事件总和, 与24小时比较, 剩余时间是否满足睡眠区间, 压缩或者延伸时间长度
+        # 根据事件发生的地点, 安排交通事件, 
+        self.arrangeTransActivity()
+        # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
+        self.adjustActivityTime()
     def display(self):
         return
 
@@ -114,7 +115,7 @@ class Child():
             else:
                 arch_type = random.choice(activity_lst[2])
                 arch_type_index = self.parent.relationMapping.archToIndex(arch_type)
-                arch_index = random.randint(0, num_lst[arch_index])
+                arch_index = random.randint(0, num_lst[arch_type_index])
                 mp[classify][activity_i] = (arch_type_index, arch_index)
             if classify <> 3:   # 先不计算睡觉时间
                 time = random.uniform(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
@@ -151,17 +152,21 @@ class Child():
         # 事件的权重, 应该作为类属性
         self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
         # 保证睡眠的一天事儿
-        for i range(len(self.place)-1):
-            distance = self.parent.relationMapping.getShortestPathDistance(self.place[i], self.place[i+1])
-            tran_type_int = random.randint(0, len(self.transType))
+        for i in range(len(self.place)-1):
+            # distance = self.parent.relationMapping.getNodeShortestDistance([self.place[i], self.place[i+1]])
+            distance = 3.5    # 临时3.5公里
+            trans_type_int = random.randint(0, len(self.parent.transType))
             # 交通方式名称映射速度
-            speed = self.parent.relationMapping.getTransSpeedFromName()
+            speed = self.parent.relationMapping.getTransSpeedFromIndex(trans_type_int)*3.6
             time = distance / speed
             self.trans_time.append(time)
-        update_total_time = sum(self.trans_time) + getActivityTotalTime()
+        
+    def adjustActivityTime(self):
+        # 根据计算得到交通序列, 调整事件消耗的时间
+        update_total_time = sum(self.trans_time) + self.getActivityTotalTime()
 
         seq_n = len(self.sequence)
-        node_lst = self.parent.getNodeList()
+        node_lst = self.parent.getNodeToList()
         domain_lst = [ node_lst[self.seqClassify[i]].domain[self.sequence[i]]
                        for i in range(seq_n)]    # 已经存在的每个事件的区间
         sleep_d1, sleep_d2 = domain_lst[-1][0], domain_lst[-1][1]
@@ -177,7 +182,7 @@ class Child():
                 # 当前时间和区间左端点的差, 事件权重
                 que.put(DeltaNode(i, self.time[i] - domain_lst[i][0], self.weight_data[i]))
             
-        elif 24 - update_total_time > d2:    # 睡眠过多
+        elif 24 - update_total_time > sleep_d2:    # 睡眠过多
             self.time[-1] = sleep_d2          # 保证最必要的睡眠
             flag = 1
             delta = 24 - update_total_time - sleep_d2
@@ -190,17 +195,16 @@ class Child():
             # 分配交通时间(之前分配的交通时间是合理的)
             return 
                 
-
         while delta != 0 and not que.empty():
             qNode = que.get()  # 队首出队
             if qNode.d <= delta:
                 delta = delta - qNode.d
                 if flag == 1:
-                    this.time[qNode.index] = domain_lst[qNode.index][1]  # 扩展取右端点
+                    self.time[qNode.index] = domain_lst[qNode.index][1]  # 扩展取右端点
                 else:
-                    this.time[qNode.index] = domain_lst[qNode.index][0]  # 压缩取左端点
+                    self.time[qNode.index] = domain_lst[qNode.index][0]  # 压缩取左端点
             else:   # 队首差值大于剩余delta
-                this.time[qNode.index] = this.time[qNode.index] + delta * flag  # 1加-1减
+                self.time[qNode.index] = self.time[qNode.index] + delta * flag  # 1加-1减
                 delta = 0
         if delta != 0:   # 所有可扩展或者压缩的区间分配完后, 仍旧不足
             self.isArrangeValid = False
@@ -215,6 +219,9 @@ class Child():
             self.isArrangeValid = True
 
         return
+
+    def getActivityAndTransTotalTime(self):
+        return sum(self.trans_time) + self.getActivityTotalTime()
         
             
 
@@ -225,7 +232,7 @@ class TypeMapping():
         for i in range(len(tot_arch_type)):
             # f(建筑类型) = 建筑类型编号
             self.arch_dict[tot_arch_type[i]] = i
-        self.node_path = {}
+        self.node_path = tot_node_path   # {a,b: [[[nodeOrder], d1], [], []], []}
         self.trans_type_dict = {}  # 将出行方式映射成序号
         self.trans_speed_dict = {}  # 将出行序号映射成速度
         for i in range(len(tot_trans_type)):
@@ -241,19 +248,20 @@ class TypeMapping():
     def nodeToPath(self, node_pair):
         # f(结点序号) = 结点间路径
         # node_pair: [node_i1, node_i2] -> key = node1, node2
-        s_node = str(node_i1) + ',' + str(node_i2)
+        s_node = str(node_pair[0]) + ',' + str(node_pair[1])
         return self.node_path[s_node]
 
-    def getNodeShortestDistance(self, node_path):
+    def getNodeShortestDistance(self, node_pair):
+        node_paths = self.nodeToPath(node_pair)
         # 根据带距离的路径结点, 选择最近的距离
-        node_path = [nodes, distances]
-        sum_d = 0
-        for d in node_path[1]:
-            sum_d = sum_d + d
-        return sum_d
+        #node_path = [nodes, distances]
+        return node_pathes[0][1]
 
     def getTransSpeedFromName(self, trans_type):
-        return trans_speed_dict[trans_type_dict[trans_type]]
+        return self.trans_speed_dict[trans_type_dict[trans_type]]
+
+    def getTransSpeedFromIndex(self, trans_type_i):
+        return self.trans_speed_dict[trans_type_i]
 
     
 
@@ -279,12 +287,6 @@ def testParent(parent):
     print(parent.transType)
 
 def testChild(child):
-    """
-    print('parentName = ' + child.parent.name)
-    print(child.sequence)
-    print(child.time)
-    print(child.place)
-    """
     seqTimePlace_lst = child.getSeqTimePlaceList()
     print("seqClassify:")
     print(seqTimePlace_lst[0])
@@ -294,7 +296,10 @@ def testChild(child):
     print(seqTimePlace_lst[2])
     print("place:")
     print(seqTimePlace_lst[3])
-    print("total time = " + str(child.getActivityTotalTime()))
+    print("total activity time = " + str(child.getActivityTotalTime()))
+    print('trans_time: ')
+    print(child.trans_time)
+    print("total time = " + str(child.getActivityAndTransTotalTime()))
 
 
 if __name__ == "__main__":
@@ -316,11 +321,20 @@ if __name__ == "__main__":
                       ['别墅', '宾馆', '洗浴中心'],
                       ['是', '是', '是']],
                      ['6:00-9:30'],
-                     ['走路', '班车', '汽车']]
+                     ['走路', '公交车', '汽车']]
     tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
                      '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
                      '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
-    mapping = TypeMapping(tot_arch_type)
+    tot_job_type = ['工厂叉车司机', '地头混混', '幼儿园老师', '啃老族', '打零工', '扫地工人',
+                    '水果小贩', '小老板', '流浪汉', '快递员', '健身教练', '出租车司机',
+                    '养蜂人', '小学生', '中学生', '工厂工人', '片警', '退休', '政府官员',
+                    '上市公司老板', '渔民', '厂长', '货车司机', '种地农民', '幼儿园清洁工',
+                    '中心学校校长', '幼儿园学生', '学校厨师长', '退休老人', '老年服务中心主管',
+                    '村支书', '派出所民警', '病人', '医生', '水产养殖户', '家庭主妇', '旅游者']
+    tot_trans_type = ['走路', '自行车', '电瓶车', '公交车', '汽车']
+    tot_trans_speed = [1.2, 5, 1.8, 12.5, 16.7]
+    tot_node_path = {}
+    mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path)
     parent = Parent(genicDataLst, mapping)
     # testParent(parent)
     child = Child(parent)
