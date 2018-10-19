@@ -20,7 +20,7 @@ class Node():
 
 class Parent():
     ' 基因库中一条基因对应的基类 '
-    def __init__(self, genicDataLst, mappingObj, path_obj):
+    def __init__(self, genicDataLst, mappingObj):
         self.name = genicDataLst[0][0]      #职业名字
         #obj_lst = self.getNodeToList()
         #for i in range(1, 5):
@@ -31,7 +31,7 @@ class Parent():
         self.sleep = Node(genicDataLst[4])  # 睡觉
         self.breakup = [self.convertTimeFormat(time) for time in genicDataLst[5][0].split('-')]  # 起床时间点
         self.transType = genicDataLst[6]  # 出行方式
-        self.typeMapping = mappingObj     # 类型映射属性
+        self.relationMapping = mappingObj     # 类型映射属性
 
     def convertTimeFormat(self, s):
         # convert 6:30 to 6.5
@@ -58,6 +58,7 @@ class Child():
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
+        self.trans_time = []  # 储存与地点序列匹配的交通时间
         self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
         self.isArrangeValid = False    # 人的事件时间地点安排表是否合理
         # 分配事件对应的分类
@@ -73,7 +74,8 @@ class Child():
         return
 
     def getSeqClassify(self):
-        self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
+        # 得到事件序列的类型
+        self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 初:吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
         # 暂时: 吃饭和睡觉不变, 事件中工作和爱好分配权重
         weight_data = {0: 1, 1: 9}   # 平均分配
         # 在数组中选择某个数来代替权重的运算
@@ -84,7 +86,7 @@ class Child():
     def arrangeActivityTimeSeq(self):
         # 学长的接口
         # 测试: 每个都是20
-        num_lst = [20]*(len(self.parent.typeMapping.arch_dict.keys()))
+        num_lst = [20]*(len(self.parent.relationMapping.arch_dict.keys()))
         # num_lst: 建筑类型中实际的区块数量
         # 得到每个人的事件时长地点, 三个列表
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
@@ -111,7 +113,7 @@ class Child():
                 arch_index = mp[classify][activity_i][1]
             else:
                 arch_type = random.choice(activity_lst[2])
-                arch_type_index = self.parent.typeMapping.archToIndex(arch_type)
+                arch_type_index = self.parent.relationMapping.archToIndex(arch_type)
                 arch_index = random.randint(0, num_lst[arch_index])
                 mp[classify][activity_i] = (arch_type_index, arch_index)
             if classify <> 3:   # 先不计算睡觉时间
@@ -123,7 +125,7 @@ class Child():
             self.place.append((arch_type_index, arch_index))
         return
 
-    def getTotalTime(self):
+    def getActivityTotalTime(self):
         sum_t = 0
         for t in self.time:
             sum_t += t
@@ -149,13 +151,14 @@ class Child():
         # 事件的权重, 应该作为类属性
         self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
         # 保证睡眠的一天事儿
-        tran_time_lst = []
         for i range(len(self.place)-1):
-            distance = path_obj.getShortestPathDistance(self.place[i], self.place[i+1])
+            distance = self.parent.relationMapping.getShortestPathDistance(self.place[i], self.place[i+1])
             tran_type_int = random.randint(0, len(self.transType))
+            # 交通方式名称映射速度
+            speed = self.parent.relationMapping.getTransSpeedFromName()
             time = distance / speed
-            tran_time_lst.append(time)
-        update_total_time = sum(tran_time_lst) + getTotalTime()
+            self.trans_time.append(time)
+        update_total_time = sum(self.trans_time) + getActivityTotalTime()
 
         seq_n = len(self.sequence)
         node_lst = self.parent.getNodeList()
@@ -163,8 +166,8 @@ class Child():
                        for i in range(seq_n)]    # 已经存在的每个事件的区间
         sleep_d1, sleep_d2 = domain_lst[-1][0], domain_lst[-1][1]
         delta, flag = 0, 0
-        q_node_lst = [0]*(seq_n-1)    # 用于构造优先队列 [[0, d0, weight0], [1, d1, weight1]]
-        que = Queue.PriorityQueue()
+        # q_node_lst = [0]*(seq_n-1)    # 用于构造优先队列 [[0, d0, weight0], [1, d1, weight1]]
+        que = Queue.PriorityQueue()     # que中存放DeltaNode{index, d, weight}
         if 24-update_total_time < sleep_d1:   # 睡眠不足
             self.time[-1] = sleep_d1          # 保证最必要的睡眠
             flag = -1
@@ -184,8 +187,7 @@ class Child():
                 que.put(DeltaNode(i, domain_lst[i][1] - self.time[i], self.weight_data[i]))
         else:
             self.time[-1] = 24 - update_total_time   # 睡眠区间合理, 剩余时间睡觉
-            # 分配交通时间(还没写)
-
+            # 分配交通时间(之前分配的交通时间是合理的)
             return 
                 
 
@@ -207,26 +209,53 @@ class Child():
             # 出行方式不恰当
             # 城市路网不合理
             # 城市区块分布有问题
+
+            # 修改之前插入的一天的交通时间(还没写)
         else:
             self.isArrangeValid = True
-
-        # 插入一天的交通时间(还没写)
 
         return
         
             
 
 class TypeMapping():
-    # 关系映射对象
-    def __init__(self, tot_arch_type):
+    # 关系映射对象, 用于查表
+    def __init__(self, tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path):
         self.arch_dict = {}
         for i in range(len(tot_arch_type)):
             # f(建筑类型) = 建筑类型编号
             self.arch_dict[tot_arch_type[i]] = i
+        self.node_path = {}
+        self.trans_type_dict = {}  # 将出行方式映射成序号
+        self.trans_speed_dict = {}  # 将出行序号映射成速度
+        for i in range(len(tot_trans_type)):
+            self.trans_type_dict[tot_trans_type[i]] = i
+            self.trans_speed_dict[i] = tot_trans_speed[i]
+        
+        
         return
 
     def archToIndex(self, archType):
         return self.arch_dict[archType]
+
+    def nodeToPath(self, node_pair):
+        # f(结点序号) = 结点间路径
+        # node_pair: [node_i1, node_i2] -> key = node1, node2
+        s_node = str(node_i1) + ',' + str(node_i2)
+        return self.node_path[s_node]
+
+    def getNodeShortestDistance(self, node_path):
+        # 根据带距离的路径结点, 选择最近的距离
+        node_path = [nodes, distances]
+        sum_d = 0
+        for d in node_path[1]:
+            sum_d = sum_d + d
+        return sum_d
+
+    def getTransSpeedFromName(self, trans_type):
+        return trans_speed_dict[trans_type_dict[trans_type]]
+
+    
 
 class Path(object):
     ' 路径对象描述 '
@@ -265,7 +294,7 @@ def testChild(child):
     print(seqTimePlace_lst[2])
     print("place:")
     print(seqTimePlace_lst[3])
-    print("total time = " + str(child.getTotalTime()))
+    print("total time = " + str(child.getActivityTotalTime()))
 
 
 if __name__ == "__main__":
