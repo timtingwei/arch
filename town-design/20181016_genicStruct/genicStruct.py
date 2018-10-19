@@ -50,7 +50,7 @@ class DeltaNode(object):
     def __lt__(self, other):
         if self.flag == 1:     # 如果flag为1, weight大的排在前面, 权重大的被先扩展
             return self.weight > other.weight
-        elif self.flag == 0:   # 如果flag为0, 权重小的先被压缩
+        elif self.flag == -1:   # 如果flag为0, 权重小的先被压缩
             return self.weight < other.weight
     def __str__(self):
         return '(' + str(self.index)+',\'' + str(self.d)+',\'' + str(self.weight) + '\')'
