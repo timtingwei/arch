@@ -42,12 +42,16 @@ class Parent():
 
 class DeltaNode(object):
     '压缩事件时间区间的优先队列的结点构造'
-    def __init__(self, index, d, weight):
+    def __init__(self, index, d, weight, flag):
         self.index = index
         self.weight = weight
         self.d = d
+        self.flag = flag
     def __lt__(self, other):
-        return self.weight < other.weight
+        if self.flag == 1:     # 如果flag为1, weight大的排在前面, 权重大的被先扩展
+            return self.weight > other.weight
+        elif self.flag == 0:   # 如果flag为0, 权重小的先被压缩
+            return self.weight < other.weight
     def __str__(self):
         return '(' + str(self.index)+',\'' + str(self.d)+',\'' + str(self.weight) + '\')'
 
@@ -59,7 +63,8 @@ class Child():
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
         self.trans_time = []  # 储存与地点序列匹配的交通时间
-        self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
+        # self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
+        self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
         self.isArrangeValid = False    # 人的事件时间地点安排表是否合理
         # 分配事件对应的分类
         self.getSeqClassify()
@@ -67,6 +72,7 @@ class Child():
         # 按照的分配事件类序, 人的一日三餐保证睡眠, 粗略分配事件时刻地点表
         # self.arrangeActivityTimeSeq(num_lst)
         self.arrangeActivityTimeSeq()
+
         # 根据事件发生的地点, 安排交通事件, 
         self.arrangeTransActivity()
         # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
@@ -149,8 +155,7 @@ class Child():
 
     def arrangeTransActivity(self):
 
-        # 事件的权重, 应该作为类属性
-        self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
+        
         # 保证睡眠的一天事儿
         for i in range(len(self.place)-1):
             # distance = self.parent.relationMapping.getNodeShortestDistance([self.place[i], self.place[i+1]])
@@ -162,8 +167,15 @@ class Child():
             self.trans_time.append(time)
         
     def adjustActivityTime(self):
+        # 测试
+        print('activity_time:')
+        print(self.time)
+        print('total activityAndTransport time:')
+        print(self.getActivityTotalTime()+sum(self.trans_time))
         # 根据计算得到交通序列, 调整事件消耗的时间
         update_total_time = sum(self.trans_time) + self.getActivityTotalTime()
+        # 事件的权重, 应该作为类属性
+        self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
 
         seq_n = len(self.sequence)
         node_lst = self.parent.getNodeToList()
@@ -180,7 +192,7 @@ class Child():
             # 压缩优先队列,  权重小的差值在前
             for i in range(seq_n-1):
                 # 当前时间和区间左端点的差, 事件权重
-                que.put(DeltaNode(i, self.time[i] - domain_lst[i][0], self.weight_data[i]))
+                que.put(DeltaNode(i, self.time[i] - domain_lst[i][0], self.weight_data[i], flag))
             
         elif 24 - update_total_time > sleep_d2:    # 睡眠过多
             self.time[-1] = sleep_d2          # 保证最必要的睡眠
@@ -189,7 +201,7 @@ class Child():
             # 扩展优先队列, 权重大的事件差值在前
             for i in range(seq_n-1):
                 # 当前时间和区间右端点的差, 事件权重
-                que.put(DeltaNode(i, domain_lst[i][1] - self.time[i], self.weight_data[i]))
+                que.put(DeltaNode(i, domain_lst[i][1] - self.time[i], self.weight_data[i], flag))
         else:
             self.time[-1] = 24 - update_total_time   # 睡眠区间合理, 剩余时间睡觉
             # 分配交通时间(之前分配的交通时间是合理的)
@@ -317,7 +329,7 @@ if __name__ == "__main__":
                       ['小饭馆', '政府', '小饭馆', '别墅'],
                       ['是', '是', '否', '是']],
                      [['回家睡觉', '暂住宾馆', '夜总会玩乐'],
-                      ['7~10', '7~11', '7~11'],
+                      ['7~9', '7~9', '7~9'],
                       ['别墅', '宾馆', '洗浴中心'],
                       ['是', '是', '是']],
                      ['6:00-9:30'],
