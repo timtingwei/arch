@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 import random
 import Queue
+import readDataFromExcel
 # 基因条构造
 # 工作-爱好-吃饭-睡觉构造
 class Node():
@@ -350,6 +351,7 @@ if __name__ == "__main__":
                       ['是', '是', '是']],
                      ['6:00-9:30'],
                      ['走路', '公交车', '汽车']]
+    genicDataLst = readDataFromExcel.read()[36]
     tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
                      '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
                      '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
@@ -367,15 +369,35 @@ if __name__ == "__main__":
     testParent(parent)
     child = Child(parent)
     testChild(child)
+    #print(readDataFromExcel.read())
+
+
 
 """
 if __name__ == "__main__":
+    tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
+                     '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
+                     '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
+    tot_job_type = ['工厂叉车司机', '地头混混', '幼儿园老师', '啃老族', '打零工', '扫地工人',
+                    '水果小贩', '小老板', '流浪汉', '快递员', '健身教练', '出租车司机',
+                    '养蜂人', '小学生', '中学生', '工厂工人', '片警', '退休', '政府官员',
+                    '上市公司老板', '渔民', '厂长', '货车司机', '种地农民', '幼儿园清洁工',
+                    '中心学校校长', '幼儿园学生', '学校厨师长', '退休老人', '老年服务中心主管',
+                    '村支书', '派出所民警', '病人', '医生', '水产养殖户', '家庭主妇', '旅游者']
+    tot_trans_type = ['走路', '自行车', '电瓶车', '公交车', '汽车']
+    tot_trans_speed = [1.2, 5, 1.8, 12.5, 16.7]
+    tot_node_path = {}
+    mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path)
 
-    genicStr_lst = []    # 所有职业基因条
+    genicDataLst_lst = readDataFromExcel.read()  # 所有职业基因列表
+    #genicStr_lst = []    # 所有职业基因条
     tot_num = 1000       # 总人数
-    num_scale_lst = []   # 各职业对应的人数比例
+    num_scale_lst = [30]*len(genicDataLst_lst)   # 各职业对应的人数比例
+    sum_scale = sum(num_scale_lst)
+    for i in range(len(genicDataLst_lst)):
+        num_scale_lst[i] = num_scale_lst[i]/ sum_scale
     # 传入所有职业的基因条, 得到所有职业的父类实例
-    parent_lst = [Parent(s) for s in genicStr_lst]
+    parent_lst = [Parent(genicDataLst, mapping) for genicDataLst in genicDataLst_lst]
     # 根据总人数和分配比得到每个职业的人数
     num_lst = [int(x * tot_num) for x in num_scale_lst]
     # 根据每个职业的人数和已经构造好的父类, 构造一定数量的子类实例
@@ -386,13 +408,17 @@ if __name__ == "__main__":
        children_dict[i] = child_lst
     # 索引得到每个实例人的事件-时长-地点列表
     for key in children_dict:
-        print()
+        print(key)
         for person in children_dict[key]:
             print()
-            print("name : " + person.parent.name)
-            print("sequence : " + person.sequence)
-            print("time: " + person.time)
-            print("place: " + person.space)
+            print('name:')
+            print(person.parent.name)
+            print("sequence:")
+            print(person.sequence)
+            print("time:")
+            print(person.time)
+            print("place:")
+            print(person.space)
 """
     
 """
