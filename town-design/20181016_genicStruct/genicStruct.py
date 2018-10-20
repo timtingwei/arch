@@ -364,7 +364,7 @@ if __name__ == "__main__":
     tot_node_path = {}
     mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path)
     parent = Parent(genicDataLst, mapping)
-    # testParent(parent)
+    testParent(parent)
     child = Child(parent)
     testChild(child)
 
