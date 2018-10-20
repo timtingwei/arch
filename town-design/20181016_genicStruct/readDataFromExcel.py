@@ -32,7 +32,18 @@ if __name__ == '__main__':
         booksheet = wb[sheetName]
         jobName = getColumnValueList(booksheet, 1, 3)    # 该职业名字
         lst.append(jobName)
-
+        # 每一个分类结构放在一个list下
+        for i in range(15)[2:14:4]:  # [2, 6, 10, 14]
+            activity = getColumnValueList(booksheet, i, 3)
+            domain = getColumnValueList(booksheet, i+1, 3)
+            place = getColumnValueList(booksheet, i+2, 3)
+            isDup = getColumnValueList(booksheet, i+3, 3)
+            node_lst = [activity, domain, place, isDup]
+            lst.append(node_lst)
+        breakup = getColumnValueList(booksheet, 18, 3)
+        trans_type = getColumnValueList(booksheet, 19, 3)
+        lst.append(breakup)
+        lst.append(trans_type)
         
         genicDataLst_lst.append(lst)
     print(genicDataLst_lst)
