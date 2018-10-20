@@ -172,9 +172,9 @@ class Child():
         
     def adjustActivityTime(self):
         # 测试
-        print('activity_time:')
-        print(self.time)
-        print('total activityAndTransport time:')
+        #print('activity_time:')
+        #print(self.time)
+        #print('total activityAndTransport time:')
         print(self.getActivityTotalTime()+sum(self.trans_time))
         # 根据计算得到交通序列, 调整事件消耗的时间
         update_total_time = sum(self.trans_time) + self.getActivityTotalTime()
@@ -272,6 +272,7 @@ class TypeMapping():
         return
 
     def archToIndex(self, archType):
+        print(archType.encode('utf-8'))
         return self.arch_dict[archType]
 
     def nodeToPath(self, node_pair):
@@ -330,7 +331,7 @@ def testChild(child):
     print(child.trans_time)
     print("total time = " + str(child.getActivityAndTransTotalTime()))
 
-
+"""
 if __name__ == "__main__":
     genicDataLst = [ ['政府官员'],
                      [['处理文件', '接待上访', '走访民众', '会议'],
@@ -351,7 +352,7 @@ if __name__ == "__main__":
                       ['是', '是', '是']],
                      ['6:00-9:30'],
                      ['走路', '公交车', '汽车']]
-    genicDataLst = readDataFromExcel.read()[36]
+    genicDataLst = readDataFromExcel.read()[35]
     tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
                      '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
                      '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
@@ -370,10 +371,10 @@ if __name__ == "__main__":
     child = Child(parent)
     testChild(child)
     #print(readDataFromExcel.read())
-
-
-
 """
+
+
+
 if __name__ == "__main__":
     tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
                      '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
@@ -418,8 +419,7 @@ if __name__ == "__main__":
             print("time:")
             print(person.time)
             print("place:")
-            print(person.space)
-"""
+            print(person.place)
     
 """
 [['政府官员'], ['处理文件', '接待上访', '走访民众', '会议'], ['3~6', '2~4', '2~4', '0.5~5'], ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'], ['是', '是', '否', '是'],
