@@ -54,7 +54,10 @@ if __name__ == '__main__':
 
 'Python 2.7'
 import sys
+reload(sys) # Python2.5 初始化后会删除 sys.setdefaultencoding 这个方法，我们需要重新载入 
+sys.setdefaultencoding('utf-8') 
 from xlrd import open_workbook
+import string
 
 def getColumnValueList(booksheet, column, start_row):
     # 读取一个booksheet的某一列的值, 可以标记头行
@@ -70,9 +73,18 @@ def getColumnValueList(booksheet, column, start_row):
             value = value.encode('utf-8')
         lst.append(value)
     return lst
-
+"""
 def main():
     wb = open_workbook('/Users/htwt/Desktop/20181019_totalGenics.xls')
+    tot_sheets = wb.sheets()
+    booksheet = tot_sheets[0]
+    ncols = booksheet.ncols
+    print([str(s.encode('utf-8')) for s in booksheet.col_values(3)])
+"""
+
+
+def read():
+    wb = open_workbook(u'/Users/htwt/Desktop/20181019_totalGenics.xls')
     tot_sheets = wb.sheets()
     # 表头
     #sheet_head = sheets[0]
@@ -101,10 +113,12 @@ def main():
         lst.append(trans_type)
         
         genicDataLst_lst.append(lst)
-    print(genicDataLst_lst)
+    return genicDataLst_lst
+    #print(str(genicDataLst_lst).decode('string_escape'))
+    #print(genicDataLst_lst)[-9][1][0][0]
     #print(genicDataLst_lst[0])
     #print(len(genicDataLst_lst[0]))
 
 
 if __name__ == '__main__':
-    main()
+    read()
