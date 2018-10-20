@@ -63,6 +63,7 @@ class Child():
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
         self.trans_time = []  # 储存与地点序列匹配的交通时间
+        self.breakup = 0.0    # 起床时间点
         # self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
         self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
         self.isArrangeValid = False    # 人的事件时间地点安排表是否合理
@@ -77,6 +78,8 @@ class Child():
         self.arrangeTransActivity()
         # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
         self.adjustActivityTime()
+        # 选择起床时间点
+        self.breakup = self.selectBreakupTime()
     def display(self):
         return
 
@@ -234,6 +237,19 @@ class Child():
 
     def getActivityAndTransTotalTime(self):
         return sum(self.trans_time) + self.getActivityTotalTime()
+
+    def selectBreakupTime(self):
+        # 选择起床时间点
+        # 测试:[6.5, 9.5]   [23.5, 1.0]
+        print(self.parent.breakup)
+        ret = 0.0
+        domain = self.parent.breakup
+        if domain[0] < domain[1]:
+            ret =  random.uniform(domain[0], domain[1])
+        else:
+            tmp = [random.uniform(domain[0], 24), random.uniform(0, domain[1])]
+            ret = random.choice(tmp)
+        return ret
         
             
 
