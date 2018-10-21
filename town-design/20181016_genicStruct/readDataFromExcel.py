@@ -65,7 +65,7 @@ def getColumnValueList(booksheet, column, start_row):
     row = start_row
     value = ''
     nrows = booksheet.nrows
-    for row in range(start_row, nrows):
+    for row in range(start_row, nrows+1):
         value = booksheet.cell(row-1, column-1).value
         if (value == ''):  # 判断空
             break
@@ -89,6 +89,8 @@ def read(filepath):
     # 表头
     #sheet_head = sheets[0]
     booksheet = tot_sheets[0]
+    tot_job_scale = getColumnValueList(booksheet, 2, 2)   # 所有职业人数分配比例
+    tot_block_num = getColumnValueList(booksheet, 4, 2)   # 所有建筑类型对应区块的数量
     tot_arch_type = getColumnValueList(booksheet, 5, 2)   # 所有建筑类型
     tot_job_type = getColumnValueList(booksheet, 6, 2)    # 所有职业类型
     tot_trans_type = getColumnValueList(booksheet, 7, 2)  # 所有出行方式类型
@@ -113,7 +115,7 @@ def read(filepath):
         lst.append(trans_type)
         
         genicDataLst_lst.append(lst)
-    return genicDataLst_lst
+    return genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed
     #print(str(genicDataLst_lst).decode('string_escape'))
     #print(genicDataLst_lst)[-9][1][0][0]
     #print(genicDataLst_lst[0])
