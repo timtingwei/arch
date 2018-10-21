@@ -97,7 +97,8 @@ class Child():
     def arrangeActivityTimeSeq(self):
         # 学长的接口
         # 测试: 每个都是20
-        num_lst = [20]*(len(self.parent.relationMapping.arch_dict.keys()))
+        # num_lst = [20]*(len(self.parent.relationMapping.arch_dict.keys()))
+        num_lst = self.parent.relationMapping.tot_block_num
         # num_lst: 建筑类型中实际的区块数量
         # 得到每个人的事件时长地点, 三个列表
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
@@ -125,7 +126,8 @@ class Child():
             else:
                 arch_type = random.choice(activity_lst[2])
                 arch_type_index = self.parent.relationMapping.archToIndex(arch_type)
-                arch_index = random.randint(0, num_lst[arch_type_index])
+                #arch_index = random.randint(0, num_lst[arch_type_index])
+                arch_index = random.choice(range(num_lst[arch_type_index]))
                 mp[classify][activity_i] = (arch_type_index, arch_index)
             if classify <> 3:   # 先不计算睡觉时间
                 time = random.uniform(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
@@ -175,11 +177,12 @@ class Child():
         #print('activity_time:')
         #print(self.time)
         #print('total activityAndTransport time:')
-        print(self.getActivityTotalTime()+sum(self.trans_time))
+        #print(self.getActivityTotalTime()+sum(self.trans_time))
         # 根据计算得到交通序列, 调整事件消耗的时间
         update_total_time = sum(self.trans_time) + self.getActivityTotalTime()
         # 事件的权重, 应该作为类属性
-        self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
+        #self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
+        self.weight_data = {0: 5, 1: 20, 2:10 , 3:20, 4:10, 5:10, 6:5}
 
         seq_n = len(self.sequence)
         node_lst = self.parent.getNodeToList()
@@ -242,7 +245,7 @@ class Child():
     def selectBreakupTime(self):
         # 选择起床时间点
         # 测试:[6.5, 9.5]   [23.5, 1.0]
-        print(self.parent.breakup)
+        # print('selectBreakupTime():', self.parent.breakup)
         ret = 0.0
         domain = self.parent.breakup
         if domain[0] < domain[1]:
@@ -256,8 +259,9 @@ class Child():
 
 class TypeMapping():
     # 关系映射对象, 用于查表
-    def __init__(self, tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path):
+    def __init__(self, tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path, tot_block_num):
         self.arch_dict = {}
+        self.arch_type = tot_arch_type
         for i in range(len(tot_arch_type)):
             # f(建筑类型) = 建筑类型编号
             self.arch_dict[tot_arch_type[i]] = i
@@ -267,13 +271,16 @@ class TypeMapping():
         for i in range(len(tot_trans_type)):
             self.trans_type_dict[tot_trans_type[i]] = i
             self.trans_speed_dict[i] = tot_trans_speed[i]
-        
-        
+
+        self.tot_block_num = [int(num) for num in tot_block_num]   # 各个建筑类型对应的区块数量
         return
 
     def archToIndex(self, archType):
-        print(archType.encode('utf-8'))
+        #print(archType.encode('utf-8'))
         return self.arch_dict[archType]
+    def indexToArch(self, index):
+        # 将建筑类型序号映射成建筑类型
+        return self.arch_type[index]
 
     def nodeToPath(self, node_pair):
         # f(结点序号) = 结点间路径
@@ -302,9 +309,10 @@ class Path(object):
     
 def testNode(node):
     print('testNode:')
-    print(node.activity)
+    print(str(node.activity).decode('string_escape'))
     print(node.domain)
-    print([p for p in node.place])
+    print(str(node.place).decode('string_escape'))
+    #print([str(p).decode('string_escape') for p in node.place])
     print(node.isDup)
 
 def testParent(parent):
@@ -314,7 +322,9 @@ def testParent(parent):
     testNode(parent.eat)
     testNode(parent.sleep)
     print(parent.breakup)
-    print(parent.transType)
+    print(str(parent.transType).decode('string_escape'))
+    print('parent.tot_block_num: ')
+    print(parent.relationMapping.tot_block_num)
 
 def testChild(child):
     seqTimePlace_lst = child.getSeqTimePlaceList()
@@ -325,14 +335,17 @@ def testChild(child):
     print("time:")
     print(seqTimePlace_lst[2])
     print("place:")
-    print(seqTimePlace_lst[3])
+    #print(seqTimePlace_lst[3])
+    temp = [(child.parent.relationMapping.indexToArch(place[0]), place[1]) for place in seqTimePlace_lst[3]]
+    print(str(temp).decode('string_escape'))
     print("total activity time = " + str(child.getActivityTotalTime()))
     print('trans_time: ')
     print(child.trans_time)
     print("total time = " + str(child.getActivityAndTransTotalTime()))
 
-"""
+
 if __name__ == "__main__":
+    """
     genicDataLst = [ ['政府官员'],
                      [['处理文件', '接待上访', '走访民众', '会议'],
                       ['3~6', '2~4', '2~4', '0.5~5'],
@@ -352,7 +365,6 @@ if __name__ == "__main__":
                       ['是', '是', '是']],
                      ['6:00-9:30'],
                      ['走路', '公交车', '汽车']]
-    genicDataLst = readDataFromExcel.read()[35]
     tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
                      '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
                      '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
@@ -364,48 +376,44 @@ if __name__ == "__main__":
                     '村支书', '派出所民警', '病人', '医生', '水产养殖户', '家庭主妇', '旅游者']
     tot_trans_type = ['走路', '自行车', '电瓶车', '公交车', '汽车']
     tot_trans_speed = [1.2, 5, 1.8, 12.5, 16.7]
+    """
+    filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
+    genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
+    genicDataLst = genicDataLst_lst[19]   # 选取其中一种职业
     tot_node_path = {}
-    mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path)
+    mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path, tot_block_num)
     parent = Parent(genicDataLst, mapping)
     testParent(parent)
     child = Child(parent)
     testChild(child)
     #print(readDataFromExcel.read())
+
+
+
 """
-
-
-
 if __name__ == "__main__":
-    tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
-                     '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
-                     '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
-    tot_job_type = ['工厂叉车司机', '地头混混', '幼儿园老师', '啃老族', '打零工', '扫地工人',
-                    '水果小贩', '小老板', '流浪汉', '快递员', '健身教练', '出租车司机',
-                    '养蜂人', '小学生', '中学生', '工厂工人', '片警', '退休', '政府官员',
-                    '上市公司老板', '渔民', '厂长', '货车司机', '种地农民', '幼儿园清洁工',
-                    '中心学校校长', '幼儿园学生', '学校厨师长', '退休老人', '老年服务中心主管',
-                    '村支书', '派出所民警', '病人', '医生', '水产养殖户', '家庭主妇', '旅游者']
-    tot_trans_type = ['走路', '自行车', '电瓶车', '公交车', '汽车']
-    tot_trans_speed = [1.2, 5, 1.8, 12.5, 16.7]
+    filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
+    genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
     tot_node_path = {}
-    mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path)
+    mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path, tot_block_num)
 
-    genicDataLst_lst = readDataFromExcel.read()  # 所有职业基因列表
-    #genicStr_lst = []    # 所有职业基因条
     tot_num = 1000       # 总人数
-    num_scale_lst = [30]*len(genicDataLst_lst)   # 各职业对应的人数比例
-    sum_scale = sum(num_scale_lst)
-    for i in range(len(genicDataLst_lst)):
-        num_scale_lst[i] = num_scale_lst[i]/ sum_scale
+    # 重新计算每个职业的实际比例
+    sum_scale = sum(tot_job_scale)
+    for i in range(len(tot_job_scale)):
+        tot_job_scale[i] = tot_job_scale[i]/ sum_scale
+
     # 传入所有职业的基因条, 得到所有职业的父类实例
     parent_lst = [Parent(genicDataLst, mapping) for genicDataLst in genicDataLst_lst]
     # 根据总人数和分配比得到每个职业的人数
-    num_lst = [int(x * tot_num) for x in num_scale_lst]
+    num_lst = [int(x * tot_num) for x in tot_job_scale]
+    print(num_lst)
+
     # 根据每个职业的人数和已经构造好的父类, 构造一定数量的子类实例
     children_dict = {}   # 职业序号为key的所有人对象
     for i in range(len(parent_lst)):
        parent = parent_lst[i]
-       child_lst = [Child(parent) for num in num_lst]   # error
+       child_lst =  [Child(parent) for j in range(num_lst[i])]
        children_dict[i] = child_lst
     # 索引得到每个实例人的事件-时长-地点列表
     for key in children_dict:
@@ -413,13 +421,15 @@ if __name__ == "__main__":
         for person in children_dict[key]:
             print()
             print('name:')
-            print(person.parent.name)
+            print(person.parent.name.encode('utf-8'))
             print("sequence:")
             print(person.sequence)
             print("time:")
             print(person.time)
             print("place:")
             print(person.place)
+"""
+
     
 """
 [['政府官员'], ['处理文件', '接待上访', '走访民众', '会议'], ['3~6', '2~4', '2~4', '0.5~5'], ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'], ['是', '是', '否', '是'],
