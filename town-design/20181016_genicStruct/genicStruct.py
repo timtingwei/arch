@@ -88,7 +88,7 @@ class Child():
         # 得到事件序列的类型
         self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 初:吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
         # 暂时: 吃饭和睡觉不变, 事件中工作和爱好分配权重
-        weight_data = {0: 1, 1: 9}   # 平均分配
+        weight_data = {0: 5, 1: 5}   # 平均分配
         # 在数组中选择某个数来代替权重的运算
         i_lst = [1, 3, 5]
         for i in i_lst:
@@ -160,15 +160,18 @@ class Child():
         return [self.seqClassify, self.sequence, self.time, self.place]
 
     def arrangeTransActivity(self):
-
-        
+        # 安排交通事件
+        # 求出所有的出行方式速度
+        trans_speed_lst = [self.parent.relationMapping.getTransSpeedFromName(trans_type)*3.6
+                           for trans_type in self.parent.transType]
+        min_speed, max_speed = min(trans_speed_lst), max(trans_speed_lst)
         # 保证睡眠的一天事儿
         for i in range(len(self.place)-1):
             # distance = self.parent.relationMapping.getNodeShortestDistance([self.place[i], self.place[i+1]])
-            distance = 3.5    # 临时3.5公里
-            trans_type_int = random.randint(0, len(self.parent.transType))
-            # 交通方式名称映射速度
-            speed = self.parent.relationMapping.getTransSpeedFromIndex(trans_type_int)*3.6
+            distance = random.uniform(0.5, 5)    # 在0.5~5之间随机
+            speed = 0.0
+            # 1km以内走路, 1km以上选择用最快交通工具
+            speed = min_speed if distance < 1.0 else max_speed
             time = distance / speed
             self.trans_time.append(time)
         
@@ -295,7 +298,7 @@ class TypeMapping():
         return node_pathes[0][1]
 
     def getTransSpeedFromName(self, trans_type):
-        return self.trans_speed_dict[trans_type_dict[trans_type]]
+        return self.trans_speed_dict[self.trans_type_dict[trans_type]]
 
     def getTransSpeedFromIndex(self, trans_type_i):
         return self.trans_speed_dict[trans_type_i]
