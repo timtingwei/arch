@@ -83,8 +83,8 @@ def main():
 """
 
 
-def read():
-    wb = open_workbook(u'/Users/htwt/Desktop/20181019_totalGenics.xls')
+def read(filepath):
+    wb = open_workbook(filepath)
     tot_sheets = wb.sheets()
     # 表头
     #sheet_head = sheets[0]
@@ -121,4 +121,4 @@ def read():
 
 
 if __name__ == '__main__':
-    read()
+    read('/Users/htwt/Desktop/20181019_totalGenics.xls')
