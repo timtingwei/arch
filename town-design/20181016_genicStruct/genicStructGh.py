@@ -3,6 +3,7 @@
 import random
 import Queue
 import readDataFromExcel
+import readDictFromTxt
 # 基因条构造
 # 工作-爱好-吃饭-睡觉构造
 class Node():
@@ -63,11 +64,13 @@ class Child():
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
+        self.trans_speed = [] # 储存与交通时间匹配的速度
         self.trans_time = []  # 储存与地点序列匹配的交通时间
+        self.trans_path = []  # 储存对应事件和交通的路径结点序和距离
         self.breakup = 0.0    # 起床时间点
         # self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
         self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
-        self.isArrangeValid = False    # 人的事件时间地点安排表是否合理
+        self.isArrangeValid = True    # 人的事件时间地点安排表是否合理
         # 分配事件对应的分类
         self.getSeqClassify()
         #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
@@ -77,10 +80,11 @@ class Child():
 
         # 根据事件发生的地点, 安排交通事件, 
         self.arrangeTransActivity()
-        # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
-        self.adjustActivityTime()
-        # 选择起床时间点
-        self.breakup = self.selectBreakupTime()
+        if self.isArrangeValid == True:    # 如果交通时间安排的是有效的话
+            # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
+            self.adjustActivityTime()
+            # 选择起床时间点
+            self.breakup = self.selectBreakupTime()
     def display(self):
         return
 
@@ -161,19 +165,37 @@ class Child():
 
     def arrangeTransActivity(self):
         # 安排交通事件
+        self.trans_speed = []
+        self.trans_time = []
+        self.trans_path = []
         # 求出所有的出行方式速度
         trans_speed_lst = [self.parent.relationMapping.getTransSpeedFromName(trans_type)*3.6
                            for trans_type in self.parent.transType]
         min_speed, max_speed = min(trans_speed_lst), max(trans_speed_lst)
+        temp_trans_path = []
         # 保证睡眠的一天事儿
+        
         for i in range(len(self.place)-1):
-            # distance = self.parent.relationMapping.getNodeShortestDistance([self.place[i], self.place[i+1]])
-            distance = random.uniform(0.5, 5)    # 在0.5~5之间随机
+            distance = 0
+            if self.place[i] != self.place[i+1]:
+                shortestPath = self.parent.relationMapping.getNodeShortestPath([self.place[i], self.place[i+1]])
+                #print('shorestPath:', shortestPath)
+                if shortestPath == -1:  # 跨越2.5层, 不存在最短路
+                    self.isArrangeValid = False
+                    return
+                distance = shortestPath[1]/1000        # 米和公米进行转换
+                temp_trans_path.append(shortestPath)
+            else:
+                temp_trans_path.append(([], 0))
+            #distance = random.uniform(0.5, 5)    # 在0.5~5之间随机
             speed = 0.0
             # 1km以内走路, 1km以上选择用最快交通工具
             speed = min_speed if distance < 1.0 else max_speed
             time = distance / speed
+            self.trans_speed.append(speed)
             self.trans_time.append(time)
+        self.trans_path = temp_trans_path
+        return
         
     def adjustActivityTime(self):
         # 测试
@@ -268,7 +290,16 @@ class TypeMapping():
         for i in range(len(tot_arch_type)):
             # f(建筑类型) = 建筑类型编号
             self.arch_dict[tot_arch_type[i]] = i
-        self.node_path = tot_node_path   # {a,b: [[[nodeOrder], d1], [], []], []}
+        self.node_path = tot_node_path
+        """
+        # {'p1,i1;p2,i2': [([node_i1, node_i2, node_i3], d1),
+                           ([node_i4, node_i5, node_i6], d2),
+                           ([node_i7, node_i8, node_i9], d3)],
+           'p3,i3;p4,i4': [([node_i1, node_i2, node_i3], d1),
+                           ([node_i4, node_i5, node_i6], d2),
+                           ([node_i7, node_i8, node_i9], d3)]
+          }
+        """
         self.trans_type_dict = {}  # 将出行方式映射成序号
         self.trans_speed_dict = {}  # 将出行序号映射成速度
         for i in range(len(tot_trans_type)):
@@ -287,17 +318,29 @@ class TypeMapping():
 
     def nodeToPath(self, node_pair):
         # f(结点序号) = 结点间路径
-        # node_pair: [node_i1, node_i2] -> key = node1, node2
-        s_node = str(node_pair[0]) + ',' + str(node_pair[1])
-        return self.node_path[s_node]
+        # node_pair: [(p1, i1), (p2, i2)] -> key = 'p1,i1;p2,i2'
+        s1 = str(node_pair[0][0]) + ',' + str(node_pair[0][1])
+        s2 = str(node_pair[1][0]) + ',' + str(node_pair[1][1])
+        s_node1 = s1 + ';' + s2
+        s_node2 = s2 + ';' + s1
+        # print('s_node', s_node)
+        if s_node1 in self.node_path or s_node2 in self.node_path:
+            ret = self.node_path[s_node1] if s_node1 in self.node_path else self.node_path[s_node2]
+            return ret
+        else:
+            #print('error:node not in dict, no path.')
+            return -1
 
-    def getNodeShortestDistance(self, node_pair):
+    def getNodeShortestPath(self, node_pair):
         node_paths = self.nodeToPath(node_pair)
-        # 根据带距离的路径结点, 选择最近的距离
-        #node_path = [nodes, distances]
-        return node_pathes[0][1]
+        if node_paths != -1:
+            # 根据带距离的路径结点, 选择最近的距离
+            return node_paths[0]  # ([node_i1, node_i2, node_i3], d1)
+        else:
+            return -1
 
     def getTransSpeedFromName(self, trans_type):
+        #print(trans_type.encode('utf-8'))
         return self.trans_speed_dict[self.trans_type_dict[trans_type]]
 
     def getTransSpeedFromIndex(self, trans_type_i):
@@ -312,7 +355,6 @@ class Path(object):
     
 def testNode(node):
     print('testNode:')
-    #print(str(node.activity).decode('string_escape'))
     print(str(node.activity).decode('string_escape'))
     print(node.domain)
     print(str(node.place).decode('string_escape'))
@@ -339,74 +381,45 @@ def testChild(child):
     print("time:")
     print(seqTimePlace_lst[2])
     print("place:")
-    print(seqTimePlace_lst[3])
-    #temp = [(child.parent.relationMapping.indexToArch(place[0]), place[1]) for place in seqTimePlace_lst[3]]
-    #print(str(temp).decode('string_escape'))
+    #print(seqTimePlace_lst[3])
+    temp = [(child.parent.relationMapping.indexToArch(place[0]), place[1]) for place in seqTimePlace_lst[3]]
+    print(str(temp).decode('string_escape'))
     print("total activity time = " + str(child.getActivityTotalTime()))
     print('trans_time: ')
     print(child.trans_time)
     print("total time = " + str(child.getActivityAndTransTotalTime()))
+    print("child.isArrangeValid = " + str(child.isArrangeValid))
 
-def child_main():
-    """
-    genicDataLst = [ ['政府官员'],
-                     [['处理文件', '接待上访', '走访民众', '会议'],
-                      ['3~6', '2~4', '2~4', '0.5~5'],
-                      ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'],
-                      ['是', '是', '否', '是']],
-                     [['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'],
-                      ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'],
-                      ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'],
-                      ['否', '是', '否', '否', '否']],
-                     [['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'],
-                      ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'],
-                      ['小饭馆', '政府', '小饭馆', '别墅'],
-                      ['是', '是', '否', '是']],
-                     [['回家睡觉', '暂住宾馆', '夜总会玩乐'],
-                      ['7~9', '7~9', '7~9'],
-                      ['别墅', '宾馆', '洗浴中心'],
-                      ['是', '是', '是']],
-                     ['6:00-9:30'],
-                     ['走路', '公交车', '汽车']]
-    tot_arch_type = ['普通小区', '河边旧民居', '别墅', '船', '农田自建房', '工厂', '菜市场',
-                     '宾馆', '小饭馆', '农田', '学校', '警署', '老年活动中心', '医院', '政府',
-                     '棋牌室', '公园', '超市', '茶馆', '网吧', '鱼塘', '洗浴中心','咖啡馆']
-    tot_job_type = ['工厂叉车司机', '地头混混', '幼儿园老师', '啃老族', '打零工', '扫地工人',
-                    '水果小贩', '小老板', '流浪汉', '快递员', '健身教练', '出租车司机',
-                    '养蜂人', '小学生', '中学生', '工厂工人', '片警', '退休', '政府官员',
-                    '上市公司老板', '渔民', '厂长', '货车司机', '种地农民', '幼儿园清洁工',
-                    '中心学校校长', '幼儿园学生', '学校厨师长', '退休老人', '老年服务中心主管',
-                    '村支书', '派出所民警', '病人', '医生', '水产养殖户', '家庭主妇', '旅游者']
-    tot_trans_type = ['走路', '自行车', '电瓶车', '公交车', '汽车']
-    tot_trans_speed = [1.2, 5, 1.8, 12.5, 16.7]
-    """
+
+"""    
+if __name__ == "__main__":
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
-    genicDataLst = genicDataLst_lst[19]   # 选取其中一种职业
-    tot_node_path = {}
+    genicDataLst = genicDataLst_lst[18]   # 选取其中一种职业
+    tot_node_path = readDictFromTxt.getNodePathDict()
     mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path, tot_block_num)
     parent = Parent(genicDataLst, mapping)
     #testParent(parent)
-    child = Child(parent)
+    while 1:
+        child = Child(parent)                     # 有很多人位点选择不合理
+        if child.isArrangeValid == True: break;   # 直到循环出满意的才结束
+    #child = Child(parent)
     #testChild(child)
-    # 返回起床时间点, 事件时间序列, 交通事件序列, 事件地点编号, (交通路径结点编号)
-    return child.breakup, child.time, child.trans_time, child.place
-
-if __name__ == "__main__":
-    lst = child_main()
-    
-    breakup = lst[0]
-    seq_time = lst[1]
-    trans_time = lst[2]
-    place = lst[3]
-
-
-
+    #print(readDataFromExcel.read())
 """
-if __name__ == "__main__":
+
+
+def createChild(parent):
+    while 1:
+        child = Child(parent)
+        if child.isArrangeValid == True:
+            break;
+    return child
+
+def child_main():
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
-    tot_node_path = {}
+    tot_node_path = readDictFromTxt.getNodePathDict()
     mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path, tot_block_num)
 
     tot_num = 1000       # 总人数
@@ -419,15 +432,19 @@ if __name__ == "__main__":
     parent_lst = [Parent(genicDataLst, mapping) for genicDataLst in genicDataLst_lst]
     # 根据总人数和分配比得到每个职业的人数
     num_lst = [int(x * tot_num) for x in tot_job_scale]
-    print(num_lst)
+    #print(num_lst)
 
     # 根据每个职业的人数和已经构造好的父类, 构造一定数量的子类实例
     children_dict = {}   # 职业序号为key的所有人对象
+    child_lst = []
     for i in range(len(parent_lst)):
        parent = parent_lst[i]
-       child_lst =  [Child(parent) for j in range(num_lst[i])]
-       children_dict[i] = child_lst
+       #child_lst =  [createChild(parent) for j in range(num_lst[i])]
+       for j in range(num_lst[i]):
+           child_lst.append(createChild(parent))
+       #children_dict[i] = child_lst
     # 索引得到每个实例人的事件-时长-地点列表
+    """
     for key in children_dict:
         print(key)
         for person in children_dict[key]:
@@ -440,7 +457,11 @@ if __name__ == "__main__":
             print(person.time)
             print("place:")
             print(person.place)
-"""
+    """
+    return child_lst
+child_main()
+#if __name__ == '__init__':
+#    child_main()
 
     
 """
