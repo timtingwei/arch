@@ -63,11 +63,13 @@ class Child():
         self.sequence = []  # 事件序列                       # string  [s1, s2, s3, s4]
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 建筑序号  # string,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
+        self.trans_speed = [] # 储存与交通时间匹配的速度
         self.trans_time = []  # 储存与地点序列匹配的交通时间
+        self.trans_path = []  # 储存对应事件和交通的路径结点序和距离
         self.breakup = 0.0    # 起床时间点
         # self.weight_data = {0: 10, 1: 14, 2: 15, 3:22, 4:9, 5:12, 6:5}  # 事件权重, 暂时随机分配
         self.weight_data = {0: 20, 1: 15, 2:10 , 3:9, 4:6, 5:5, 6:5}  # 事件权重, 暂时随机分配
-        self.isArrangeValid = False    # 人的事件时间地点安排表是否合理
+        self.isArrangeValid = True    # 人的事件时间地点安排表是否合理
         # 分配事件对应的分类
         self.getSeqClassify()
         #self.seqClassify = [2, 0, 2, 1, 2, 1, 3]   # 吃饭, 事件, 吃饭, 事件, 吃饭, 事件, 睡觉
@@ -77,10 +79,11 @@ class Child():
 
         # 根据事件发生的地点, 安排交通事件, 
         self.arrangeTransActivity()
-        # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
-        self.adjustActivityTime()
-        # 选择起床时间点
-        self.breakup = self.selectBreakupTime()
+        if self.isArrangeValid == True:    # 如果交通时间安排的是有效的话
+            # 得到总时间, 剩余时间是否满足睡眠区间, 压缩或者扩展事件时间
+            self.adjustActivityTime()
+            # 选择起床时间点
+            self.breakup = self.selectBreakupTime()
     def display(self):
         return
 
@@ -161,19 +164,27 @@ class Child():
 
     def arrangeTransActivity(self):
         # 安排交通事件
+        self.trans_speed = []
+        self.trans_time = []
         # 求出所有的出行方式速度
         trans_speed_lst = [self.parent.relationMapping.getTransSpeedFromName(trans_type)*3.6
                            for trans_type in self.parent.transType]
         min_speed, max_speed = min(trans_speed_lst), max(trans_speed_lst)
         # 保证睡眠的一天事儿
         for i in range(len(self.place)-1):
-            # distance = self.parent.relationMapping.getNodeShortestDistance([self.place[i], self.place[i+1]])
-            distance = random.uniform(0.5, 5)    # 在0.5~5之间随机
+            shortestPath = self.parent.relationMapping.getNodeShortestPath([self.place[i], self.place[i+1]])
+            if (shortestPath == -1):  # 跨越2.5层, 不存在最短路
+                self.isArrangeValid = False
+                return
+            distance = shortestPath[1]
+            #distance = random.uniform(0.5, 5)    # 在0.5~5之间随机
             speed = 0.0
             # 1km以内走路, 1km以上选择用最快交通工具
             speed = min_speed if distance < 1.0 else max_speed
             time = distance / speed
+            self.trans_speed.append(speed)
             self.trans_time.append(time)
+            self.trans_path.append(shortestPath)
         
     def adjustActivityTime(self):
         # 测试
@@ -268,7 +279,16 @@ class TypeMapping():
         for i in range(len(tot_arch_type)):
             # f(建筑类型) = 建筑类型编号
             self.arch_dict[tot_arch_type[i]] = i
-        self.node_path = tot_node_path   # {a,b: [[[nodeOrder], d1], [], []], []}
+        self.node_path = tot_node_path
+        """
+        # {'p1,i1;p2,i2': [([node_i1, node_i2, node_i3], d1),
+                           ([node_i4, node_i5, node_i6], d2),
+                           ([node_i7, node_i8, node_i9], d3)],
+           'p3,i3;p4,i4': [([node_i1, node_i2, node_i3], d1),
+                           ([node_i4, node_i5, node_i6], d2),
+                           ([node_i7, node_i8, node_i9], d3)]
+          }
+        """
         self.trans_type_dict = {}  # 将出行方式映射成序号
         self.trans_speed_dict = {}  # 将出行序号映射成速度
         for i in range(len(tot_trans_type)):
@@ -287,15 +307,22 @@ class TypeMapping():
 
     def nodeToPath(self, node_pair):
         # f(结点序号) = 结点间路径
-        # node_pair: [node_i1, node_i2] -> key = node1, node2
-        s_node = str(node_pair[0]) + ',' + str(node_pair[1])
-        return self.node_path[s_node]
+        # node_pair: [(p1, i1), (p2, i2)] -> key = 'p1,i1;p2,i2'
+        s1 = str(node_pair[0][0]) + ',' + str(node_pair[0][1])
+        s2 = str(node_pair[1][0]) + ',' + str(node_pair[1][1])
+        s_node = s1 + ';' + s2
+        if s_node in self.node_path:
+            return self.node_path[s_node]
+        else:
+            return -1
 
-    def getNodeShortestDistance(self, node_pair):
+    def getNodeShortestPath(self, node_pair):
         node_paths = self.nodeToPath(node_pair)
-        # 根据带距离的路径结点, 选择最近的距离
-        #node_path = [nodes, distances]
-        return node_pathes[0][1]
+        if node_paths != -1:
+            # 根据带距离的路径结点, 选择最近的距离
+            return node_pathes[0]  # ([node_i1, node_i2, node_i3], d1)
+        else:
+            return -1
 
     def getTransSpeedFromName(self, trans_type):
         return self.trans_speed_dict[self.trans_type_dict[trans_type]]
@@ -345,6 +372,7 @@ def testChild(child):
     print('trans_time: ')
     print(child.trans_time)
     print("total time = " + str(child.getActivityAndTransTotalTime()))
+    print("child.isArrangeValid = " + str(child.isArrangeValid))
 
 
 if __name__ == "__main__":
