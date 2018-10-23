@@ -24,6 +24,7 @@ def getPlacePtLst(place_lst, place_dict):
 def getRoadCurve(key1, key2, trans_path, road_dict, insert_road_dict):
     # 根据路径结点序号得到一条路径线段
     curve_lst = []
+    direction = False     # 合并后线的方向, true代表和第一段线同向
     #trans_path = ([9, 0, 70, 79, 91, 77, 8, 60, 56, 58, 47, 43, 29, 61, 50, 54, 78, 81, 80], 3660.0)
     if trans_path[1] == 0:
         return curve_lst
@@ -42,8 +43,9 @@ def getRoadCurve(key1, key2, trans_path, road_dict, insert_road_dict):
             return curve_lst[0]
         join_curve = rs.JoinCurves(curve_lst)
         length = rs.CurveLength(join_curve)
-        print('length = ' + str(length))
-        return join_curve
+        if rs.CurveTangent(join_curve, 0) == rs.CurveTangent(curve_lst[0], 0):
+            direction = True
+        return join_curve, direction
         #print(length)
         #t = 0.5
         #pt = rs.CurveArcLengthPoint(join_curve, t*length)
@@ -68,13 +70,23 @@ def getChildPtLst(child, place_dict, road_dict, insert_road_dict, clock_time_ran
     place_pt_lst = getPlacePtLst(child.place, place_dict)
     #road_curve_lst = [getRoadCurve(path, road_dict) for path in child.trans_path]
     road_curve_lst = []
+    road_direction_lst = []
     for i in range(len(child.trans_path)):
         place_this, place_next = child.place[i], child.place[i+1]
         path = child.trans_path[i]
-        key1 = str(place_this[0]) + ',' + str(place_this[1]) + ';' + str(path[0][0])
-        key2 = str(place_next[0]) + ',' + str(place_next[1]) + ';' + str(path[0][-1])
-        road_curve = getRoadCurve(key1, key2, path, road_dict, insert_road_dict)
-        road_curve_lst.append(road_curve)
+        if path[1] == 0:
+            road_curve_lst.append([])
+            road_direction_lst.append(False)
+            continue;
+        key1_1 = str(place_this[0]) + ',' + str(place_this[1]) + ';' + str(path[0][0])
+        key1_2 = str(place_this[0]) + ',' + str(place_this[1]) + ';' + str(path[0][-1])
+        key1 = key1_1 if key1_1 in insert_road_dict else key1_2
+        key2_1 = str(place_next[0]) + ',' + str(place_next[1]) + ';' + str(path[0][0])
+        key2_2 = str(place_next[0]) + ',' + str(place_next[1]) + ';' + str(path[0][-1])
+        key2 = key2_1 if key2_1 in insert_road_dict else key2_2
+        road_curve_return = getRoadCurve(key1, key2, path, road_dict, insert_road_dict)
+        road_curve_lst.append(road_curve_return[0])
+        road_direction_lst.append(road_curve_return[1])
     
     # evaluateCurveByLength() 组合line成polyline, 根据距离得到线上对应点
     # 获得确定起床点, 事件和交通情况下, 时间结点序列
@@ -100,11 +112,13 @@ def getChildPtLst(child, place_dict, road_dict, insert_road_dict, clock_time_ran
                 pt = place_pt_lst[int((seq_p-1)/2)]
             else:               # 交通事件
                 road_curve = road_curve_lst[int((seq_p-1)/2)]
+                direction = road_direction_lst[int((seq_p-1)/2)]
                 scale_t = (t-seqTime[seq_p]) / child.trans_time[int((seq_p-1)/2)]
                 #domain = rs.CurveDomain(road_curve)
                 #pt = rs.EvaluateCurve(road_curve, domain[1]*scale_t)
-                #length = child.trans_path[int((seq_p-1)/2)][1]*scale_t
-                #pt = rs.CurveArcLengthPoint(road_curve, length)
+                length = child.trans_path[int((seq_p-1)/2)][1]*scale_t
+                #print('PathLength = ' + str(length))
+                pt = rs.CurveArcLengthPoint(road_curve, length, direction)
         pt_lst.append(pt)
     return pt_lst, place_pt_lst, road_curve_lst
 
@@ -114,9 +128,9 @@ def main():
 
     insert_road_dict['4,15;77']
     # 设置帧数
-    time_step = 0.1   # 0.1h/帧 = 6min/帧
+    #time_step = 0.1   # 0.1h/帧 = 6min/帧
     #time_step = 1     # 1h/帧
-    #time_step = 1/60   # 1min/zhen
+    time_step = 1/1000   # 1min/zhen
     tot_time = 24     # 记录一天的变化
     
     # 构造打点时间序列
@@ -125,6 +139,7 @@ def main():
     while temp_sum < tot_time:
         clock_time_range.append(temp_sum)
         temp_sum = temp_sum + time_step
+    #print(len(clock_time_range))
 
     pts_lst = []      # 所有人的帧数点的集合
     child_lst = genicStructGh.child_main()    # 从基因条py中传入所有的子对象
@@ -132,11 +147,10 @@ def main():
     #print(child_lst)
     """
     for child in child_lst:
-        pts_lst.append(getChildPtLst(child, place_dict, road_dict, clock_time_range))
-    
+        pts_lst.append(getChildPtLst(child, place_dict, road_dict, insert_road_dict, clock_time_range))
     return pts_lst
     """
-    return getChildPtLst(child_lst[18], place_dict, road_dict, insert_road_dict, clock_time_range)
+    return getChildPtLst(child_lst[19], place_dict, road_dict, insert_road_dict, clock_time_range)
     
-
+#pt_lst = main()
 pt_lst, place_pt_lst, road_curve_lst = main()
