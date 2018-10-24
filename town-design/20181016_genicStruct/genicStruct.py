@@ -276,7 +276,67 @@ class Child():
             tmp = [random.uniform(domain[0], 24), random.uniform(0, domain[1])]
             ret = random.choice(tmp)
         return ret
+
+class ParentBlock(object):
+    ' 所有区块对象的存储结构 '
+    def __init__(self, block_lst):      # 人对象作为成员函数的参数, 不作为属性
+        self.block_dict =  {}           # 属于这个父block的所有blocks, key = name, value=obj
+        for block in block_lst:
+            self.block_dict[block.name] = block   # 跟直接根据name找到block实例对象
+
+        self.tot_area = 0               # 所有子区块的总面积
+        return
+
+    def __init__(self, block_lst, child_lst):
+        self.block_dict =  {}           # 属于这个父block的所有blocks, key = name, value=obj
+        for block in block_lst:
+            self.block_dict[block.name] = block   # 跟直接根据name找到block实例对象
+
+        self.child_lst = child_lst      # 所有跟这个bloc相关的人对象
+        self.tot_area = 0               # 所有子区块的总面积
+        return
+
+    def statPersonCount(self, child_lst):
+        # 根据传入的人员对象, 统计各个子区块的使用总人流量, 最大同时使用人数, 地块总花费的时长
+        for child in child_lst:
+            len_place = len(child.place)
+            mp_name =  {}   # 一天中某人多次去某个地方, 只算增加一个人
+            for i in range(len_place):
+                block_name = child.place[i][0]
+                self.block_dict[block_name].addSumTime(child.time[i])  #总花费时长
+                if not block_name in mp_name:
+                    self.block_dict[block_name].addTotPerosonCount()   #使用总人流量
+                    mp_name[block_name] = 1   # 标记
+
+        return
+                
+            
         
+        
+    
+class ChildBlock(object):
+    '每一个区块对象'
+    def __init__(self, name):
+        self.name = name    # 区块建筑类型名字
+        self.arch = []      # 属于该区块的建筑对象
+        self.tot_person_count = 0    # 区块一天中使用的总人流量
+        self.max_person_count = 0    # 一天中最大的同时使用人数
+        self.sum_time = 0.0  # 一天中不同人总共在该地块花费的时长
+        self.area = []      # 该区块面积
+
+    def addTotPerosonCount(self):
+        # 增加一个区块一天中使用的总人数
+        self.tot_person_count = self.tot_person_count + 1
+        return
+
+    def updateMaxPersonCount(self, compareCount):
+        # 尝试用当前地块人数更新最大同时使用人数
+        self.max_person_count = compareCount if compareCount > self.max_person_count else self.max_person_count
+        return
+
+    def addSumTime(self, addTime):
+        self.sum_time = self.sum_time + addTime
+        return
             
 
 class TypeMapping():
@@ -343,7 +403,7 @@ class TypeMapping():
     def getTransSpeedFromIndex(self, trans_type_i):
         return self.trans_speed_dict[trans_type_i]
 
-    
+
 
 class Path(object):
     ' 路径对象描述 '
@@ -387,9 +447,10 @@ def testChild(child):
     print("total time = " + str(child.getActivityAndTransTotalTime()))
     print("child.isArrangeValid = " + str(child.isArrangeValid))
 
-
-"""    
-if __name__ == "__main__":
+def statBlockData(parentBlock, child_lst):
+    # 统计地块信息
+    
+def main():
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
     genicDataLst = genicDataLst_lst[18]   # 选取其中一种职业
@@ -401,9 +462,12 @@ if __name__ == "__main__":
         child = Child(parent)                     # 有很多人位点选择不合理
         if child.isArrangeValid == True: break;   # 直到循环出满意的才结束
     #child = Child(parent)
-    #testChild(child)
-    #print(readDataFromExcel.read())
-"""
+    testChild(child)
+    return
+
+if __name__ == "__main__":
+    main()
+
 
 
 def createChild(parent):
@@ -414,7 +478,7 @@ def createChild(parent):
     return child
 
 
-
+"""
 if __name__ == "__main__":
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
@@ -440,7 +504,6 @@ if __name__ == "__main__":
        child_lst =  [createChild(parent) for j in range(num_lst[i])]
        children_dict[i] = child_lst
     # 索引得到每个实例人的事件-时长-地点列表
-    """
     for key in children_dict:
         print(key)
         for person in children_dict[key]:
@@ -453,8 +516,7 @@ if __name__ == "__main__":
             print(person.time)
             print("place:")
             print(person.place)
-    """
-
+"""
 
     
 """
