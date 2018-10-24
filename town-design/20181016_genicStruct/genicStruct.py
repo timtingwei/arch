@@ -85,6 +85,21 @@ class Child():
             self.adjustActivityTime()
             # 选择起床时间点
             self.breakup = self.selectBreakupTime()
+            self.seq_clock_time = self.getSeqClockTime()     # 事件和交通的时间结点序列
+
+    def getSeqClockTime(self):
+        # 获得确定起床点, 事件和交通情况下, 时间结点序列
+        seqTime = [0, self.breakup]
+        temp_sum = self.breakup
+        for i in range(len(self.time)-1):
+            temp_sum = temp_sum + self.time[i]
+            seqTime.append(temp_sum)
+            temp_sum = temp_sum + self.trans_time[i]
+            seqTime.append(temp_sum)
+        seqTime.append(temp_sum + self.time[-1])
+        # print(seqTime[-1]-child.breakup)   # right
+        return seqTime
+
     def display(self):
         return
 
@@ -298,10 +313,10 @@ class ParentBlock(object):
 
     def statPersonCount(self, child_lst):
         # 根据传入的人员对象, 统计各个子区块的使用总人流量, 最大同时使用人数, 地块总花费的时长
-        for child in child_lst:
+        for child in child_lst:  # 遍历每个人
             len_place = len(child.place)
             mp_name =  {}   # 一天中某人多次去某个地方, 只算增加一个人
-            for i in range(len_place):
+            for i in range(len_place):   # 遍历当前人的所有事件地点
                 block_name = child.place[i][0]
                 self.block_dict[block_name].addSumTime(child.time[i])  #总花费时长
                 if not block_name in mp_name:
@@ -323,6 +338,7 @@ class ChildBlock(object):
         self.max_person_count = 0    # 一天中最大的同时使用人数
         self.sum_time = 0.0  # 一天中不同人总共在该地块花费的时长
         self.area = []      # 该区块面积
+        self.time_seq_person_count = []    # 一天中不同时段该地块人数
 
     def addTotPerosonCount(self):
         # 增加一个区块一天中使用的总人数
