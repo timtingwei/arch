@@ -302,6 +302,7 @@ class ParentBlock(object):
         self.tot_area = 0               # 所有子区块的总面积(未算)
         return
 
+    """
     def __init__(self, block_lst, child_lst):
         self.block_dict =  {}           # 属于这个父block的所有blocks, key = name, value=obj
         for block in block_lst:
@@ -310,6 +311,7 @@ class ParentBlock(object):
         self.child_lst = child_lst      # 所有跟这个bloc相关的人对象
         self.tot_area = 0               # 所有子区块的总面积(未算)
         return
+    """
 
     def statPersonCount(self, child_lst):
         # 统计各个子区块的信息
@@ -317,16 +319,16 @@ class ParentBlock(object):
         # 规定不同时段地块人数的时间间隔
         tot_time = 24     # 记录一天的变化
         range_num = 48    # 一天被分成48个时段
-        for key in block_dict:
-            block_dict[key].initTimeSeqPersonCountLst(range_num)   # 初始化成[0]*range_num
+        for key in self.block_dict:
+            self.block_dict[key].initTimeSeqPersonCountLst(range_num)   # 初始化成[0]*range_num
         
         # 构造打点时间序列
         temp_sum = 0
         clock_time_range = []
         while temp_sum < tot_time:
             clock_time_range.append(temp_sum)
-            temp_sum = temp_sum + tot_time / range_num
-        
+            temp_sum = temp_sum + float(tot_time) / range_num
+
         seq_p = 0
         for child in child_lst:  # 遍历每个人
             len_place = len(child.place)
@@ -340,8 +342,9 @@ class ParentBlock(object):
 
             # 人对象不同时间段所处的地块, 可获得某地块当天的最大同时使用人数(这一块可直接传入drawing函数)
             seq_p = 0
-            for t in clock_time_range:
-                while child.seq_clock_time <= t:     # maybe error
+            for i in range(range_num):
+                t = clock_time_range[i]
+                while child.seq_clock_time[seq_p+1] <= t:     # maybe error
                     seq_p = seq_p + 1
                 # seq_clock_time[seq_p] <= t < seq_clock_time[seq_p+1]
                 if seq_p == 0:     # 起床前睡觉地点(基因条未计算)
@@ -350,21 +353,24 @@ class ParentBlock(object):
                     if seq_p % 2 == 1:
                         block_name = child.place[int(seq_p-1)/2][0]
                     # 暂时忽略交通的情况
-                self.block_dict[block_name].addOneTimeRangePersonCount(t)
+                self.block_dict[block_name].addOneTimeRangePersonCount(i)
+                #print(t, block_name, seq_p)
         for block_name in self.block_dict:
             block_obj = self.block_dict[block_name]
-            #print('block_name' + str(block_name))
+            print('block_name: ' + str(block_name))
+            # 使用总人流量
+            print('tot_person_count = ' + str(block_obj.tot_person_count))
+            # 总花费的时长
+            print('sum_time = ' + str(block_obj.sum_time))
             block_obj.max_person_count = max(block_obj.time_seq_person_count)  #最大同时使用人数
-            #print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
-            #print('block.max_person_count = ', block_obj.max_person_count)
+            
+            print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
+            print('block.max_person_count = ' + str(block_obj.max_person_count))
         return
 
     # 统计总共地块的信息
                 
             
-        
-        
-    
 class ChildBlock(object):
     '每一个区块对象'
     def __init__(self, name):
@@ -511,7 +517,7 @@ def testChild(child):
 def statBlockData(child_lst, mapping):
     # 构造地块实例和统计地块信息
     block_lst = []
-    type_num = len(mapping.tot_arch_type)
+    type_num = len(mapping.arch_type)
     block_lst = [ChildBlock(name) for name in range(type_num)]
     parentBlock = ParentBlock(block_lst)
     parentBlock.statPersonCount(child_lst)  # 统计地块信息, 写入各个地块
@@ -529,18 +535,17 @@ def child_main():
         child = Child(parent)                     # 有很多人位点选择不合理
         if child.isArrangeValid == True: break;   # 直到循环出满意的才结束
     #child = Child(parent)
-    #testChild(child)
+    testChild(child)
+    statBlockData([child], mapping)
     return
 
 
-def createChild(parent):
+def createChild(parent):   # 因为2.5层路网不全做的一个循环
     while 1:
         child = Child(parent)
         if child.isArrangeValid == True:
             break;
     return child
-
-
 
 def parent_main():
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
