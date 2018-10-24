@@ -51,3 +51,6 @@ test.cpp
 
 # phote files
 town-design/collection/*
+
+# python clink
+*.pyc
