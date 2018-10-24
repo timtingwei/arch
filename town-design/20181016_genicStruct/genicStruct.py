@@ -294,12 +294,12 @@ class Child():
 
 class ParentBlock(object):
     ' 所有区块对象的存储结构 '
-    def __init__(self, block_lst):      # 人对象作为成员函数的参数, 不作为属性
+    def __init__(self, block_lst):      # 人对象作为成员函数的参数, 不作为属性(目前暂时选择这种)
         self.block_dict =  {}           # 属于这个父block的所有blocks, key = name, value=obj
         for block in block_lst:
             self.block_dict[block.name] = block   # 跟直接根据name找到block实例对象
 
-        self.tot_area = 0               # 所有子区块的总面积
+        self.tot_area = 0               # 所有子区块的总面积(未算)
         return
 
     def __init__(self, block_lst, child_lst):
@@ -308,11 +308,26 @@ class ParentBlock(object):
             self.block_dict[block.name] = block   # 跟直接根据name找到block实例对象
 
         self.child_lst = child_lst      # 所有跟这个bloc相关的人对象
-        self.tot_area = 0               # 所有子区块的总面积
+        self.tot_area = 0               # 所有子区块的总面积(未算)
         return
 
     def statPersonCount(self, child_lst):
+        # 统计各个子区块的信息
         # 根据传入的人员对象, 统计各个子区块的使用总人流量, 最大同时使用人数, 地块总花费的时长
+        # 规定不同时段地块人数的时间间隔
+        tot_time = 24     # 记录一天的变化
+        range_num = 48    # 一天被分成48个时段
+        for key in block_dict:
+            block_dict[key].initTimeSeqPersonCountLst(range_num)   # 初始化成[0]*range_num
+        
+        # 构造打点时间序列
+        temp_sum = 0
+        clock_time_range = []
+        while temp_sum < tot_time:
+            clock_time_range.append(temp_sum)
+            temp_sum = temp_sum + tot_time / range_num
+        
+        seq_p = 0
         for child in child_lst:  # 遍历每个人
             len_place = len(child.place)
             mp_name =  {}   # 一天中某人多次去某个地方, 只算增加一个人
@@ -323,7 +338,28 @@ class ParentBlock(object):
                     self.block_dict[block_name].addTotPerosonCount()   #使用总人流量
                     mp_name[block_name] = 1   # 标记
 
+            # 人对象不同时间段所处的地块, 可获得某地块当天的最大同时使用人数(这一块可直接传入drawing函数)
+            seq_p = 0
+            for t in clock_time_range:
+                while child.seq_clock_time <= t:     # maybe error
+                    seq_p = seq_p + 1
+                # seq_clock_time[seq_p] <= t < seq_clock_time[seq_p+1]
+                if seq_p == 0:     # 起床前睡觉地点(基因条未计算)
+                    block_name = child.place[-1][0]
+                else:
+                    if seq_p % 2 == 1:
+                        block_name = child.place[int(seq_p-1)/2][0]
+                    # 暂时忽略交通的情况
+                self.block_dict[block_name].addOneTimeRangePersonCount(t)
+        for block_name in self.block_dict:
+            block_obj = self.block_dict[block_name]
+            #print('block_name' + str(block_name))
+            block_obj.max_person_count = max(block_obj.time_seq_person_count)  #最大同时使用人数
+            #print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
+            #print('block.max_person_count = ', block_obj.max_person_count)
         return
+
+    # 统计总共地块的信息
                 
             
         
@@ -332,12 +368,12 @@ class ParentBlock(object):
 class ChildBlock(object):
     '每一个区块对象'
     def __init__(self, name):
-        self.name = name    # 区块建筑类型名字
-        self.arch = []      # 属于该区块的建筑对象
+        self.name = name    # 区块建筑类型名字(序号)
+        self.arch = []      # 属于该区块的建筑对象(未添加)
         self.tot_person_count = 0    # 区块一天中使用的总人流量
         self.max_person_count = 0    # 一天中最大的同时使用人数
         self.sum_time = 0.0  # 一天中不同人总共在该地块花费的时长
-        self.area = []      # 该区块面积
+        self.area = []      # 该区块面积(未添加)
         self.time_seq_person_count = []    # 一天中不同时段该地块人数
 
     def addTotPerosonCount(self):
@@ -352,6 +388,15 @@ class ChildBlock(object):
 
     def addSumTime(self, addTime):
         self.sum_time = self.sum_time + addTime
+        return
+
+    def initTimeSeqPersonCountLst(self, num):
+        # 为一天中不同时段地块人数数组建立初始Hash表
+        self.time_seq_person_count = [0] * num
+        return
+
+    def addOneTimeRangePersonCount(self, time_i):
+        self.time_seq_person_count[time_i] += 1
         return
             
 
@@ -463,10 +508,16 @@ def testChild(child):
     print("total time = " + str(child.getActivityAndTransTotalTime()))
     print("child.isArrangeValid = " + str(child.isArrangeValid))
 
-def statBlockData(parentBlock, child_lst):
-    # 统计地块信息
-    
-def main():
+def statBlockData(child_lst, mapping):
+    # 构造地块实例和统计地块信息
+    block_lst = []
+    type_num = len(mapping.tot_arch_type)
+    block_lst = [ChildBlock(name) for name in range(type_num)]
+    parentBlock = ParentBlock(block_lst)
+    parentBlock.statPersonCount(child_lst)  # 统计地块信息, 写入各个地块
+
+
+def child_main():
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
     genicDataLst = genicDataLst_lst[18]   # 选取其中一种职业
@@ -478,12 +529,8 @@ def main():
         child = Child(parent)                     # 有很多人位点选择不合理
         if child.isArrangeValid == True: break;   # 直到循环出满意的才结束
     #child = Child(parent)
-    testChild(child)
+    #testChild(child)
     return
-
-if __name__ == "__main__":
-    main()
-
 
 
 def createChild(parent):
@@ -494,8 +541,8 @@ def createChild(parent):
     return child
 
 
-"""
-if __name__ == "__main__":
+
+def parent_main():
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
     tot_node_path = readDictFromTxt.getNodePathDict()
@@ -515,27 +562,23 @@ if __name__ == "__main__":
 
     # 根据每个职业的人数和已经构造好的父类, 构造一定数量的子类实例
     children_dict = {}   # 职业序号为key的所有人对象
+    children_lst = []
     for i in range(len(parent_lst)):
        parent = parent_lst[i]
-       child_lst =  [createChild(parent) for j in range(num_lst[i])]
+       child_lst = []
+       for j in range(num_lst[i]):
+           child = createChild(parent)
+           child_lst.append(child)
+           children_lst.append(child)
+       #child_lst =  [createChild(parent) for j in range(num_lst[i])]
        children_dict[i] = child_lst
-    # 索引得到每个实例人的事件-时长-地点列表
-    for key in children_dict:
-        print(key)
-        for person in children_dict[key]:
-            print()
-            print('name:')
-            print(person.parent.name.encode('utf-8'))
-            print("sequence:")
-            print(person.sequence)
-            print("time:")
-            print(person.time)
-            print("place:")
-            print(person.place)
-"""
 
+    # 根据人统计地块信息
+    statBlockData(children_lst, mapping)
     
-"""
-[['政府官员'], ['处理文件', '接待上访', '走访民众', '会议'], ['3~6', '2~4', '2~4', '0.5~5'], ['政府', '政府', '普通小区~河边旧民居~别墅~农田自建房~工厂~农田~老年活动中心', '政府'], ['是', '是', '否', '是'],
-['打牌', '钓鱼', '拜访朋友', '嫖娼', '喝酒'], ['2~5', '1.5~4', '2~6', '0.5~10', '2~5'], ['棋牌室', '鱼塘', '普通小区~河边旧民居~别墅~工厂~茶馆', '别墅~洗浴中心~宾馆', '小饭馆'], ['否', '是', '否', '否', '否'], ['面馆早饭', '机构食堂', '餐馆吃饭', '回家吃饭'], ['0.2~1', '0.2~1.5', '0.5~3', '0.5~3'], ['小饭馆', '政府', '小饭馆', '别墅'], ['是', '是', '否', '是'], ['回家睡觉', '暂住宾馆', '夜总会玩乐'], ['7~10', '7~11', '7~11'], ['别墅', '宾馆', '洗浴中心'], ['是', '是', '是'], ['6:00-9:30'], ['走路', '班车', '汽车']]
-"""
+
+
+if __name__ == "__main__":
+    #child_main()
+    parent_main()
+
