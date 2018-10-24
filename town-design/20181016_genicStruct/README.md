@@ -26,4 +26,10 @@
 ### 3, 根据child.trans_path得到道路多段线(roadcurvelst)
 ### 4, 增添evaluateCurveByLength()方法: 组合line成polyline, 根据距离得到线上对应点
 
+
+# 10.24
+## 1, 构造Block类, Blocks类
+## 2, 统计一天中某区块一天中使用的总人流量
+## 3, 统计一天中某区块一天中最大的同时使用人数
+## 4, 统计一天各地块总共花费的时长
 # 两个地点的关联性和两个事件的关联性bug[-]
