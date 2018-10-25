@@ -378,7 +378,12 @@ class ParentBlock(object):
             # 根据地块人员分配计算出使用面积
             block_obj.getUseArea()
             # 在使用面积确定的情况下, 控制建筑密度, 容积率，建筑数量
-            block_obj.arrangeArch(building_density_lst[i], plot_ratio_lst[i], arch_num_lst[i])
+            print('block_name ' + str(block_obj.name) + ':')
+            ret = block_obj.arrangeArch(building_density_lst[i], plot_ratio_lst[i], arch_num_lst[i])
+            if ret <> -1:
+                
+                print('use_area = ' + str(block_obj.use_area) + ', building_density = ' + str(building_density_lst[i]) + ', plot_ratio = ' + str(plot_ratio_lst[i]))
+                print('arch_num = ' + str(ret[0]) + ', each_area = ' +  str(ret[1]) + ', each_height = ' + str(ret[2]))
             i += 1
         return
                 
@@ -421,16 +426,24 @@ class ChildBlock(object):
     def getUseArea(self):
         # 根据一天中最大的同时使用人数, 映射计算出总使用面积
         # 假设每个人需要10平米面积
-        self.use_area = 10 * self.max_person_count
+        self.use_area = 10.0 * self.max_person_count
         return
         
 
     def arrangeArch(self, building_density, plot_ratio, arch_num):
         # 根据建筑使用面积, 建筑密度, 容积率, 建筑数量, 得到区块中各个建筑面积和高度, 以及其他关于地块的中间数据
-        print('use_area = ' + str(self.use_area) + ', building_density = ' + str(building_density) + ', plot_ratio = ' + str(plot_ratio) + ', arch_num = ' + str(arch_num))
+        
         if not self.use_area:
-            print("no use_area")
+            print("error: no use_area")
             return -1
+        min_area, min_height, max_height = 15, 3, 15
+        max_arch_num = int(self.use_area / (min_area * min_height))
+        # 根据最小建筑面积, 最小高度, 得到最大的建筑数量
+        arch_num = max_arch_num if arch_num > max_arch_num else arch_num
+        if arch_num == 0:
+            print('error: arch_num = 0')
+            return -1
+        #print('revise arch_num  = ' + str(arch_num))
         floor_space = self.use_area / plot_ratio
         tot_area = floor_space / building_density
 
@@ -439,17 +452,16 @@ class ChildBlock(object):
         # 平均分配高度
         each_height = self.use_area / each_area / arch_num
 
-        if each_height < 3 or each_height > 15:
-            print('-- height error: ' + str(each_height))
+        if each_height < min_height or each_height > max_height:
+            print('error: height ' + str(each_height))
             return -1
-        elif each_area < 10:
-            print('-- area error: ' + str(each_area))
+        elif each_area < min_area:
+            print('error: area ' + str(each_area))
             return -1
-        else:
-            print('each_area = ' +  str(each_area) + ' each_height = ' + str(each_height))
+        else:            
             #vert_use_area = each_area * each_height * arch_num
             #print('vert_use_area = ' + str(vert_use_area) +  ' use_area = ' + str(self.use_area))
-            return each_height
+            return arch_num, each_area, each_height
             
 
 class TypeMapping():
