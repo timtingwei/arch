@@ -124,19 +124,38 @@ class Child():
         self.time = []      # 事件对应的时段值                # double  [t1, t2, t3, t4]
         self.place = []     # 事件对应的建筑类型序号, 区块序号  # int,int  [[农田, 2], [工厂, 0], [p3,i3], [p4,i4]]
         # eat, job/hobby, eat, job/hobby, eat, job/hobby, sleep
-        mp = {0:{}, 1:{}, 2:{}, 3:{}}   # key=事件, value = (建筑类型, 建筑序号)
+        #mp = {0:{}, 1:{}, 2:{}, 3:{}}   # key=事件, value = (建筑类型, 建筑序号)
+        mp_place = {}          # 已经出现的建筑类型对应的区块序号字典 key = 建筑类型,value=[序号]
         node_lst = self.parent.getNodeToList()
         for classify in self.seqClassify:
             # 选择事件为序号
             activity_len = len(node_lst[classify].activity)
             activity_i = random.choice(range(activity_len))
-            #activity_i = random.randint(0, activity_len-1)
             # 得到该事件的横向列表
             activity_lst = [activity_i,
                             node_lst[classify].domain[activity_i],
                             node_lst[classify].place[activity_i],
                             node_lst[classify].isDup[activity_i]]
             # 为事件选择发生地点和建筑类型
+            # 是否关联问题: 先选择一个事件发生的建筑类型, 如果关联, 地点根据建筑类型去找; 否则, 随机一个区块序号, 在mp_place中记录
+            arch_type = random.choice(activity_lst[2])
+            arch_type_index = self.parent.relationMapping.archToIndex(arch_type)
+            arch_index = 0
+            if (activity_lst[3] == 1):   # 关联
+                if arch_type in mp_place:  # 出现过
+                    arch_index = mp_place[arch_type][0]  # 在出现过的建筑类型下的所有区块中选择一个
+                else:  # 关联, 但未出现过
+                    arch_index = random.choice(range(num_lst[arch_type_index]))
+                    mp_place[arch_type] = [arch_index]   # 创建数组并添加Index
+            else:                       # 不关联
+                arch_index = random.choice(range(num_lst[arch_type_index]))  # 选择一个区块
+                if arch_type in mp_place:  # 存在添加
+                    mp_place[arch_type].append(arch_index)
+                else:                      # 不存在创建
+                    mp_place[arch_type] = [arch_index]
+
+            """
+            # 事件关联
             if activity_i in mp[classify] and activity_lst[3] == 1:
                 # 重复且关联
                 arch_type = ''
@@ -148,6 +167,7 @@ class Child():
                 #arch_index = random.randint(0, num_lst[arch_type_index])
                 arch_index = random.choice(range(num_lst[arch_type_index]))
                 mp[classify][activity_i] = (arch_type_index, arch_index)
+            """
             if classify <> 3:   # 先不计算睡觉时间
                 time = random.uniform(activity_lst[1][0], activity_lst[1][1]) #[d1, d2)
             else:
@@ -589,7 +609,7 @@ def statBlockData(child_lst, mapping):
 def child_main():
     filepath = '/Users/htwt/Desktop/20181019_totalGenics.xls'
     genicDataLst_lst, tot_job_scale, tot_block_num, tot_arch_type, tot_job_type, tot_trans_type, tot_trans_speed = readDataFromExcel.read(filepath)
-    genicDataLst = genicDataLst_lst[18]   # 选取其中一种职业
+    genicDataLst = genicDataLst_lst[19]   # 选取其中一种职业
     tot_node_path = readDictFromTxt.getNodePathDict()
     mapping = TypeMapping(tot_arch_type, tot_trans_type, tot_job_type, tot_trans_speed, tot_node_path, tot_block_num)
     parent = Parent(genicDataLst, mapping)
@@ -599,7 +619,7 @@ def child_main():
         if child.isArrangeValid == True: break;   # 直到循环出满意的才结束
     #child = Child(parent)
     testChild(child)
-    statBlockData([child], mapping)
+    #statBlockData([child], mapping)
     return
 
 
@@ -647,6 +667,6 @@ def parent_main():
 
 
 if __name__ == "__main__":
-    #child_main()
-    parent_main()
+    child_main()
+    #parent_main()
 
