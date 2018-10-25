@@ -357,15 +357,15 @@ class ParentBlock(object):
                 #print(t, block_name, seq_p)
         for block_name in self.block_dict:
             block_obj = self.block_dict[block_name]
-            print('block_name: ' + str(block_name))
+            #print('block_name: ' + str(block_name))
             # 使用总人流量
-            print('tot_person_count = ' + str(block_obj.tot_person_count))
+            #print('tot_person_count = ' + str(block_obj.tot_person_count))
             # 总花费的时长
-            print('sum_time = ' + str(block_obj.sum_time))
+            #print('sum_time = ' + str(block_obj.sum_time))
             block_obj.max_person_count = max(block_obj.time_seq_person_count)  #最大同时使用人数
             
-            print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
-            print('block.max_person_count = ' + str(block_obj.max_person_count))
+            #print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
+            #print('block.max_person_count = ' + str(block_obj.max_person_count))
         return
 
     # 统计总共地块的信息
@@ -378,7 +378,7 @@ class ParentBlock(object):
             # 根据地块人员分配计算出使用面积
             block_obj.getUseArea()
             # 在使用面积确定的情况下, 控制建筑密度, 容积率，建筑数量
-            block_obj.arrangeArch(block_obj.use_area, building_density_lst[i], plot_ratio_lst[i], arch_num_lst[i]):
+            block_obj.arrangeArch(building_density_lst[i], plot_ratio_lst[i], arch_num_lst[i])
             i += 1
         return
                 
@@ -418,27 +418,37 @@ class ChildBlock(object):
         self.time_seq_person_count[time_i] += 1
         return
 
-    def getUseArea(self, self.max_person_count):
+    def getUseArea(self):
         # 根据一天中最大的同时使用人数, 映射计算出总使用面积
         # 假设每个人需要10平米面积
         self.use_area = 10 * self.max_person_count
         return
         
 
-    def arrangeArch(self, self.use_area, building_density, plot_ratio, arch_num):
+    def arrangeArch(self, building_density, plot_ratio, arch_num):
         # 根据建筑使用面积, 建筑密度, 容积率, 建筑数量, 得到区块中各个建筑面积和高度, 以及其他关于地块的中间数据
-        if not self.use_area: return -1
-        floor_space = use_area / plot_ratio
+        print('use_area = ' + str(self.use_area) + ', building_density = ' + str(building_density) + ', plot_ratio = ' + str(plot_ratio) + ', arch_num = ' + str(arch_num))
+        if not self.use_area:
+            print("no use_area")
+            return -1
+        floor_space = self.use_area / plot_ratio
         tot_area = floor_space / building_density
 
         # 平均分配面积
-        each_area = tot_area / each_num
+        each_area = tot_area / arch_num
         # 平均分配高度
-        each_height = use_area / each_area / arch_num
+        each_height = self.use_area / each_area / arch_num
 
         if each_height < 3 or each_height > 15:
+            print('-- height error: ' + str(each_height))
+            return -1
+        elif each_area < 10:
+            print('-- area error: ' + str(each_area))
             return -1
         else:
+            print('each_area = ' +  str(each_area) + ' each_height = ' + str(each_height))
+            #vert_use_area = each_area * each_height * arch_num
+            #print('vert_use_area = ' + str(vert_use_area) +  ' use_area = ' + str(self.use_area))
             return each_height
             
 
@@ -557,6 +567,11 @@ def statBlockData(child_lst, mapping):
     block_lst = [ChildBlock(name) for name in range(type_num)]
     parentBlock = ParentBlock(block_lst)
     parentBlock.statPersonCount(child_lst)  # 统计地块信息, 写入各个地块
+    # 为各个区块分配容积率, 密度, 建筑数量, 得到各建筑面积, 高度
+    building_density_lst = [random.uniform(0.3, 0.6) for i in range(type_num)]
+    plot_ratio_lst = [random.uniform(2, 10) for i in range(type_num)]
+    arch_num_lst = [random.randint(3, 5) for i in range(type_num)]
+    parentBlock.arrangeAllBlock(building_density_lst, plot_ratio_lst, arch_num_lst)
 
 
 def child_main():
