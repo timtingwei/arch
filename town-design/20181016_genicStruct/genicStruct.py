@@ -312,8 +312,8 @@ class Child():
             ret = random.choice(tmp)
         return ret
 
-class ParentBlock(object):
-    ' 所有区块对象的存储结构 '
+class ParentTypeBlock(object):
+    ' 所有建筑类型区块对象的存储结构 '
     def __init__(self, block_lst):      # 人对象作为成员函数的参数, 不作为属性(目前暂时选择这种)
         self.block_dict =  {}           # 属于这个父block的所有blocks, key = name, value=obj
         for block in block_lst:
@@ -408,8 +408,8 @@ class ParentBlock(object):
         return
                 
             
-class ChildBlock(object):
-    '每一个区块对象'
+class ChildTypeBlock(object):
+    '每一个建筑类型区块对象'
     def __init__(self, name):
         self.name = name    # 区块建筑类型名字(序号)
         self.arch = []      # 属于该区块的建筑对象(未添加)
@@ -482,7 +482,27 @@ class ChildBlock(object):
             #vert_use_area = each_area * each_height * arch_num
             #print('vert_use_area = ' + str(vert_use_area) +  ' use_area = ' + str(self.use_area))
             return arch_num, each_area, each_height
-            
+
+class InitBlock(object):
+    ' 实际地块对象 '
+    def __init__(self):
+        self.area = 0.0          # 地块面积
+        self.arch_num = 0        # 建筑数量
+        self.tot_use_area = 0.0  # 总的建筑面积
+        self.arch = arch_obj_lst   # 地块拥有的建筑对象
+        self.plot_ratio = 0.0      # 容积率
+        self.building_density = 0.0  # 覆盖率
+        self.floor_space = 0.0       # 占地面积
+
+        return
+
+class Arch(object):
+    ' 建筑对象 '
+    def __init__(self):
+        self.size = (0.0, 0.0, 0.0)        # 建筑宽深高
+        self.type_name = ''                # 建筑类型
+
+        return
 
 class TypeMapping():
     # 关系映射对象, 用于查表
@@ -596,8 +616,8 @@ def statBlockData(child_lst, mapping):
     # 构造地块实例和统计地块信息
     block_lst = []
     type_num = len(mapping.arch_type)
-    block_lst = [ChildBlock(name) for name in range(type_num)]
-    parentBlock = ParentBlock(block_lst)
+    block_lst = [ChildTypeBlock(name) for name in range(type_num)]
+    parentBlock = ParentTypeBlock(block_lst)
     parentBlock.statPersonCount(child_lst)  # 统计地块信息, 写入各个地块
     # 为各个区块分配容积率, 密度, 建筑数量, 得到各建筑面积, 高度
     building_density_lst = [random.uniform(0.3, 0.6) for i in range(type_num)]
@@ -667,6 +687,6 @@ def parent_main():
 
 
 if __name__ == "__main__":
-    child_main()
-    #parent_main()
+    #child_main()
+    parent_main()
 
