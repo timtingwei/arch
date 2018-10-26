@@ -412,11 +412,11 @@ class ChildTypeBlock(object):
     '每一个建筑类型区块对象'
     def __init__(self, name):
         self.name = name    # 区块建筑类型名字(序号)
-        self.arch = []      # 属于该区块的建筑对象(未添加)
+        # self.arch = []      # 属于该区块的建筑对象(未添加)
         self.tot_person_count = 0    # 区块一天中使用的总人流量
         self.max_person_count = 0    # 一天中最大的同时使用人数
         self.sum_time = 0.0  # 一天中不同人总共在该地块花费的时长
-        self.area = []      # 该区块面积(未添加)
+        # self.area = []      # 该区块面积(未添加)
         self.time_seq_person_count = []    # 一天中不同时段该地块人数
         self.use_area = 0   # 该区块总使用面积
 
@@ -496,6 +496,53 @@ class InitBlock(object):
 
         return
 
+    def arrangeArch(self, plot_ratio, building_density, type_lst, type_scale_lst, type_num_lst):
+        # 根据建筑总面积, 分配不同建筑类型的使用面积, 得到以及所包含的建筑数量, 面积, 高度
+        tot_use_area = self.area * plot_ratio
+        use_area_lst =  [x * tot_use_area for x in type_scale_lst]
+
+        tot_floor_space = self.area * building_density  # 总占地面积
+        floor_space_lst = [x * tot_floor_space for x in type_scale_lst]  # 各建筑类型占地面积
+
+        # 已知总建筑面积, 建筑数量, 建筑占地求高度
+        floor_num_lst = [use_area_lst[i]/floor_space_lst[i]/type_num_lst[i] for i in range(len(type_num_lst))]
+
+        # 根据建筑类型层数获得建筑高度
+
+        # 改变该建筑类型已经使用的建筑面积
+
+        return
+
+    def getTypeBlockArchData(self, s_plane, floor_num, num, s_tot):
+        # 根据给出的底面积, 层高, 栋数, 总建筑面积其中某几个值, 得到剩余值
+        # 总面积必须给出
+        if not s_tot: return -1
+        if num == 0:      # 栋数未知的情况
+            if s_place and floor_num:    # 底面积与层高已知
+                num = int(s_tot / (s_plane * floor_num)+1)
+                s_place = s_tot / num / floor_num
+                # 取整后修改底面积
+            else:  # 底与高任一未知
+                num = 1    # 栋数缺省为1
+                if s_plane:
+                    floor_num = s_tot / s_plane
+                else:
+                    s_plane = s_tot / floor_num
+        elif s_plane:  # 栋数和底面积已知
+            floor_num = s_tot / num / s_plane
+        elif floor_num:  # 栋数和层高已知
+            s_plane = s_tot/num/floor_num
+
+        return s_plane, floor_num, num
+
+    def converFloorNumToHeight(self, arch_type, floor_num):
+        # 根据建筑类型层数获得建筑高度
+        floor_height = mapping.getFloorHeight(arch_type)
+        height = floor_num * floor_height
+        return height
+            
+                
+
 class Arch(object):
     ' 建筑对象 '
     def __init__(self):
@@ -571,8 +618,8 @@ class TypeMapping():
 
 
 class Path(object):
-    ' 路径对象描述 '
     def __init__(self):
+    ' 路径对象描述 '
         self.shortestPaths = {}
     
 def testNode(node):
