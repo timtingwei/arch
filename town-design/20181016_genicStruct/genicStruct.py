@@ -381,11 +381,11 @@ class ParentTypeBlock(object):
             # 使用总人流量
             #print('tot_person_count = ' + str(block_obj.tot_person_count))
             # 总花费的时长
-            #print('sum_time = ' + str(block_obj.sum_time))
+            print('sum_time = ' + str(block_obj.sum_time))
             block_obj.max_person_count = max(block_obj.time_seq_person_count)  #最大同时使用人数
             
-            #print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
-            #print('block.max_person_count = ' + str(block_obj.max_person_count))
+            print('block.time_seq_person_count =  ', block_obj.time_seq_person_count)
+            print('block.max_person_count = ' + str(block_obj.max_person_count))
         return
 
     # 统计总共地块的信息
@@ -619,7 +619,7 @@ class TypeMapping():
 
 class Path(object):
     def __init__(self):
-    ' 路径对象描述 '
+        ' 路径对象描述 '
         self.shortestPaths = {}
     
 def testNode(node):
@@ -670,7 +670,7 @@ def statBlockData(child_lst, mapping):
     building_density_lst = [random.uniform(0.3, 0.6) for i in range(type_num)]
     plot_ratio_lst = [random.uniform(2, 10) for i in range(type_num)]
     arch_num_lst = [random.randint(3, 5) for i in range(type_num)]
-    parentBlock.arrangeAllBlock(building_density_lst, plot_ratio_lst, arch_num_lst)
+    #parentBlock.arrangeAllBlock(building_density_lst, plot_ratio_lst, arch_num_lst)
 
 
 def child_main():
