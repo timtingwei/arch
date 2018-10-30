@@ -15,7 +15,9 @@ def getUseBlockArea(tot_block_area, tot_exist_block_area):
 def getParamsNum(arch_floor_lst, arch_num_lst, arch_plane_area_lst):
     # 得到输入变量有效的个数, 栋数, 层数, 底面积
     num = 0
-    if arch_floor_lst: num += 1; if arch_num_lst: num += 1; if arch_plane_area_lst: num += 1
+    if arch_floor_lst: num += 1;
+    if arch_num_lst: num += 1;
+    if arch_plane_area_lst: num += 1
     return num
     
 def fillParamsList(length, arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst):
@@ -25,7 +27,6 @@ def fillParamsList(length, arch_type_area_lst, arch_type_building_area_lst, arch
         if merge_lst[i] is None:
             merge_lst[i] = [0]*length if i == 2 or i == 3 else [0.0]*length  # 栋数和层数为int型
     return merge_lst
-    
     
 
 # 占地面积, 栋数, 底面积 三元互算
@@ -64,10 +65,9 @@ def getAreaListFromScale(sum_arch_area, scale_lst):
     # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
     return [sum_arch_area * scale for scale in scale_lst]
 
-#a, b, c = computeThreeParams(x, y, z)
 def arrange(tot_arch_type_area_lst, tot_block_area,
             tot_exist_block_area, tot_exist_block_building_area,
-            arch_type_lst, arch_type_lst, plot_ratio, building_ratio,
+            arch_type_lst, plot_ratio, building_ratio,
             arch_floor_lst, arch_num_lst, arch_plane_area_lst,
             arch_type_area_lst, arch_type_building_area_lst,
             scale_lst):
@@ -81,11 +81,11 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
     scale_lst:    占地面积, 建筑面积的在总地块中的分配比例, 在0~1范围内
     """
     if not tot_block_area: print("缺少地块总面积"); return;
-    if not tot_arch_type_area_lst: print("缺少建筑类型的建筑面积"): return;
+    if not tot_arch_type_area_lst: print("缺少建筑类型的建筑面积"); return;
     if not arch_type_lst: print("缺少建筑类型"); return;
     tot_use_block_area = getUseBlockArea(tot_block_area, tot_exist_block_area)  # 获得可使用的建筑占地面积
     paramsNum = getParamsNum(arch_floor_lst, arch_num_lst, arch_plane_area_lst)  # 得到输入变量有效的个数
-    arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst = fillParamsList(length = len(arch_type_lst), arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst)   # ?: 将None填充成0数组, 实现不太优雅
+    arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst = fillParamsList(len(arch_type_lst), arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst)   # ?: 将None填充成0数组, 实现不太优雅
     building_flag = 0        # 占地面积是否满足标记
     rest_flag_lst = []       # 各建筑类型剩余是否满足标记
     rest_arch_area_lst = []  # 各建筑类型剩余建筑面积
@@ -162,28 +162,3 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
         
     return arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst
 
-
-def main():
-    tot_arch_type_area_lst = None
-    tot_block_area = None
-    tot_exist_block_area = None
-    tot_exist_block_building_area = None
-    arch_type_lst = None
-    plot_ratio = None
-    building_ratio = None
-    arch_floor_lst = None
-    arch_num_lst = None
-    arch_plane_area_lst = None
-    arch_type_area_lst = None
-    arch_type_building_area_lst = None
-    scale_lst = None
-    rst = arrange(tot_arch_type_area_lst, tot_block_area,
-            tot_exist_block_area, tot_exist_block_building_area,
-            arch_type_lst, arch_type_lst, plot_ratio, building_ratio,
-            arch_floor_lst, arch_num_lst, arch_plane_area_lst,
-            arch_type_area_lst, arch_type_building_area_lst,
-            scale_lst)
-    return rst 
-
-if __name__ == '__main__':
-    tot_arch_type_area_lst, tot_block_area, tot_exist_block_area, tot_exist_block_building_area, arch_type_lst, arch_type_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst, arch_type_area_lst, arch_type_building_area_lst, scale_lst = main()
