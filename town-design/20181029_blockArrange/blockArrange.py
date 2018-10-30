@@ -8,6 +8,7 @@
 __author__ = "mituh"
 __version__ = "2018.10.29"
 
+"""
 import rhinoscriptsyntax as rs
 
 # 占地面积, 栋数, 底面积 三元互算
@@ -67,3 +68,14 @@ def main():
         final_arch_plot_ratio, final_building_ratio, final_arch_floor, final_arch_n, final_plane_area
 
 final_arch_type, final_arch_rest_area, final_arch_area, final_arch_space, final_arch_plot_ratio, final_building_ratio, final_arch_floor, final_arch_n, final_plane_area = main()
+"""
+
+# test if
+
+def testIf():
+    if 1:
+        a = 5
+    print('a = ' + str(a))
+
+if __name__ == '__main__':
+    testIf()
