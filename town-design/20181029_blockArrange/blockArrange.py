@@ -31,6 +31,7 @@ def fillParamsList(length, arch_type_area_lst, arch_type_building_area_lst, arch
 
 # 占地面积, 栋数, 底面积 三元互算
 def computeThreeParams(a = 0.0, b = 0, c = 0.0):
+    a, b, c = float(a), int(b), float(c)
     if a and b: c = a / b
     elif a and c: 
         b = int(a / c) + 1
@@ -41,6 +42,7 @@ def computeThreeParams(a = 0.0, b = 0, c = 0.0):
 
 # 建筑面积, 栋数, 层数, 底面积 四元互算
 def computeFourParams(a = 0.0, f = 0, n = 0, pa = 0.0):
+    a, f, n, pa = float(a), int(f), int(n), float(pa)
     if a and f and n: pa = a/f/n
     elif a and f and pa:
         n = int(a/f/pa)+1
@@ -76,9 +78,18 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
     tot_arch_type_area_lst, tot_block_area:   # 所有建筑类型建筑面积, 地块总面积
     tot_exist_block_area, tot_exist_block_building_area:  # 已经存在地块建筑面积, 已经存在地块占地面积
     arch_type_lst, plot_ratio, building_ratio: # 建筑类型, 容积率, 覆盖率
-    arch_floor_lst, arch_num_lst, arch_plane_area_lst:  # 层高, 栋数, 地平面面积
+    arch_floor_lst, arch_num_lst, arch_plane_area_lst:  # 层高, 栋数, 底平面面积
     arch_type_area_lst, arch_type_building_area_lst:   # 各类型建筑面积, 各类型占地面积
     scale_lst:    占地面积, 建筑面积的在总地块中的分配比例, 在0~1范围内
+
+    @output:
+    arch_type_lst, arch_type_area_lst:    建筑类型, 各类型建筑面积
+    rest_arch_area_lst, rest_flag_lst:    各建筑剩余建筑面积, 剩余建筑面积是否满足标记
+    tot_use_block_area:                   总共可用地块面积
+    sum_building_area:                    输入建筑总占地面积
+    building_flag, arch_type_building_area_lst:    建筑占地是否满足标记, 各类型占地面积
+    plot_ratio, building_ratio,           容积率, 覆盖率
+    arch_floor_lst, arch_num_lst, arch_plane_area_lst  层数, 栋数, 底面积
     """
     if not tot_block_area: print("缺少地块总面积"); return;
     if not tot_arch_type_area_lst: print("缺少建筑类型的建筑面积"); return;
@@ -126,7 +137,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
 
         if two_params_flag == 0:     # 进行第一种计算方式
             for i in range(len(arch_type_lst)):
-                rest = tot_arch_type_lst[i] - arch_type_area_lst[i]  # ? 可抽象
+                rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # ? 可抽象
                 rest_flag = 0 if rest < 0 else 1
                 rest_arch_area_lst.append(rest)
                 rest_flag_lst.append(rest_flag)
@@ -146,7 +157,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
                 arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i] = computeThreeParams(arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i])   # 根据占地面积, 层数, 栋数or底面积生成新的三元
                 arch_type_area_lst[i] = computeFourParams(arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i])[0]  # 根据另外三个变量得到该类型建筑面积
                 
-                rest = tot_arch_type_lst[i] - arch_type_area_lst[i]  # ? 可抽象
+                rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # ? 可抽象
                 rest_flag = 0 if rest < 0 else 1
                 rest_arch_area_lst.append(rest)
                 rest_flag_lst.append(rest_flag)
