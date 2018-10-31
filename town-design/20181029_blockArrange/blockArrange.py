@@ -136,12 +136,14 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
             return
 
         if two_params_flag == 0:     # 进行第一种计算方式
+            temp_flag = 0 if not sum_arch_area else 1   # 用于标记是否已经算总建筑面积?
             for i in range(len(arch_type_lst)):
                 rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # ? 可抽象
                 rest_flag = 0 if rest < 0 else 1
                 rest_arch_area_lst.append(rest)
                 rest_flag_lst.append(rest_flag)
                 arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i] = computeFourParams(arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i])  # 生成新三元
+                if not temp_flag: sum_arch_area += arch_type_area_lst[i]  # 没算过的话算
                 arch_type_building_area_lst[i] = computeThreeParams(arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i])[0]   # 根据新生成的三元得到该类型的建筑占地
                 sum_building_area += arch_type_building_area_lst[i]   # 计算输入建筑的总地块面积
             building_flag = 1 if sum_building_area <= tot_use_block_area else 0  # 现有地块的限制条件
