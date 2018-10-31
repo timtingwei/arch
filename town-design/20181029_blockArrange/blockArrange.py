@@ -72,6 +72,14 @@ def convertScale(scale_lst):
     tot = sum(scale_lst)
     return [float(weight) / tot for weight in scale_lst]
 
+def getRestAreaAndFlagAppendToList(tot_arch_type_area_lst, arch_type_area_lst, i, rest_arch_area_lst, rest_flag_lst):
+    # 计算剩余面积, 判断是否满足可用面积, 增添入列表
+    rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # ? 可抽象
+    rest_flag = 0 if rest < 0 else 1
+    rest_arch_area_lst.append(rest)
+    rest_flag_lst.append(rest_flag)
+    return rest_arch_area_lst, rest_flag_lst
+
 def arrange(tot_arch_type_area_lst, tot_block_area,
             tot_exist_block_area, tot_exist_block_building_area,
             arch_type_lst, plot_ratio, building_ratio,
@@ -111,10 +119,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
         # 栋数, 层数, 底面积均存在的情况
         for i in range(len(arch_type_lst)):
             arch_type_area_lst[i] = computeFourParams(arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i])[0]  # 根据另外三个变量得到该类型建筑面积
-            rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # 根据可用面积得到剩余面积
-            rest_flag = 0 if rest < 0 else 1         # 建筑类型可用建筑面积限制
-            rest_arch_area_lst.append(rest)
-            rest_flag_lst.append(rest_flag)
+            rest_arch_area_lst, rest_flag_lst = getRestAreaAndFlagAppendToList(tot_arch_type_area_lst, arch_type_area_lst, i, rest_arch_area_lst, rest_flag_lst)
             sum_arch_area += arch_type_area_lst[i]   # 输入的各类型总建筑面积
             sum_building_area += computeThreeParams(arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i])[0]                    # 输入的各类型总占地面积
         building_flag = 1 if sum_building_area <= tot_use_block_area else 0  # 现有地块的限制条件
@@ -143,10 +148,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
         if two_params_flag == 0:     # 进行第一种计算方式
             temp_flag = 0 if not sum_arch_area else 1   # 用于标记是否已经算总建筑面积?
             for i in range(len(arch_type_lst)):
-                rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # ? 可抽象
-                rest_flag = 0 if rest < 0 else 1
-                rest_arch_area_lst.append(rest)
-                rest_flag_lst.append(rest_flag)
+                rest_arch_area_lst, rest_flag_lst = getRestAreaAndFlagAppendToList(tot_arch_type_area_lst, arch_type_area_lst, i, rest_arch_area_lst, rest_flag_lst)  # 得到并判断剩余建筑面积
                 arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i] = computeFourParams(arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i])  # 生成新三元
                 if not temp_flag: sum_arch_area += arch_type_area_lst[i]  # 没算过的话算
                 arch_type_building_area_lst[i] = computeThreeParams(arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i])[0]   # 根据新生成的三元得到该类型的建筑占地
@@ -163,12 +165,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
             for i in range(len(arch_type_lst)):
                 arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i] = computeThreeParams(arch_type_building_area_lst[i], arch_num_lst[i], arch_plane_area_lst[i])   # 根据占地面积, 层数, 栋数or底面积生成新的三元
                 arch_type_area_lst[i] = computeFourParams(arch_type_area_lst[i], arch_floor_lst[i], arch_num_lst[i], arch_plane_area_lst[i])[0]  # 根据另外三个变量得到该类型建筑面积
-                
-                rest = tot_arch_type_area_lst[i] - arch_type_area_lst[i]  # ? 可抽象
-                rest_flag = 0 if rest < 0 else 1
-                rest_arch_area_lst.append(rest)
-                rest_flag_lst.append(rest_flag)
-
+                rest_arch_area_lst, rest_flag_lst = getRestAreaAndFlagAppendToList(tot_arch_type_area_lst, arch_type_area_lst, i, rest_arch_area_lst, rest_flag_lst)
                 sum_arch_area += arch_type_area_lst[i]
                 if not temp_flag: sum_building_area += arch_type_building_area_lst[i]
             if not building_ratio: building_ratio = getRatio(sum_building_area, tot_exist_block_building_area, tot_block_area)   # 计算覆盖率
