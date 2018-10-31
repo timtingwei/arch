@@ -24,7 +24,7 @@ def fillParamsList(length, arch_type_area_lst, arch_type_building_area_lst, arch
     # 根据length长度, 扩展输入为None的值为[0]*length, 便于后面的等价计算
     merge_lst = [arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst]
     for i in range(len(merge_lst)):
-        if merge_lst[i] is None:
+        if merge_lst[i] is None or merge_lst[i] == []:  # 无输入或者空列表(GH)
             merge_lst[i] = [0]*length if i == 2 or i == 3 else [0.0]*length  # 栋数和层数为int型
     return merge_lst
     
