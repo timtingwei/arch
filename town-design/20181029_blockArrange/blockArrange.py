@@ -67,6 +67,11 @@ def getAreaListFromScale(sum_arch_area, scale_lst):
     # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
     return [sum_arch_area * scale for scale in scale_lst]
 
+def convertScale(scale_lst):
+    # 将权值比重, 转换成0~1之间的比例
+    tot = sum(scale_lst)
+    return [float(weight) / tot for weight in scale_lst]
+
 def arrange(tot_arch_type_area_lst, tot_block_area,
             tot_exist_block_area, tot_exist_block_building_area,
             arch_type_lst, plot_ratio, building_ratio,
@@ -125,12 +130,12 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
             if not scale_lst: print("缺少比例参数"); return;
             two_params_flag = 0
             sum_arch_area = getAreaFromRatio(plot_ratio, tot_block_area)  # 通过容积率得到所有输入建筑的总建筑面积
-            arch_type_area_lst = getAreaListFromScale(sum_arch_area, scale_lst)  # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
+            arch_type_area_lst = getAreaListFromScale(sum_arch_area, convertScale(scale_lst))  # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
         elif building_ratio:
             if not scale_lst: print("缺少比例参数"); return;
             two_params_flag = 1
             sum_building_area = getAreaFromRatio(building_ratio, tot_block_area)   # 通过覆盖率得到所有输入建筑的总占地面积
-            arch_type_building_area_lst = getAreaListFromScale(sum_building_area, scale_lst)  # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
+            arch_type_building_area_lst = getAreaListFromScale(sum_building_area, convertScale(scale_lst))  # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
         else:
             print("如果只输入两个建筑变量, 在各建筑类型面积, 各建筑类型占地面积, 容积率, 覆盖率中必须有一项")
             return
