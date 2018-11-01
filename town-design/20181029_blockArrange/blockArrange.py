@@ -107,7 +107,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
     if not tot_block_area: print("缺少地块总面积"); return;
     if not tot_arch_type_area_lst: print("缺少建筑类型的建筑面积"); return;
     if not arch_type_lst: print("缺少建筑类型"); return;
-    tot_use_block_area = getUseBlockArea(tot_block_area, tot_exist_block_area)  # 获得可使用的建筑占地面积
+    tot_use_block_area = getUseBlockArea(tot_block_area, tot_exist_block_building_area)  # 获得可使用的建筑占地面积
     paramsNum = getParamsNum(arch_floor_lst, arch_num_lst, arch_plane_area_lst)  # 得到输入变量有效的个数
     arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst = fillParamsList(len(arch_type_lst), arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst)   # ?: 将None填充成0数组, 实现不太优雅
     building_flag = 0        # 占地面积是否满足标记
