@@ -1,5 +1,7 @@
-# 面积转换宽深机制
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
 
+# 面积转换宽深机制
 def limit(length, length_domain):
     # 把长度限制在值域范围内
     length = length_domain[0] if length < length_domain[0] else (length_domain[1] if length > length_domain[1] else length)
@@ -20,7 +22,7 @@ def recomputeDomain(area, length_domain, width_domain):
     return length_domain, width_domain
     
 
-def convertArea(area, lenth_domain, width_domain, length, width, flag):
+def convertArea(area, length_domain, width_domain, length, width, flag):
     """
     给定面积, 宽深范围, 改变宽深中的一个值, 确定另外一个值
     @params:
@@ -31,6 +33,7 @@ def convertArea(area, lenth_domain, width_domain, length, width, flag):
     width:    深度 float
     flag:     当前确定的是宽还是深度, 1 -> 宽, 0 -> 深
     """
+    area = float(area)  # ? 如何定义好呢
     length_domian, width_domain = recomputeDomain(area, length_domain, width_domain)
     if flag:
         length = limit(length, length_domain)
