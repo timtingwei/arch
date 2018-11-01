@@ -372,6 +372,44 @@ def foo9():
         scale_lst)
     return rst
 
+def foo10():
+    '三元; 已存在建筑面积, 已存在占地面积'
+    # 所有建筑类型建筑面积
+    tot_arch_type_area_lst = [500, 420]
+    # 地块总面积
+    tot_block_area = 4000
+    # 已经存在地块建筑面积
+    tot_exist_block_area = 500.0
+    # 已经存在地块占地面积
+    tot_exist_block_building_area = 880.0
+    # 建筑类型
+    arch_type_lst = [0, 1]
+    # 容积率
+    plot_ratio = None
+    # 覆盖率
+    building_ratio = None
+    # 层高
+    arch_floor_lst = [2, 3]
+    # 栋数
+    arch_num_lst = [1, 3]
+    # 底平面面积
+    arch_plane_area_lst = [120.2, 50.8]
+    # 各类型建筑面积
+    arch_type_area_lst = None
+    # 各类型占地面积
+    arch_type_building_area_lst = None
+    # 面积比例
+    scale_lst = [5, 5]
+    rst = blockArrange.arrange(
+        tot_arch_type_area_lst, tot_block_area,
+        tot_exist_block_area, tot_exist_block_building_area,
+        arch_type_lst, plot_ratio, building_ratio,
+        arch_floor_lst, arch_num_lst, arch_plane_area_lst,
+        arch_type_area_lst, arch_type_building_area_lst,
+        scale_lst)
+    return rst
+
+
 
 def print_foo(arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst):
     print('建筑类型:')
@@ -420,7 +458,8 @@ if __name__ == '__main__':
     #arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst = foo6()
     #arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst = foo7()
     #arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst = foo8()
-    arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst = foo9()
+    #arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst = foo9()
+    arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst = foo10()
     print_foo(arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst)
     #testConvertScale()
     

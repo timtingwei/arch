@@ -104,9 +104,9 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
     plot_ratio, building_ratio,           容积率, 覆盖率
     arch_floor_lst, arch_num_lst, arch_plane_area_lst  层数, 栋数, 底面积
     """
-    if not tot_block_area: print("缺少地块总面积"); return;
-    if not tot_arch_type_area_lst: print("缺少建筑类型的建筑面积"); return;
-    if not arch_type_lst: print("缺少建筑类型"); return;
+    if not tot_block_area: print("缺少 地块总面积"); return;
+    if not arch_type_lst: print("缺少 建筑类型"); return;
+    if not tot_arch_type_area_lst: print("缺少 建筑类型可用建筑面积"); return;
     tot_use_block_area = getUseBlockArea(tot_block_area, tot_exist_block_building_area)  # 获得可使用的建筑占地面积
     paramsNum = getParamsNum(arch_floor_lst, arch_num_lst, arch_plane_area_lst)  # 得到输入变量有效的个数
     arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst = fillParamsList(len(arch_type_lst), arch_type_area_lst, arch_type_building_area_lst, arch_num_lst, arch_floor_lst, arch_plane_area_lst)   # ?: 将None填充成0数组, 实现不太优雅
@@ -132,7 +132,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
         if arch_type_area_lst[0]: two_params_flag = 0
         elif arch_type_building_area_lst[0]: two_params_flag = 1
         elif plot_ratio:
-            if not scale_lst: print("缺少比例参数"); return;
+            if not scale_lst: print("缺少 建筑面积/建筑占地比例"); return;
             two_params_flag = 0
             sum_arch_area = getAreaFromRatio(plot_ratio, tot_block_area)  # 通过容积率得到所有输入建筑的总建筑面积
             arch_type_area_lst = getAreaListFromScale(sum_arch_area, convertScale(scale_lst))  # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
@@ -142,7 +142,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
             sum_building_area = getAreaFromRatio(building_ratio, tot_block_area)   # 通过覆盖率得到所有输入建筑的总占地面积
             arch_type_building_area_lst = getAreaListFromScale(sum_building_area, convertScale(scale_lst))  # 通过建筑类型比例和总面积, 得到各建筑类型建筑面积
         else:
-            print("如果只输入两个建筑变量, 在各建筑类型面积, 各建筑类型占地面积, 容积率, 覆盖率中必须有一项")
+            print("在层数, 栋数, 底面积三变量中, 如果只输入两个变量, 在 各类型总建筑面积, 各类型总占地面积, 容积率, 覆盖率 中必须有一项输入")
             return
 
         if two_params_flag == 0:     # 进行第一种计算方式
@@ -158,7 +158,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
             building_ratio = getRatio(sum_building_area, tot_exist_block_building_area, tot_block_area)   # 计算覆盖率
         else:   # two_params_flag == 1 进行第二种计算方式
             if not (arch_floor_lst[0] and (arch_num_lst[0] or arch_plane_area_lst[0])):
-                print("还需要层数, 还有栋数或者底面积两者中的任意一个"); return;
+                print("还需要确定 层数, 另外还需要 栋数 或 底面积 两者中的任意一个"); return;
             sum_building_area = sum(arch_type_area_lst)  # 得到总的地块面积
             building_flag = 1 if sum_building_area <= tot_use_block_area else 0  # 现有地块的限制条件
             temp_flag = 0 if not sum_building_area else 1   # 用于标记是否已经算总占地面积?
@@ -172,7 +172,7 @@ def arrange(tot_arch_type_area_lst, tot_block_area,
             plot_ratio = getRatio(sum_arch_area, tot_exist_block_area, tot_block_area)  # 计算容积率
         
     else:
-        print("至少在建筑栋数, 底面积, 层数中输入两个")
+        print("至少在建筑 栋数, 底面积, 层数 中输入两个")
         return
         
     return arch_type_lst, arch_type_area_lst, rest_arch_area_lst, rest_flag_lst, tot_use_block_area, sum_building_area, building_flag, arch_type_building_area_lst, plot_ratio, building_ratio, arch_floor_lst, arch_num_lst, arch_plane_area_lst
