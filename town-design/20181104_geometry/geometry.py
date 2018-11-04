@@ -5,6 +5,8 @@ class Point2D(object):
     def __init__(self, coordinate):
         self.x, self.y = coordinate
         return
+    def addVec(self, vec):
+        return Point2D([self.x + vec.x, self.y + vec.y])
 
 class Point3D(Point2D):
     def __init__(self, coordinate):
@@ -29,11 +31,12 @@ class Vector(object):
 
 class Polyline(object):
     def __init__(self, pt_lst):
+        self.start_pt = pt_lst[0]
         self.pt_lst = pt_lst
-        self.vec_lst = getVectorList()
+        self.vec_lst = getVectorListFromPts()
         self.cornerYinYangProperty_lst = getYinYangProperty()
 
-    def getVectorList(self):
+    def getVectorListFromPts(self):
         # 根据顺序点得到向量
         vec_lst = []
         for i in range(len(self.pt_lst)-1):
@@ -47,3 +50,27 @@ class Polyline(object):
         # 得到多边形的端点阴阳角性质
         cornerYinYangProperty_lst = []
         return cornerYinYangProperty_lst
+
+class Rectangle(Polyline):
+    def __init__(self, pt_lst):
+        self.start_pt = pt_lst[0]
+        self.pt_lst = pt_lst
+        self.vec_lst = getVectorListFromPts()
+        self.cornerYinYangProperty_lst = [1, 1, 1, 1]
+
+    def __init__(self, vec_lst, start_pt):
+        self.start_pt = start_pt
+        self.vec_lst = vec_lst
+        self.pt_lst = getPtListFromVectors()
+
+    def getPtListFromVectors(self):
+        # 根据初始点和所有向量得到所有点
+        pt_lst = []
+        pt_lst.append(self.start_pt)
+        temp_pt = self.start_pt
+        for vec in self.vec_lst[:-1]:
+            temp_pt = temp_pt.addVec(vec)
+            pt_lst.append(temp_pt)
+        return pt_lst
+        
+        
