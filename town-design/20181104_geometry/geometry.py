@@ -29,6 +29,9 @@ class Vector(object):
         self.x = end_pt.x - start_pt.x
         self.y = end_pt.y - start_pt.y
 
+    def isVectorParallel(self, vec):
+        # 判断实例向量和vec之间是否平行
+
 class Polyline(object):
     def __init__(self, pt_lst):
         self.start_pt = pt_lst[0]
@@ -73,4 +76,35 @@ class Rectangle(Polyline):
             pt_lst.append(temp_pt)
         return pt_lst
         
+class RectangleRelation(object):
+    ' 两个矩形的关系对象 '
+    def __init__(self, rec1, rec2):
+        self.rec1, self.rec2 = rec1, rec2
+        self.cornerVisiable = getCornerVisiable()
+        self.isParallel = judgeParallel()
+        self.gapClass = getGapClass()
+        self.gapDistance = getGapDistance()
+
+        return
+
+    def cornerVisiable(self):
+        # 计算矩形各个角点的可见性
+        visiable = []
+        return visiable
+
+    def isParallel(self):
+        # 根据向量计算两个矩形是否平行
+        parallel = False
+        self.rec1.vec_lst[0].isVectorParallel(self.rec2.vec_lst[0])
+        return parallel
+
+    def getGapClass(self):
+        # 判断两个矩形间距是属于哪种类型: 角对角, 边对边, 边对角
+        gapClass = 0
+        return gapClass
+
+    def getGapDistance(self):
+        # 根据矩形间距位置, 计算两个矩形之间的间距
+        distance = 0
+        return distance
         
