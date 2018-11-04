@@ -14,6 +14,7 @@ class Point3D(Point2D):
         return
 
 class PointVec(Point2D):
+    '位点带向量构造'
     def __init__(self, coordinate, vec_lst):
         self.pt = Point2D(coordinate)
         self.vec_lst = vec_lst
