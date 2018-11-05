@@ -8,6 +8,17 @@ class Point2D(object):
     def addVec(self, vec):
         return Point2D([self.x + vec.x, self.y + vec.y])
 
+    def initPointVec_rectangle_corner(self, rec, corner_index):
+        # 将一个普通的点, 根据矩形角点编号构造成向量点
+        vec_lst = rec.vec_lst
+        ptVec = PointVec(self, vec_lst)      # 用当前点和向量构造向量点
+        ptVec.isValidPhrase_lst = [1, 1, 1, 1]
+        ptVec.isValidPhrase_lst[corner_index] = 0   # 当前角点面向的象限无效
+        return ptVec
+
+    def __init__(self, rec, edge_index, length):
+        # 根据矩形边上的位点构造
+
 class Point3D(Point2D):
     def __init__(self, coordinate):
         self.x, self.y, self.z = coordinate
@@ -20,26 +31,18 @@ class Phrase(object):
         return
     
 class PointVec(Point2D):
-    '位点带向量构造'
+    '向量点构造'
+    """
     def __init__(self, coordinate, vec_lst):
         self.pt = Point2D(coordinate)
         self.vec_lst = vec_lst
+    """
 
     def __init__(self, pt, vec_lst):
         self.pt = pt
         self.vec_lst = vec_lst
         self.phrase_lst = getPhraseListFromVec()  # 所有象限
         self.isValidPhrase_lst = []               # 象限的有效性
-
-    def __init__(self, rec, corner_index):
-        # 根据矩形角点编号构造
-        self.pt = pt
-        self.vec_lst = vec_lst
-        self.phrase_lst = getPhraseListFromVec()  # 所有象限
-        self.isValidPhrase_lst = []               # 象限的有效性
-
-    def __init__(self, rec, edge_index, length):
-        # 根据矩形边上的位点构造
 
     def getPhraseListFromVec(self):
         # 根据向量得到象限的有效性
@@ -83,19 +86,14 @@ class Polyline(object):
         return cornerYinYangProperty_lst
 
 class Rectangle(Polyline):
-    def __init__(self, pt_lst):
-        self.start_pt = pt_lst[0]
-        self.pt_lst = pt_lst
-        self.vec_lst = getVectorListFromPts()
-        self.cornerYinYangProperty_lst = [1, 1, 1, 1]
-
     def __init__(self, vec_lst, start_pt):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
         self.pt_lst = getPtListFromVectors()
+        self.cornerYinYangProperty_lst = [1, 1, 1, 1]
 
     def getPtListFromVectors(self):
-        # 根据初始点和所有向量得到所有点
+        # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
         pt_lst = []
         pt_lst.append(self.start_pt)
         temp_pt = self.start_pt
