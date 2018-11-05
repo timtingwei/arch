@@ -12,7 +12,13 @@ class Point3D(Point2D):
     def __init__(self, coordinate):
         self.x, self.y, self.z = coordinate
         return
-
+class Phrase(object):
+    '象限对象'
+    def __init__(self, start_vec, end_vec):
+        self.start_vec = start_vec  # 起始向量
+        self.end_vec = end_vec      # 结束向量
+        return
+    
 class PointVec(Point2D):
     '位点带向量构造'
     def __init__(self, coordinate, vec_lst):
@@ -22,6 +28,22 @@ class PointVec(Point2D):
     def __init__(self, pt, vec_lst):
         self.pt = pt
         self.vec_lst = vec_lst
+        self.phrase_lst = getPhraseListFromVec()  # 所有象限
+        self.isValidPhrase_lst = []               # 象限的有效性
+
+    def __init__(self, rec, corner_index):
+        # 根据矩形角点编号构造
+        self.pt = pt
+        self.vec_lst = vec_lst
+        self.phrase_lst = getPhraseListFromVec()  # 所有象限
+        self.isValidPhrase_lst = []               # 象限的有效性
+
+    def __init__(self, rec, edge_index, length):
+        # 根据矩形边上的位点构造
+
+    def getPhraseListFromVec(self):
+        # 根据向量得到象限的有效性
+        return
 
 class Vector(object):
     def __init__(self, vec_x, vec_y):
@@ -30,7 +52,12 @@ class Vector(object):
         self.x = end_pt.x - start_pt.x
         self.y = end_pt.y - start_pt.y
 
+    def vectorDot(self, vec):
+        # 向量的点积
+        return
+
     def isVectorParallel(self, vec):
+        vectorDot()
         # 判断实例向量和vec之间是否平行
 
 class Polyline(object):
