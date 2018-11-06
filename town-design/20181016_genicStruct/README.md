@@ -116,8 +116,9 @@
 ## 5. 增加矩形计算角点之间可见性的方法, getCornerVisiableAndPath()[X]
 ## 6. 修改Polyline构造, 由向量构造(向量作为通用的运算)[X]
 ## 7. 增加向量的点积, 叉积, 向量长度, 反向量[X]
-## 8. 增加向量长度属性, 在构造Polyline实例时候的长度属性传入, Rectangle的veclengthlst属性[]
-## 9. Vector类reverse方法重写, 测试对象赋值[]
+## 8. 增加向量长度属性, 在构造Polyline实例时候的长度属性传入, Rectangle的veclengthlst属性[X]
+## 9. Vector类reverse方法重写, 测试对象赋值(不太行, 重载ok)[X]
 ## 10. 实现根据实例属性找到最短路的方法findShortestPath()[]
+## 11. 实现Polyline类的addPolyline()方法[]
 
 ## 判断机制后的限制处理: 可以拉到某个变量的最大值, 然后保持不变
