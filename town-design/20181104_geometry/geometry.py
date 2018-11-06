@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+import math
 
 class Point2D(object):
     def __init__(self, coordinate):
@@ -25,10 +26,6 @@ class Point2D(object):
         ptVec.isValidPhrase_lst[edge_index] = False     # 当前角点面向的象限无效
         ptVec.isValidPhrase_lst[index] = False          # 当前角点面向的象限无效
         return ptVec
-
-    def initVecBetweenPts(self, pt):
-        
-        return vec
 
     def initVecBetweenPts(self, end_pt):
         # 用末尾点和当前点构造向量
@@ -91,6 +88,52 @@ class PointVec(Point2D):
         pt = Point2D([c+x2*t2,d+y2*t2])
         return pt
 
+    @staticmethod
+    def minAngleVector(phase1, phase2, veca, vecb):
+        #得到最小角度的向量
+        #获取各个象限的向量
+        vec1, vec2, vec3, vec4 = phase1.start_vec, phase1.end_vec, phase2.start_vec, phase2.end_vec
+        #这里需要调用求向量长度的方法
+        vec_list = [vec1,vec2,vec3,vec4]
+        vec1_len, vec2_len, vec3_len, vec4_len = vec1.length(), vec2.length(), vec3.length(), vec4.length()
+        k_2, k_3, k_4 = vec1_len/vec2_len, vec1_len/vec3_len, vec1_len/vec4_len
+        #下面需要用到向量的点积算法
+        angle_a1 = veca.dot(vec1)
+        angle_a2 = k_2*veca.dot(vec2)
+        angle_b3 = k_3*vecb.dot(vec3)
+        angle_b4 = k_4*vecb.dot(vec4)
+        #找到最小的角度以及对应的vector
+        angle_list = [angle_a1,angle_a2,angle_b3,angle_b4]
+        min_angle = angle_a1
+        min_index = 0
+        min_index_other = 0
+        for i in range(1,4):
+            if angle_list[i] < min_angle:
+                min_angle = angle_list[i]
+                min_index = i
+        #下面需要用到向量的叉积算法
+        cross_a1 = veca.cross(vec1)
+        cross_a2 = veca.cross(vec2)
+        cross_b3 = vecb.cross(vec3)
+        cross_b4 = vecb.cross(vec4)
+        cross_list = [cross_a1,cross_a2,cross_b3,cross_b4]
+        #找到最小角度向量对应的另一边的向量
+        if i <= 1:
+            if cross_list[i] * cross_list[2] < 0:
+                min_index_other = 2
+            else:
+                min_index_other = 3
+        else:
+            if cross_list[i] * cross_list[0] < 0:
+                min_index_other = 0
+            else:
+                min_index_other = 1
+        #最后按照phase1，phase2的顺序输出向量
+        if min_index > min_index_other:
+            return vec_list[min_index_other],vec_list[min_index]
+        else:
+            return vec_list[min_index],vec_list[min_index_other]
+
 
 class Vector(object):
     def __init__(self, vec_x, vec_y):
@@ -99,15 +142,24 @@ class Vector(object):
         self.x = end_pt.x - start_pt.x
         self.y = end_pt.y - start_pt.y
 
-    def vectorDot(self, vec):
+    def dot(self, vec):
         # 向量的点积
-        return
+        return self.x*vec.x+self.y*vec.y
+
+    def cross(self,vec):
+        #向量的叉积
+        return self.x*vec.y-self.y*vec.x
+
     def reverse(self):
         # 取反向量
         return Vector(-self.x, -self.y)
 
+    def length(self):
+        #向量的长度
+        return math.sqrt(self.x*self.x+self.y*self.y)
+
     def isVectorParallel(self, vec):
-        vectorDot()
+        dot()
         # 判断实例向量和vec之间是否平行
 
 class Polyline(object):
