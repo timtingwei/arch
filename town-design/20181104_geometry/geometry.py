@@ -10,14 +10,22 @@ class Point2D(object):
 
     def initPointVec_rectangle_corner(self, rec, corner_index):
         # 将一个普通的点, 根据矩形角点编号构造成向量点
-        vec_lst = rec.vec_lst
-        ptVec = PointVec(self, vec_lst)      # 用当前点和向量构造向量点
-        ptVec.isValidPhrase_lst = [1, 1, 1, 1]
-        ptVec.isValidPhrase_lst[corner_index] = 0   # 当前角点面向的象限无效
+        ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
+        ptVec.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
+        ptVec.isValidPhrase_lst = [True]*4              # 向量点的有效性
+        ptVec.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
         return ptVec
 
-    def __init__(self, rec, edge_index, length):
-        # 根据矩形边上的位点构造
+    def initPointVec_rectangle_egde(self, rec, edge_index):
+        # 将一个普通的点, 根据矩形的边号构造成向量点
+        ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
+        ptVec.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
+        ptVec.isValidPhrase_lst = [True]*4              # 向量点的有效性
+        index = 0 if edge_index + 1 == 4 else edge_index
+        ptVec.isValidPhrase_lst[edge_index] = False     # 当前角点面向的象限无效
+        ptVec.isValidPhrase_lst[index] = False          # 当前角点面向的象限无效
+        return ptVec
+
 
 class Point3D(Point2D):
     def __init__(self, coordinate):
@@ -41,12 +49,9 @@ class PointVec(Point2D):
     def __init__(self, pt, vec_lst):
         self.pt = pt
         self.vec_lst = vec_lst
-        self.phrase_lst = getPhraseListFromVec()  # 所有象限
-        self.isValidPhrase_lst = []               # 象限的有效性
+        self.phrase_lst = []                      # 所有象限(根据矩形)
+        self.isValidPhrase_lst = []               # 象限的有效性(根据矩形)
 
-    def getPhraseListFromVec(self):
-        # 根据向量得到象限的有效性
-        return
 
 class Vector(object):
     def __init__(self, vec_x, vec_y):
@@ -58,6 +63,9 @@ class Vector(object):
     def vectorDot(self, vec):
         # 向量的点积
         return
+    def reverse(self):
+        # 取反向量
+        return Vector(-self.x, -self.y)
 
     def isVectorParallel(self, vec):
         vectorDot()
@@ -89,7 +97,9 @@ class Rectangle(Polyline):
     def __init__(self, vec_lst, start_pt):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
-        self.pt_lst = getPtListFromVectors()
+        self.pt_lst = self.getPtListFromVectors()
+        self.phrase_lst = self.getFourPhrase()
+        self.pt_lst = self.revisePtToPtVec()    # 根据象限和向量得到角点向量点
         self.cornerYinYangProperty_lst = [1, 1, 1, 1]
 
     def getPtListFromVectors(self):
@@ -101,6 +111,24 @@ class Rectangle(Polyline):
             temp_pt = temp_pt.addVec(vec)
             pt_lst.append(temp_pt)
         return pt_lst
+
+    def getFourPhrase(self):
+        # 根据x轴和y轴线得到四个象限
+        vec_x, vec_y = self.vec_lst[0], self.vec_lst[1]
+        rev_x, rec_y = vex_x.reverse(), vec_y.reverse()
+        p1 = Phrase(vec_x, vex_y)
+        p2 = Phrase(vec_y, rev_x)
+        p3 = Phrase(rev_x, rev_y)
+        p4 = Phrase(rev_y, vec_x)
+        phrase_lst = [p1, p2, p3, p4]
+        return phrase_lst
+
+    def revisePtToPtVec(self):
+        # 根据象限和向量修改普通角点为角点向量点
+        corner_pt_lst = []
+        for i in range(len(self.pt_lst)):
+            corner_pt_lst.append(pt_lst[i].initPointVec_rectangle_corner(self, i))
+        return corner_pt_lst
         
 class RectangleRelation(object):
     ' 两个矩形的关系对象 '
