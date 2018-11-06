@@ -3,7 +3,8 @@
 
 import geometry
 
-def findShortestPath():
+# 已经判断好两个矩形各个角点的可见性
+def findShortestPath(rec1, rec2, p):
     # 计算得到两个矩形之间的最短路径
 
     # 判断起点和终点之间的可见性

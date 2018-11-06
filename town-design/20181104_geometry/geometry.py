@@ -26,6 +26,9 @@ class Point2D(object):
         ptVec.isValidPhrase_lst[index] = False          # 当前角点面向的象限无效
         return ptVec
 
+    def initVecBetweenPts(self, pt):
+        return vec
+
 
 class Point3D(Point2D):
     def __init__(self, coordinate):
@@ -37,7 +40,27 @@ class Phrase(object):
         self.start_vec = start_vec  # 起始向量
         self.end_vec = end_vec      # 结束向量
         return
-    def jia(self, vec):
+    
+    def isFolder(self, vec):
+        # 给定一个向量，判断是否被象限两个向量两个相夹
+        # 返回1就是相夹,0就是不相夹,-1就是共线
+        rst = 0
+        vectora, vectorb, vectorc = self.start_vec, self.end_vec, vec
+        #cross_product1 = (vectora[0]*vectorb[1])-(vectora[1]*vectorb[0])
+        #cross_product2 = (vectora[0]*vectorc[1])-(vectora[1]*vectorc[0])
+        cross_product1 = vectora.cross(vectorb)
+        cross_product2 = vectora.cross(vectorc)
+        cross_product = cross_product1*cross_product2
+        if cross_product > 0:   #叉积相乘大于0
+            rst = 0
+        else:
+            #dot_product1 = (vectora[0]*vectorb[0])+(vectora[1]*vectorb[1])
+            dot_product1 = vectora.dot(vectorb)
+            if dot_product1 > 0:    # 在点积大于零的情况下，判断是否共线
+                if cross_product == 0: rst = -1   # 共线
+                else: rst = 1      # 相互夹
+            else: rst = 0          # 如果点积小于零，不相夹
+        return rst
     
 class PointVec(Point2D):
     '向量点构造'
@@ -52,6 +75,16 @@ class PointVec(Point2D):
         self.vec_lst = vec_lst
         self.phrase_lst = []                      # 所有象限(根据矩形)
         self.isValidPhrase_lst = []               # 象限的有效性(根据矩形)
+
+    @staticmethod
+    def rayrayintersect(pt1,vec1,pt2,vec2):
+        #(暂时定义为静态方法)
+        #分别给定两条射线的起始点与向量,得到交点,注意输入的不能是平行或共线的射线
+        a, b, c, d = pt1.x, pt1.y, pt2.x, pt2.y
+        x1, y1, x2, y2 = vec1.x, vec1.y, vec2.x, vec2.y
+        t2 = (c*y1-ay1-dx1+bx1)/(y2*x1-x2*y1)
+        pt = Point2D([c+x2*t2,d+y2*t2])
+        return pt
 
 
 class Vector(object):
@@ -135,17 +168,27 @@ class RectangleRelation(object):
     ' 两个矩形的关系对象 '
     def __init__(self, rec1, rec2):
         self.rec1, self.rec2 = rec1, rec2
-        self.cornerVisiable = getCornerVisiable()
-        self.isParallel = judgeParallel()
-        self.gapClass = getGapClass()
-        self.gapDistance = getGapDistance()
+        self.cornerVisiable = []             # 矩形各角点间的可见性
+        self.cornerShortestPath_lst  = []    # 矩形各角点间的路径
+        self.cornerVec_lst = []              # 矩形角点间连线
+        self.cornerVisiable, self.cornerShortestPath_lst = getCornerVisiableAndPath()
+        
+        self.isParallel = judgeParallel()    # 矩形是否平行
+        self.gapClass = getGapClass()        # 矩形间距分类
+        self.gapDistance = getGapDistance()  # 矩形间距
 
         return
 
-    def cornerVisiable(self):
+    def getCornerVisiableAndPath(self):
         # 计算矩形各个角点的可见性
-        visiable = []
-        return visiable
+        visiable, path_lst = [], [], cornerVec_lst = []
+        for i in range(4):
+            # 矩形1的四个角点序号
+            for j in range(4):
+                # 矩形2的四个角点序号
+                pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]
+                isFolder(self, vec)
+        return visiable, path_lst
 
     def isParallel(self):
         # 根据向量计算两个矩形是否平行
