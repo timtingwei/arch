@@ -37,6 +37,7 @@ class Phrase(object):
         self.start_vec = start_vec  # 起始向量
         self.end_vec = end_vec      # 结束向量
         return
+    def jia(self, vec):
     
 class PointVec(Point2D):
     '向量点构造'
