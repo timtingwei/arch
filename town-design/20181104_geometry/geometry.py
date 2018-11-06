@@ -181,7 +181,7 @@ class Polyline(object):
         self.cornerYinYangProperty_lst = self.getYinYangProperty()
 
     def getLength(self):
-        # 返回polyline的每段向量长度之和
+        # 返回polyline的每段向量长度和
         length = 0.0
         for vec in vec_lst:
             length += vec.length()
