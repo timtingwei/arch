@@ -111,11 +111,22 @@ class Vector(object):
         # 判断实例向量和vec之间是否平行
 
 class Polyline(object):
+    """
     def __init__(self, pt_lst):
         self.start_pt = pt_lst[0]
         self.pt_lst = pt_lst
         self.vec_lst = getVectorListFromPts()
         self.cornerYinYangProperty_lst = getYinYangProperty()
+    """
+    def __init__(self, vec_lst, start_pt):
+        self.start_pt = start_pt
+        self.vec_lst = vec_lst
+        self.pt_lst = self.getPointListFromVecs()
+        self.cornerYinYangProperty_lst = self.getYinYangProperty()
+
+    def getPointListFromVecs(self):
+        # 根据向量序得到点
+        return
 
     def getVectorListFromPts(self):
         # 根据顺序点得到向量
@@ -186,7 +197,6 @@ class RectangleRelation(object):
 
     def getCornerVisiableAndPath(self):
         # 计算矩形各个角点的可见性
-        visiable, path_lst = [], [], cornerVec_dict = []
         visiable_dict = {0:[], 1:[], 2:[], 3:[]}
         path_dict = {0:[], 1:[], 2:[], 3:[]}
         vec_dict = {0:[], 1:[], 2:[], 3:[]}
