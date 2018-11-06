@@ -17,7 +17,7 @@ class Point2D(object):
         ptVec.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
         return ptVec
 
-    def initPointVec_rectangle_egde(self, rec, edge_index):
+    def initPointVec_rectangle_edge(self, rec, edge_index):
         # 将一个普通的点, 根据矩形的边号构造成向量点
         ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
         ptVec.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
@@ -138,9 +138,12 @@ class PointVec(Point2D):
 class Vector(object):
     def __init__(self, vec_x, vec_y):
         self.x, self.y = vec_x, vec_y
+        self.length = self.length()
+    """
     def __init__(self, start_pt, end_pt):
         self.x = end_pt.x - start_pt.x
         self.y = end_pt.y - start_pt.y
+    """
 
     def dot(self, vec):
         # 向量的点积
@@ -174,7 +177,15 @@ class Polyline(object):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
         self.pt_lst = self.getPointListFromVecs()
+        self.length = self.getLength()
         self.cornerYinYangProperty_lst = self.getYinYangProperty()
+
+    def getLength(self):
+        # 返回polyline的每段向量长度之和
+        length = 0.0
+        for vec in vec_lst:
+            length += vec.length()
+        return length
 
     def getPointListFromVecs(self):
         # 根据向量序得到点
@@ -199,10 +210,20 @@ class Rectangle(Polyline):
     def __init__(self, vec_lst, start_pt):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
+        self.vec_length_lst = self.getVectorLengthList()
         self.pt_lst = self.getPtListFromVectors()
         self.phrase_lst = self.getFourPhrase()
         self.pt_lst = self.revisePtToPtVec()    # 根据象限和向量得到角点向量点
         self.cornerYinYangProperty_lst = [1, 1, 1, 1]
+
+    def getVectorLengthList(self):
+        # 根据所有向量将长度写入矩形实例属性
+        num = len(self.vec_lst)
+        length_lst = [0.0]*num
+        for i in range(num):
+            length_lst[i] = self.vec_lst[i].length()
+        return length_lst
+            
 
     def getPtListFromVectors(self):
         # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
@@ -251,13 +272,14 @@ class RectangleRelation(object):
         # 计算矩形各个角点的可见性
         visiable_dict = {0:[], 1:[], 2:[], 3:[]}
         path_dict = {0:[], 1:[], 2:[], 3:[]}
-        vec_dict = {0:[], 1:[], 2:[], 3:[]}
+        vec_dict = {0:{}, 1:{}, 2:{}, 3:{}}
         for i in range(4):
             # 矩形1的四个角点序号
             for j in range(4):
                 # 矩形2的四个角点序号
                 pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]  # 矩形对应计算的角向量点
                 corner_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
+                corver_vec[i][j] = corner_vec               # 添加两个角点之间的向量
                 reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
                 isVisible = False
                 phrase1, phrase2, parallel1, parallel2 = None, None, False, False
