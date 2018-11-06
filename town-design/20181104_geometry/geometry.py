@@ -136,9 +136,10 @@ class PointVec(Point2D):
 
 
 class Vector(object):
-    def __init__(self, vec_x, vec_y):
+    def __init__(self, vec_x, vec_y, length = None):
         self.x, self.y = vec_x, vec_y
-        self.length = self.length()
+        self.length = self.length() if length is None length
+        return
     """
     def __init__(self, start_pt, end_pt):
         self.x = end_pt.x - start_pt.x
@@ -155,6 +156,7 @@ class Vector(object):
 
     def reverse(self):
         # 取反向量
+        vec = Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
         return Vector(-self.x, -self.y)
 
     def length(self):

@@ -25,9 +25,15 @@ def main():
 """
 
 class Parent(object):
-    def __init__(self, a):
+    def __init__(self, a, length = None):
         self.value = a
+        self.length = self.getLength if length is None else length
         return
+
+    def getLength(self):
+        length = 77
+        return length
+        
 
 def main():
     parent = Parent(4)
@@ -35,6 +41,11 @@ def main():
     jack.value = 12
     print(parent.value)
     print(jack.value)
+
+    # test length
+    print(parent.length)
+    parent = Parent(4, length = 12)
+    print(parent.length)
 
 if __name__ == '__main__':
     main()
