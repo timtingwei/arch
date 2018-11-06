@@ -27,7 +27,12 @@ class Point2D(object):
         return ptVec
 
     def initVecBetweenPts(self, pt):
+        
         return vec
+
+    def initVecBetweenPts(self, end_pt):
+        # 用末尾点和当前点构造向量
+        return Vector(end_pt.x-self.x, end_pt.y-self.y)
 
 
 class Point3D(Point2D):
@@ -77,7 +82,7 @@ class PointVec(Point2D):
         self.isValidPhrase_lst = []               # 象限的有效性(根据矩形)
 
     @staticmethod
-    def rayrayintersect(pt1,vec1,pt2,vec2):
+    def rayrayIntersect(pt1,vec1,pt2,vec2):
         #(暂时定义为静态方法)
         #分别给定两条射线的起始点与向量,得到交点,注意输入的不能是平行或共线的射线
         a, b, c, d = pt1.x, pt1.y, pt2.x, pt2.y
@@ -168,10 +173,10 @@ class RectangleRelation(object):
     ' 两个矩形的关系对象 '
     def __init__(self, rec1, rec2):
         self.rec1, self.rec2 = rec1, rec2
-        self.cornerVisiable = []             # 矩形各角点间的可见性
-        self.cornerShortestPath_lst  = []    # 矩形各角点间的路径
-        self.cornerVec_lst = []              # 矩形角点间连线
-        self.cornerVisiable, self.cornerShortestPath_lst = getCornerVisiableAndPath()
+        self.cornerVisiable_dict = {}             # 矩形各角点间的可见性
+        self.cornerShortestPath_dict  = {}        # 矩形各角点间的路径
+        self.cornerVec_dict = {}                  # 矩形角点间连线
+        self.cornerVisiable_dict, self.cornerShortestPath_dict, self.cornerVec_dict = getCornerVisiableAndPath()
         
         self.isParallel = judgeParallel()    # 矩形是否平行
         self.gapClass = getGapClass()        # 矩形间距分类
@@ -181,14 +186,47 @@ class RectangleRelation(object):
 
     def getCornerVisiableAndPath(self):
         # 计算矩形各个角点的可见性
-        visiable, path_lst = [], [], cornerVec_lst = []
+        visiable, path_lst = [], [], cornerVec_dict = []
+        visiable_dict = {0:[], 1:[], 2:[], 3:[]}
+        path_dict = {0:[], 1:[], 2:[], 3:[]}
+        vec_dict = {0:[], 1:[], 2:[], 3:[]}
         for i in range(4):
             # 矩形1的四个角点序号
             for j in range(4):
                 # 矩形2的四个角点序号
-                pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]
-                isFolder(self, vec)
-        return visiable, path_lst
+                pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]  # 矩形对应计算的角向量点
+                corner_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
+                reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
+                isVisible = False
+                phrase1, phrase2, parallel1, parallel2 = None, None, False, False
+                for pi in range(4):
+                    if pt1.isValidPhrase[pi] == True:
+                        isf_rst = pt1.phrase_lst[pi].isFloder(corner_vec)
+                        if isf_rst:
+                            phrase1 = pt1.phrase_lst[pi]
+                            if isf_rst == -1: parallel1 = True
+                            break;
+                for pi in range(4):
+                    if pt2.isValidPhrase[pi] == True:
+                        isf_rst = pt2.phrase_lst[pi].isFloder(reverse_vec)
+                        if isf_rst:
+                            phrase2 = pt2.phrase_lst[pi]
+                            if isf_rst == -1: parallel2 = True
+                            break;
+                if phrase1 and phrase2 : isVisible = True
+                if not isVisible: continue       # 其中有一个角点被挡住
+                visiable_dict[i].append(j)       # 添加可见性
+                if parallel1 or parallel2:
+                    path = Polyline(pt1, [corner_vec])
+                else:
+                    min_vec1, min_vec2 = PointVec.minAngleVector(phrase1, phrase2, corner_vec, reverse_vec)
+                    mid_pt = PointVec.rayrayIntersect(pt1,min_vec1,pt2,min_vec2)  # 两个射线交点
+                    path_vec1 = pt1.initVecBetweenPts(mid_pt)
+                    path_vec2 = mid_pt.initVecBetweenPts(pt2)
+                    path = Polyline(pt1, [path_vec1, path_vec2])
+                path_dict[i][j] = path
+
+        return visiable_dict, path_dict, vec_dict
 
     def isParallel(self):
         # 根据向量计算两个矩形是否平行
