@@ -226,12 +226,12 @@ class Vector(object):
     """
     def unit(self):
         # 单位化一个向量
-        unit_vec = None
+        unit_vec = Vector(self.x/self.length, self.y/self.length, length = 1.0)
         return unit_vec
 
     def amplify(self, factor):
         # 向量扩大倍数
-        amp_vec = None
+        amp_vec = Vector(self.x * factor, self.y * factor, length = self.length * factor)
         return amp_vec
 
     def dot(self, vec):
