@@ -23,8 +23,8 @@ class PointVec(Point2D):
         #分别给定两条射线的起始点与向量,得到交点,注意输入的不能是平行或共线的射线
         a, b, c, d = pt1.x, pt1.y, pt2.x, pt2.y
         x1, y1, x2, y2 = vec1.x, vec1.y, vec2.x, vec2.y
-        t2 = (c*y1-ay1-dx1+bx1)/(y2*x1-x2*y1)
-        pt = Point2D([c+x2*t2,d+y2*t2])
+        t2 = (c*y1 - a*y1 - d*x1 + b*x1) / (y2*x1-x2*y1)
+        pt = Point2D([c + x2*t2,d + y2*t2])
         return pt
 
     @staticmethod
@@ -213,7 +213,7 @@ class Phrase(object):
         # 给定一个向量，判断是否被象限两个向量两个相夹
         # 返回1就是相夹,0就是不相夹,-1就是共线
         rst = 0
-        vectora, vectorb, vectorc = self.start_vec, self.end_vec, vec
+        vectora, vectorb, vectorc = vec, self.start_vec, self.end_vec
         #cross_product1 = (vectora[0]*vectorb[1])-(vectora[1]*vectorb[0])
         #cross_product2 = (vectora[0]*vectorc[1])-(vectora[1]*vectorc[0])
         cross_product1 = vectora.cross(vectorb)
