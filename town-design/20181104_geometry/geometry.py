@@ -9,6 +9,118 @@ class Point2D(object):
     def addVec(self, vec):
         return Point2D([self.x + vec.x, self.y + vec.y])
 
+class PointVec(Point2D):
+    '向量点构造'
+    """
+    def __init__(self, coordinate, vec_lst):
+        self.pt = Point2D(coordinate)
+        self.vec_lst = vec_lst
+    """
+
+    def __init__(self, pt, vec_lst):
+        self.x, self.y = pt.x, pt.y
+        self.vec_lst = vec_lst
+        self.phrase_lst = []                      # 所有象限(根据矩形)
+        self.isValidPhrase_lst = []               # 象限的有效性(根据矩形)
+
+    @staticmethod
+    def rayrayIntersect(pt1,vec1,pt2,vec2):
+        #(暂时定义为静态方法)
+        #分别给定两条射线的起始点与向量,得到交点,注意输入的不能是平行或共线的射线
+        a, b, c, d = pt1.x, pt1.y, pt2.x, pt2.y
+        x1, y1, x2, y2 = vec1.x, vec1.y, vec2.x, vec2.y
+        t2 = (c*y1-ay1-dx1+bx1)/(y2*x1-x2*y1)
+        pt = Point2D([c+x2*t2,d+y2*t2])
+        return pt
+
+    @staticmethod
+    def minAngleVector(phase1, phase2, veca, vecb):
+        #得到最小角度的向量
+        #获取各个象限的向量
+        vec1, vec2, vec3, vec4 = phase1.start_vec, phase1.end_vec, phase2.start_vec, phase2.end_vec
+        #这里需要调用求向量长度的方法
+        vec_list = [vec1,vec2,vec3,vec4]
+        vec1_len, vec2_len, vec3_len, vec4_len = vec1.length, vec2.length, vec3.length, vec4.length
+        k_2, k_3, k_4 = vec1_len/vec2_len, vec1_len/vec3_len, vec1_len/vec4_len
+        #下面需要用到向量的点积算法
+        angle_a1 = veca.dot(vec1)
+        angle_a2 = k_2*veca.dot(vec2)
+        angle_b3 = k_3*vecb.dot(vec3)
+        angle_b4 = k_4*vecb.dot(vec4)
+        #找到最小的角度以及对应的vector
+        angle_list = [angle_a1,angle_a2,angle_b3,angle_b4]
+        min_angle = angle_a1
+        min_index = 0
+        min_index_other = 0
+        for i in range(1,4):
+            if angle_list[i] < min_angle:
+                min_angle = angle_list[i]
+                min_index = i
+        #下面需要用到向量的叉积算法
+        cross_a1 = veca.cross(vec1)
+        cross_a2 = veca.cross(vec2)
+        cross_b3 = vecb.cross(vec3)
+        cross_b4 = vecb.cross(vec4)
+        cross_list = [cross_a1,cross_a2,cross_b3,cross_b4]
+        #找到最小角度向量对应的另一边的向量
+        if i <= 1:
+            if cross_list[i] * cross_list[2] < 0:
+                min_index_other = 2
+            else:
+                min_index_other = 3
+        else:
+            if cross_list[i] * cross_list[0] < 0:
+                min_index_other = 0
+            else:
+                min_index_other = 1
+        #最后按照phase1，phase2的顺序输出向量
+        if min_index > min_index_other:
+            return vec_list[min_index_other],vec_list[min_index]
+        else:
+            return vec_list[min_index],vec_list[min_index_other]
+
+
+class Vector(object):
+    def __init__(self, vec_x, vec_y, length = None):
+        self.x, self.y = vec_x, vec_y
+        self.length = self.getLength() if (length is None) else length
+        return
+    def unit(self):
+        # 单位化一个向量
+        return Vector(self.x/self.length, self.y/self.length, length = 1.0)
+
+    def amplify(self, factor):
+        # 向量扩大倍数
+        return Vector(self.x * factor, self.y * factor, length = self.length * factor)
+
+    def dot(self, vec):
+        # 向量的点积
+        return self.x*vec.x+self.y*vec.y
+
+    def cross(self,vec):
+        #向量的叉积
+        return self.x*vec.y-self.y*vec.x
+
+    def reverse(self):
+        # 取反向量
+        return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
+
+    def getLength(self):
+        # 向量的长度
+        return math.sqrt(self.x * self.x + self.y * self.y)
+
+    def isVectorParallel(self, vec):
+        # 判断实例向量和vec之间是否平行
+	if self.cross(self, vec) == 0: return True
+	else: return False
+
+class VectorTwoPts(Vector):
+    '两点向量构造'
+    def __init__(self, start_pt, end_pt):
+        self.x, self.y = end_pt.x - start_pt.x, end_pt.y - start_pt.y
+        self.length = self.getLength()        # 向量长度, 调用父类的求长度方法
+        return
+
 class RectangleCornerPoint(PointVec):
     '矩形角上 向量点构造'
     def __init__(self, rec, corner_index):
@@ -145,120 +257,6 @@ class Phrase(object):
             path_vec2 = VectorTwoPts(mid_pt, pt2)
             path = Polyline(pt1, [path_vec1, path_vec2])  # 起始点和向量序构造一个Polyline实例
         return path
-
-
-    
-class PointVec(Point2D):
-    '向量点构造'
-    """
-    def __init__(self, coordinate, vec_lst):
-        self.pt = Point2D(coordinate)
-        self.vec_lst = vec_lst
-    """
-
-    def __init__(self, pt, vec_lst):
-        self.x, self.y = pt.x, pt.y
-        self.vec_lst = vec_lst
-        self.phrase_lst = []                      # 所有象限(根据矩形)
-        self.isValidPhrase_lst = []               # 象限的有效性(根据矩形)
-
-    @staticmethod
-    def rayrayIntersect(pt1,vec1,pt2,vec2):
-        #(暂时定义为静态方法)
-        #分别给定两条射线的起始点与向量,得到交点,注意输入的不能是平行或共线的射线
-        a, b, c, d = pt1.x, pt1.y, pt2.x, pt2.y
-        x1, y1, x2, y2 = vec1.x, vec1.y, vec2.x, vec2.y
-        t2 = (c*y1-ay1-dx1+bx1)/(y2*x1-x2*y1)
-        pt = Point2D([c+x2*t2,d+y2*t2])
-        return pt
-
-    @staticmethod
-    def minAngleVector(phase1, phase2, veca, vecb):
-        #得到最小角度的向量
-        #获取各个象限的向量
-        vec1, vec2, vec3, vec4 = phase1.start_vec, phase1.end_vec, phase2.start_vec, phase2.end_vec
-        #这里需要调用求向量长度的方法
-        vec_list = [vec1,vec2,vec3,vec4]
-        vec1_len, vec2_len, vec3_len, vec4_len = vec1.length, vec2.length, vec3.length, vec4.length
-        k_2, k_3, k_4 = vec1_len/vec2_len, vec1_len/vec3_len, vec1_len/vec4_len
-        #下面需要用到向量的点积算法
-        angle_a1 = veca.dot(vec1)
-        angle_a2 = k_2*veca.dot(vec2)
-        angle_b3 = k_3*vecb.dot(vec3)
-        angle_b4 = k_4*vecb.dot(vec4)
-        #找到最小的角度以及对应的vector
-        angle_list = [angle_a1,angle_a2,angle_b3,angle_b4]
-        min_angle = angle_a1
-        min_index = 0
-        min_index_other = 0
-        for i in range(1,4):
-            if angle_list[i] < min_angle:
-                min_angle = angle_list[i]
-                min_index = i
-        #下面需要用到向量的叉积算法
-        cross_a1 = veca.cross(vec1)
-        cross_a2 = veca.cross(vec2)
-        cross_b3 = vecb.cross(vec3)
-        cross_b4 = vecb.cross(vec4)
-        cross_list = [cross_a1,cross_a2,cross_b3,cross_b4]
-        #找到最小角度向量对应的另一边的向量
-        if i <= 1:
-            if cross_list[i] * cross_list[2] < 0:
-                min_index_other = 2
-            else:
-                min_index_other = 3
-        else:
-            if cross_list[i] * cross_list[0] < 0:
-                min_index_other = 0
-            else:
-                min_index_other = 1
-        #最后按照phase1，phase2的顺序输出向量
-        if min_index > min_index_other:
-            return vec_list[min_index_other],vec_list[min_index]
-        else:
-            return vec_list[min_index],vec_list[min_index_other]
-
-
-class Vector(object):
-    def __init__(self, vec_x, vec_y, length = None):
-        self.x, self.y = vec_x, vec_y
-        self.length = self.getLength() if length is None length
-        return
-    def unit(self):
-        # 单位化一个向量
-        return Vector(self.x/self.length, self.y/self.length, length = 1.0)
-
-    def amplify(self, factor):
-        # 向量扩大倍数
-        return Vector(self.x * factor, self.y * factor, length = self.length * factor)
-
-    def dot(self, vec):
-        # 向量的点积
-        return self.x*vec.x+self.y*vec.y
-
-    def cross(self,vec):
-        #向量的叉积
-        return self.x*vec.y-self.y*vec.x
-
-    def reverse(self):
-        # 取反向量
-        return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
-
-    def getLength(self):
-        # 向量的长度
-        return math.sqrt(self.x * self.x + self.y * self.y)
-
-    def isVectorParallel(self, vec):
-        # 判断实例向量和vec之间是否平行
-	if self.cross(self, vec) == 0: return True
-	else: return False
-
-class VectorTwoPts(Vector):
-    '两点向量构造'
-    def __init__(self, start_pt, end_pt):
-        self.x, self.y = end_pt.x - start_pt.x, end_pt.y - start_pt.y
-        self.length = self.getLength()        # 向量长度, 调用父类的求长度方法
-        return
 
 class Polyline(object):
     '多段线构造'
