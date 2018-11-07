@@ -284,6 +284,12 @@ class Polyline(object):
         cornerYinYangProperty_lst = []
         return cornerYinYangProperty_lst
 
+    def addPolylines(self, polys):
+        # polys: 与之合并的其他顺序多段线list
+        new_polyline = None
+        return new_polyline
+    
+
 class Rectangle(Polyline):
     def __init__(self, vec_lst, start_pt):
         self.start_pt = start_pt
@@ -331,10 +337,6 @@ class Rectangle(Polyline):
             corner_pt_lst.append(pt_lst[i].initPointVec_rectangle_corner(self, i))
         return corner_pt_lst
 
-    def addPolylines(self, polys):
-        # polys: 与之合并的其他顺序多段线list
-        new_polyline = None
-        return new_polyline
         
 class RectangleRelation(object):
     ' 两个矩形的关系对象 '
