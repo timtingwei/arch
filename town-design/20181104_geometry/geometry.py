@@ -367,7 +367,7 @@ class Rectangle(Polyline):
                     break
             if ok == 1:
                 return True
-        reutrn False
+        return False
 
 class RectangleRelation(object):
     ' 两个矩形的关系对象 '
@@ -454,28 +454,28 @@ class RectangleRelation(object):
         #首先判断rec1是否包含rec2,如果没有则判断rec2是否包含rec1
         order_list = [2,3,0,1]
         #先遍历rec1的所有端点
-        for i in range(0,len(rec1.pt_lst)):
-            now_phrase = rec1.phrase_lst[order_list[i]]
-            now_pt = rec1.pt_lst[i]
+        for i in range(0,len(self.rec1.pt_lst)):
+            now_phrase = self.rec1.phrase_lst[order_list[i]]
+            now_pt = self.rec1.pt_lst[i]
             rec1_flag = 1 
-            for z in rec2.pt_lst:
+            for z in self.rec2.pt_lst:
                 #得到端点间的向量
                 now_vec = Vector(z.x-now_pt.x,z.y-now_pt.y)
-                isfolder = now_phrase(now_vec)
+                isfolder = now_phrase.isFolde(now_vec)
                 if isfolder == 0:
                     '如果不夹,则将flag改为0,并且退出'
                     rec1_flag = 0
                     break
             if rec1_flag == 1:
                 return [1,i]
-        for i in range(0,len(rec2.pt_lst)):
-            now_phrase = rec2.phrase_lst[order_list[i]]
-            now_pt = rec2.pt_lst[i]
+        for i in range(0,len(self.rec2.pt_lst)):
+            now_phrase = self.rec2.phrase_lst[order_list[i]]
+            now_pt = self.rec2.pt_lst[i]
             rec2_flag = 1 
-            for z in rec1.pt_lst:j
+            for z in self.rec1.pt_lst:
                 #得到端点间的向量
                 now_vec = Vector(z.x-now_pt.x,z.y-now_pt.y)
-                isfolder = now_phrase(now_vec)
+                isfolder = now_phrase.isFolde(now_vec)
                 if isfolder == 0:
                     '如果不夹,则将flag改为0,并且退出'
                     rec2_flag = 0
@@ -492,7 +492,7 @@ class RectangleRelation(object):
         #边对边
         #需要一个判断是否一个矩形包含另一个矩形的函数
         include = self.isInclude() #判断包含关系
-        isparallel = self.isParallel() #判断平行
+        isparallel = self.isParallel #判断平行
         if isparallel and (include[0] == 1 or include[0] == 2): #当平行并且1包2或2包1的情况下
             return 0
         if include[0] == 1 or include[0] == 2:
