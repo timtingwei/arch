@@ -37,7 +37,7 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
         if isCorner_pt1 and isCorner_pt2:   # 如果选择的两个点都位于角点, 直接选择路径
             path = shorestPath_dict[pt1.corner_index][pt2.corner_index]
         else:  # 不位于角点, 需要重新计算
-            edgePt_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
+            edgePt_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量
             reverse_vec = edgePt_vec.reverse()          # 矩形2指向矩形1的向量
             
             phrase1, isParallel1 = Phrase.judgeVecWithPhrase(pt1, edgePt_vec)   # 已经抽象

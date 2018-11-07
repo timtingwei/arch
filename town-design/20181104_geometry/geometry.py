@@ -9,10 +9,6 @@ class Point2D(object):
     def addVec(self, vec):
         return Point2D([self.x + vec.x, self.y + vec.y])
 
-    def initVecBetweenPts(self, end_pt):
-        # 用末尾点和当前点构造向量
-        return Vector(end_pt.x-self.x, end_pt.y-self.y)
-
 class RectangleCornerPoint(PointVec):
     '矩形角上 向量点构造'
     def __init__(self, rec, corner_index):
@@ -145,8 +141,8 @@ class Phrase(object):
         else:
             min_vec1, min_vec2 = PointVec.minAngleVector(phrase1, phrase2, flode_vec, reverse_vec)
             mid_pt = PointVec.rayrayIntersect(pt1,min_vec1,pt2,min_vec2)  # 两个射线交点
-            path_vec1 = pt1.initVecBetweenPts(mid_pt)   # ? X 构造长度
-            path_vec2 = mid_pt.initVecBetweenPts(pt2)
+            path_vec1 = VectorTwoPts(pt1, mid_pt)   # 两点构造有长度的向量
+            path_vec2 = VectorTwoPts(mid_pt, pt2)
             path = Polyline(pt1, [path_vec1, path_vec2])  # 起始点和向量序构造一个Polyline实例
         return path
 
@@ -228,11 +224,6 @@ class Vector(object):
         self.x, self.y = vec_x, vec_y
         self.length = self.getLength() if length is None length
         return
-    """
-    def __init__(self, start_pt, end_pt):
-        self.x = end_pt.x - start_pt.x
-        self.y = end_pt.y - start_pt.y
-    """
     def unit(self):
         # 单位化一个向量
         return Vector(self.x/self.length, self.y/self.length, length = 1.0)
@@ -263,6 +254,11 @@ class Vector(object):
 	else: return False
 
 class VectorTwoPts(Vector):
+    '两点向量构造'
+    def __init__(self, start_pt, end_pt):
+        self.x, self.y = end_pt.x - start_pt.x, end_pt.y - start_pt.y
+        self.length = self.getLength()        # 向量长度, 调用父类的求长度方法
+        return
 
 class Polyline(object):
     '多段线构造'
@@ -379,8 +375,8 @@ class RectangleRelation(object):
             for j in range(4):
                 # 矩形2的四个角点序号
                 pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]  # 矩形对应计算的角向量点
-                corner_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
-                corner_vec_dict[i][j] = corner_vec               # 添加两个角点之间的向量
+                corner_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量
+                corner_vec_dict[i][j] = corner_vec          # 添加两个角点之间的向量
                 reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
                 isVisible = False
                 
@@ -414,8 +410,8 @@ class RectangleRelation(object):
                 else:
                     min_vec1, min_vec2 = PointVec.minAngleVector(phrase1, phrase2, corner_vec, reverse_vec)
                     mid_pt = PointVec.rayrayIntersect(pt1,min_vec1,pt2,min_vec2)  # 两个射线交点
-                    path_vec1 = pt1.initVecBetweenPts(mid_pt)
-                    path_vec2 = mid_pt.initVecBetweenPts(pt2)
+                    path_vec1 = VectorTwoPts(pt1, mid_pt)
+                    path_vec2 = VectorTwoPts(mid_pt, pt2)
                     path = Polyline(pt1, [path_vec1, path_vec2])
                 """
                 path_dict[i][j] = path
