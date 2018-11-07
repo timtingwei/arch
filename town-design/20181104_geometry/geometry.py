@@ -43,7 +43,7 @@ class Phrase(object):
         self.end_vec = end_vec      # 结束向量
         return
     
-    def isFolder(self, vec):
+    def isFolde(self, vec):
         # 给定一个向量，判断是否被象限两个向量两个相夹
         # 返回1就是相夹,0就是不相夹,-1就是共线
         rst = 0
@@ -175,7 +175,7 @@ class Polyline(object):
         self.vec_lst = getVectorListFromPts()
         self.cornerYinYangProperty_lst = getYinYangProperty()
     """
-    def __init__(self, vec_lst, start_pt):
+    def __init__(self, start_pt, vec_lst):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
         self.pt_lst = self.getPointListFromVecs()
@@ -274,16 +274,20 @@ class RectangleRelation(object):
         # 计算矩形各个角点的可见性
         visiable_dict = {0:[], 1:[], 2:[], 3:[]}
         path_dict = {0:[], 1:[], 2:[], 3:[]}
-        vec_dict = {0:{}, 1:{}, 2:{}, 3:{}}
+        corner_vec_dict = {0:{}, 1:{}, 2:{}, 3:{}}
         for i in range(4):
             # 矩形1的四个角点序号
             for j in range(4):
                 # 矩形2的四个角点序号
                 pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]  # 矩形对应计算的角向量点
                 corner_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
-                corver_vec[i][j] = corner_vec               # 添加两个角点之间的向量
+                corner_vec_dict[i][j] = corner_vec               # 添加两个角点之间的向量
                 reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
                 isVisible = False
+                
+                phrase1, isParallel1 = judgeVecWithPhrase(pt1, corner_vec)   # 已经抽象
+                phrase2, isParallel2 = judgeVecWithPhrase(pt2, reverse_vec)
+                """
                 phrase1, phrase2, parallel1, parallel2 = None, None, False, False
                 for pi in range(4):
                     if pt1.isValidPhrase[pi] == True:
@@ -299,9 +303,13 @@ class RectangleRelation(object):
                             phrase2 = pt2.phrase_lst[pi]
                             if isf_rst == -1: parallel2 = True
                             break;
+                """
                 if phrase1 and phrase2 : isVisible = True
                 if not isVisible: continue       # 其中有一个角点被挡住
                 visiable_dict[i].append(j)       # 添加可见性
+                # 可抽象, 根据可见点的象限, 平行性, 指向性向量得到中间路径
+                path = getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, corner_vec, reverse_vec)
+                """
                 if parallel1 or parallel2:
                     path = Polyline(pt1, [corner_vec])
                 else:
@@ -310,9 +318,10 @@ class RectangleRelation(object):
                     path_vec1 = pt1.initVecBetweenPts(mid_pt)
                     path_vec2 = mid_pt.initVecBetweenPts(pt2)
                     path = Polyline(pt1, [path_vec1, path_vec2])
+                """
                 path_dict[i][j] = path
 
-        return visiable_dict, path_dict, vec_dict
+        return visiable_dict, path_dict, corner_vec_dict
 
     def isParallel(self):
         # 根据向量计算两个矩形是否平行
