@@ -330,3 +330,4 @@ class RectangleRelation(object):
         distance = 0
         return distance
         
+#
