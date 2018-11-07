@@ -302,7 +302,13 @@ class Polyline(object):
 
     def addPolylines(self, polys):
         # polys: 与之合并的其他顺序多段线list
+        # 根据构造函数确定属性, pt的属性丢失, 必要时候重构
         new_polyline = None
+        new_start_pt = self.start_pt
+        new_vec_lst = self.vec_lst
+        for i in range(len(polys)):
+            new_vec_lst.extend(polys[i].vec_lst)
+        new_polyline = Polyline(new_start_pt, new_vec_lst)
         return new_polyline
     
 
