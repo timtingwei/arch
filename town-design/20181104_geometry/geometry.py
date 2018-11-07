@@ -234,11 +234,15 @@ class Phrase(object):
     def judgeVecWithPhrase(pt, flode_vec):
         # 找到有效象限, 并判断向量与象限的两个向量是否存在平行
         phrase, isParallel = None, False
-        #print('test: into judgeVecWithPhrase()')
+        
+        # print('test: into judgeVecWithPhrase()')
+        
         for pi in range(4):
             if pt.isValidPhrase_lst[pi] == True:
                 isf_rst = pt.phrase_lst[pi].isFolde(flode_vec)
-                #print('test: isf_rst = ' + str(isf_rst))
+                
+                #print('test: isf_rst = ' + str(isf_rst))   测试10.3bug
+                
                 if isf_rst:
                     phrase = pt.phrase_lst[pi]
                     if isf_rst == -1: isParallel = True
@@ -402,8 +406,10 @@ class RectangleRelation(object):
                             break;
                 """
                 if phrase1 and phrase2 : isVisible = True
-                #print('test: isVisible = ' + str(isVisible))
-                #print('phrase1 = ' + str(phrase1) + ' phrase2 = ' + str(phrase2))
+                
+                print('test: isVisible = ' + str(isVisible))
+                print('phrase1 = ' + str(phrase1) + ' phrase2 = ' + str(phrase2))
+
                 if not isVisible: continue       # 其中有一个角点被挡住
                 visiable_dict[i].append(j)       # 添加可见性
                 # 可抽象, 根据可见点的象限, 平行性, 指向性向量得到中间路径

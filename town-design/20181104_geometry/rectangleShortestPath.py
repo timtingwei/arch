@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import geometry
+from geometry import RectangleCornerPoint, RectangleEdgePoint
 
 # 已经判断好两个矩形各个角点的可见性
 def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
@@ -11,7 +11,7 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     visiable_dict = relation.cornerVisiable_dict
     shortestPath_dict = relation.cornerShortestPath_dict
 
-    corner1_a = edge_index1, corner2_a = edge_index2
+    corner1_a = edge_index1; corner2_a = edge_index2
     corner1_b = 0 if edge_index1 == 3 else edge_index1+1
     corner2_b = 0 if edge_index2 == 3 else edge_index2+1
 
@@ -20,11 +20,16 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     pt1, pt2 = None, None
     if length1 == 0:                                  pt1 = rec1.pt_lst[corner1_a]
     elif length1 == rec1.vec_length_lst[edge_index1]: pt1 = rec1.pt_lst[corner1_b]
-    else:                                             pt1 = RectangleEdgeCornerPoint(rec1, edge_index1, length1)
+    else:                                             pt1 = RectangleEdgePoint(rec1, edge_index1, length1)
 
     if length2 == 0:                                  pt2 = rec2.pt_lst[corner2_a]
     elif length2 == rec2.vec_length_lst[edge_index2]: pt2 = rec2.pt_lst[corner2_b]
-    else:                                             pt2 = RectangleEdgeCornerPoint(rec2, edge_index2, length2)
+    else:                                             pt2 = RectangleEdgePoint(rec2, edge_index2, length2)
+
+    """
+    print('test pt1, pt2: ')
+    print(pt1, pt2)
+    """
 
     isCorner_pt1, isCorner_pt2 = isinstance(pt1, RectangleCornerPoint), isinstance(pt2, RectangleCornerPoint)
     # 判断起点和终点之间的可见性
@@ -32,6 +37,10 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     if ((corner2_a in visiable_dict[corner1_a]) and (corner2_b in visiable_dict[corner1_a])
         and (corner2_a in visiable_dict[corner1_b]) and (corner2_b in visiable_dict[corner1_b])):
         isVisible = True
+    """
+    print('test isVisible: ')
+    print(isVisible)
+    """
     if isVisible: # 如果可见的情况(老师True)
         # 得到可见点之间的路径
         if isCorner_pt1 and isCorner_pt2:   # 如果选择的两个点都位于角点, 直接选择路径
