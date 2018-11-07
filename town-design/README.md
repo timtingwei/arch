@@ -121,8 +121,9 @@
 ## 10. 实现根据实例属性找到最短路的方法findShortestPath()[X]
 
 # 11.7
-## 1. 抽象最短路和矩形关系类中相同的代码成方法[]
+## 1. 抽象最短路和矩形关系类中相同的代码成方法[X]
 ## 2. 添加RectangleCornerPoint类和构造, RectangleEdgePoint类和构造[]
 ## 3. 实现Polyline类的addPolyline()方法[]
+## 4. 增加向量的unit(), amplify()工具方法[]
 
 
