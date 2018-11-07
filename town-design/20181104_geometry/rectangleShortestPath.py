@@ -3,6 +3,7 @@
 
 import geometry
 
+"""
 def judgeVecWithPhrase(pt, flode_vec):
     # 找到有效象限, 并判断向量与象限的两个向量是否存在平行
     phrase, isParallel = None, False
@@ -14,7 +15,9 @@ def judgeVecWithPhrase(pt, flode_vec):
                 if isf_rst == -1: isParallel = True
                 break;
     return phrase, isParallel
+"""
 
+"""
 def getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, flode_vec, reverse_vec):
     # 根据可见点的象限, 平行性, 指向性向量得到中间路径
     # 也许可以建立两个点的关系对象实例(结构上的优化)
@@ -25,10 +28,11 @@ def getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParalle
     else:
         min_vec1, min_vec2 = PointVec.minAngleVector(phrase1, phrase2, flode_vec, reverse_vec)
         mid_pt = PointVec.rayrayIntersect(pt1,min_vec1,pt2,min_vec2)  # 两个射线交点
-        path_vec1 = pt1.initVecBetweenPts(mid_pt)   # ? 构造长度
+        path_vec1 = pt1.initVecBetweenPts(mid_pt)   # ? X 构造长度
         path_vec2 = mid_pt.initVecBetweenPts(pt2)
         path = Polyline(pt1, [path_vec1, path_vec2])  # 起始点和向量序构造一个Polyline实例
     return path
+"""
 
 # 已经判断好两个矩形各个角点的可见性
 def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
@@ -53,9 +57,6 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     elif length2 == rec2.vec_length_lst[edge_index2]: pt2 = rec2.pt_lst[corner2_b]
     else:                                             pt2 = RectangleEdgeCornerPoint(rec2, edge_index2, length2)
     
-    corner1_a = edge_index1, corner2_a = edge_index2
-    corner1_b = 0 if edge_index1 == 3 else edge_index1+1
-    corner2_b = 0 if edge_index2 == 3 else edge_index2+1
     # 判断起点和终点之间的可见性
     isVisible = False
     if ((corner2_a in visiable_dict[corner1_a]) and (corner2_b in visiable_dict[corner1_a])
@@ -78,11 +79,11 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
             edgePt_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
             reverse_vec = edgePt_vec.reverse()          # 矩形2指向矩形1的向量
             
-            phrase1, isParallel1 = judgeVecWithPhrase(pt1, edgePt_vec)   # 已经抽象
-            phrase2, isParallel2 = judgeVecWithPhrase(pt2, reverse_vec)
+            phrase1, isParallel1 = Phrase.judgeVecWithPhrase(pt1, edgePt_vec)   # 已经抽象
+            phrase2, isParallel2 = Phrase.judgeVecWithPhrase(pt2, reverse_vec)
 
             # 可抽象, 根据可见点的象限, 平行性, 指向性向量得到中间路径
-            path = getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, edgePt_vec, reverse_vec)
+            path = Phrase.getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, edgePt_vec, reverse_vec)
 
     else:  # 无法直接可见的始末点
         # 得到起点和终点到各自矩形到可见端点的路径
@@ -97,7 +98,8 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
         # 重复抽象(但方向相反), 先不写, 先构造EdgePoint和CornerPoint类
 
         # 将中间路径(可见点之间的路径), 起点到端点的路径累加, 得到所有路径
-        path_lst = []; min_path, min_length = None, MAX;
+        path_lst = []
+        min_path, min_length = None, 2147483647  # 初始的最小距离为最大
         for corner1 in visiable_dict:
             for corner2_i in range(len(visiable_dict[corner1])):
                 corner2 = visiable_dict[corner2_i]

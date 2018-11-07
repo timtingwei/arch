@@ -19,6 +19,7 @@ class Point2D(object):
         return ptVec
     """
 
+    """
     def initPointVec_rectangle_edge(self, rec, edge_index):
         # 将一个普通的点, 根据矩形的边号构造成向量点
         ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
@@ -28,12 +29,12 @@ class Point2D(object):
         ptVec.isValidPhrase_lst[edge_index] = False     # 当前角点面向的象限无效
         ptVec.isValidPhrase_lst[index] = False          # 当前角点面向的象限无效
         return ptVec
+    """
 
     def initVecBetweenPts(self, end_pt):
         # 用末尾点和当前点构造向量
         return Vector(end_pt.x-self.x, end_pt.y-self.y)
 
-# 添加RectangleCornerPoint类和构造, RectangleEdgePoint类和构造[]
 class RectangleCornerPoint(PointVec):
     '矩形角上 向量点构造'
     def __init__(self, rec, corner_index):
@@ -142,6 +143,37 @@ class Phrase(object):
                 else: rst = 1      # 相互夹
             else: rst = 0          # 如果点积小于零，不相夹
         return rst
+
+    @staticmethod
+    def judgeVecWithPhrase(pt, flode_vec):
+        # 找到有效象限, 并判断向量与象限的两个向量是否存在平行
+        phrase, isParallel = None, False
+        for pi in range(4):
+            if pt.isValidPhrase_lst[pi] == True:
+                isf_rst = pt.phrase_lst[pi].isFlode(flode_vec)
+                if isf_rst:
+                    phrase = pt.phrase_lst[pi]
+                    if isf_rst == -1: isParallel = True
+                    break;
+        return phrase, isParallel
+
+    @staticmethod
+    def getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, flode_vec, reverse_vec):
+        # 根据可见点的象限, 平行性, 指向性向量得到中间路径
+        # 也许可以建立两个点的关系对象实例(结构上的优化)
+        # 也许中间点的可根据角点来判断路径选择的向量(计算上的优化, 仍要建立在结构上)
+        path = None
+        if isParallel1 or isParallel2:
+            path = Polyline(pt1, [flode_vec])
+        else:
+            min_vec1, min_vec2 = PointVec.minAngleVector(phrase1, phrase2, flode_vec, reverse_vec)
+            mid_pt = PointVec.rayrayIntersect(pt1,min_vec1,pt2,min_vec2)  # 两个射线交点
+            path_vec1 = pt1.initVecBetweenPts(mid_pt)   # ? X 构造长度
+            path_vec2 = mid_pt.initVecBetweenPts(pt2)
+            path = Polyline(pt1, [path_vec1, path_vec2])  # 起始点和向量序构造一个Polyline实例
+        return path
+
+
     
 class PointVec(Point2D):
     '向量点构造'
@@ -275,7 +307,7 @@ class Polyline(object):
         # 返回polyline的每段向量长度和
         length = 0.0
         for vec in vec_lst:
-            length += vec.length()
+            length += vec.length
         return length
 
     def getPointListFromVecs(self):
@@ -358,8 +390,8 @@ class RectangleRelation(object):
         self.rec1, self.rec2 = rec1, rec2
         self.cornerVisiable_dict = {}             # 矩形各角点间的可见性
         self.cornerShortestPath_dict  = {}        # 矩形各角点间的路径
-        self.cornerVec_dict = {}                  # 矩形角点间连线
-        self.cornerVisiable_dict, self.cornerShortestPath_dict, self.cornerVec_dict = getCornerVisiableAndPath()
+        self.corner_vec_dict = {}                  # 矩形角点间连线
+        self.cornerVisiable_dict, self.cornerShortestPath_dict, self.corner_vec_dict = getCornerVisiableAndPath()
         
         self.isParallel = judgeParallel()    # 矩形是否平行
         self.gapClass = getGapClass()        # 矩形间距分类
@@ -382,8 +414,8 @@ class RectangleRelation(object):
                 reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
                 isVisible = False
                 
-                phrase1, isParallel1 = judgeVecWithPhrase(pt1, corner_vec)   # 已经抽象
-                phrase2, isParallel2 = judgeVecWithPhrase(pt2, reverse_vec)
+                phrase1, isParallel1 = Phrase.judgeVecWithPhrase(pt1, corner_vec)   # 已经抽象
+                phrase2, isParallel2 = Phrase.judgeVecWithPhrase(pt2, reverse_vec)
                 """
                 phrase1, phrase2, parallel1, parallel2 = None, None, False, False
                 for pi in range(4):
@@ -405,7 +437,7 @@ class RectangleRelation(object):
                 if not isVisible: continue       # 其中有一个角点被挡住
                 visiable_dict[i].append(j)       # 添加可见性
                 # 可抽象, 根据可见点的象限, 平行性, 指向性向量得到中间路径
-                path = getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, corner_vec, reverse_vec)
+                path = Phrase.getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, corner_vec, reverse_vec)
                 """
                 if parallel1 or parallel2:
                     path = Polyline(pt1, [corner_vec])
