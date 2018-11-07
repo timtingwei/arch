@@ -43,7 +43,7 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     corner2_b = 0 if edge_index2 == 3 else edge_index2+1
 
     # 构造选择点的实例对象, 可在前面计算完性质和到各个角的路径
-    # 考虑是否需要把选择点作为角点
+    # 考虑是否需要把选择点作为角点 ?
     pt1, pt2 = None, None
     if length1 == 0:                                  pt1 = rec1.pt_lst[corner1_a]
     elif length1 == rec1.vec_length_lst[edge_index1]: pt1 = rec1.pt_lst[corner1_b]
@@ -72,9 +72,8 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
                 if length2 == 0: path = shorestPath_dict[corner1_b][corner2_a]
                 else:            path = shorestPath_dict[corner1_b][corner2_b]
         else:  # 不位于角点, 需要重新计算
-            pt1, pt2 = Point2D(), Point2D()
-            pt1 = initPointVec_rectangle_edge(rec1, edge_index1)
-            pt2 = initPointVec_rectangle_edge(rec2, edge_index2)  # ? 构造函数重写
+            #pt1 = initPointVec_rectangle_edge(rec1, edge_index1)
+            #pt2 = initPointVec_rectangle_edge(rec2, edge_index2)  # ? 构造函数重写[X]
 
             edgePt_vec = pt1.initVecBetweenPts(pt2)     # 矩形1指向指向矩形2角点的向量
             reverse_vec = edgePt_vec.reverse()          # 矩形2指向矩形1的向量
@@ -87,13 +86,13 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
 
     else:  # 无法直接可见的始末点
         # 得到起点和终点到各自矩形到可见端点的路径
-        rec1_edge_path_dict, rec2_edge_path_dict = {}, {}
-        rec1_edge_path_dict[corner1_a] = Polyline(pt1, [pt1.initVecBetweenPts(rec1.pt_lst[corner1_a])])
-        rec1_edge_path_dict[corner1_b] = Polyline(pt1, [pt1.initVecBetweenPts(rec1.pt_lst[corner1_b])])
-        after_corner = 0 if corner1_b == 3 else corner1_b+1
-        before_corner = 0 if after_corner == 3 else after_corner+1
-        rec1_edge_path_dict[before_corner] = Polyline(pt1, [rec1_edge_path_dict[corner1_a], rec1.vec_lst[before_corner].reverse()])   # ?是不是索引个反向量就可以了?
-        rec1_edge_path_dict[after_corner] = Polyline(pt1, [rec1_edge_path_dict[corner1_b], rec1.vec_lst[corner1_b]))
+        #rec1_edge_path_dict, rec2_edge_path_dict = {}, {}
+        #rec1_edge_path_dict[corner1_a] = Polyline(pt1, [pt1.initVecBetweenPts(rec1.pt_lst[corner1_a])])
+        #rec1_edge_path_dict[corner1_b] = Polyline(pt1, [pt1.initVecBetweenPts(rec1.pt_lst[corner1_b])])
+        #after_corner = 0 if corner1_b == 3 else corner1_b+1
+        #before_corner = 0 if after_corner == 3 else after_corner+1
+        #rec1_edge_path_dict[before_corner] = Polyline(pt1, [rec1_edge_path_dict[corner1_a], rec1.vec_lst[before_corner].reverse()])   # ?是不是索引个反向量就可以了?
+        #rec1_edge_path_dict[after_corner] = Polyline(pt1, [rec1_edge_path_dict[corner1_b], rec1.vec_lst[corner1_b]))
 
         # 重复抽象(但方向相反), 先不写, 先构造EdgePoint和CornerPoint类
 
@@ -103,8 +102,10 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
             for corner2_i in range(len(visiable_dict[corner1])):
                 corner2 = visiable_dict[corner2_i]
                 mid_path = shorestPath_dict[corner1][corner2_i]
-                path_edge1 = rec1_edge_path_dict[corner1]
-                path_edge2 = rec2_edge_path_dict[corner2]
+                #path_edge1 = rec1_edge_path_dict[corner1]
+                #path_edge2 = rec2_edge_path_dict[corner2]
+                path_edge1 = pt1.cornerPath_dict[corner1][0]   # 矩形1边点(角点)出发到corner1角点路径
+                path_edge2 = pt2.cornerPath_dict[corner2][1]   # 矩形2 corner2角点出发到pt2的路径
                 path = path_edge1.addPolylines([mid_path, path_edge2])    # ? 实现addPolyline方法
                 path_lst.append(path)
                 # 比较路径, 选择距离最短的路径

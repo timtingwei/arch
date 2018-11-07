@@ -9,6 +9,7 @@ class Point2D(object):
     def addVec(self, vec):
         return Point2D([self.x + vec.x, self.y + vec.y])
 
+    """
     def initPointVec_rectangle_corner(self, rec, corner_index):
         # 将一个普通的点, 根据矩形角点编号构造成向量点
         ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
@@ -16,6 +17,7 @@ class Point2D(object):
         ptVec.isValidPhrase_lst = [True]*4              # 向量点的有效性
         ptVec.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
         return ptVec
+    """
 
     def initPointVec_rectangle_edge(self, rec, edge_index):
         # 将一个普通的点, 根据矩形的边号构造成向量点
@@ -51,7 +53,7 @@ class RectangleCornerPoint(PointVec):
     def getRectangleCornerPath(self):
         # 获得矩形内部角点到各个角点的路径(向量序)
         cornerPath_dict = {}   # 构造还需要根据计算确定下
-        before = 3 if self.corner_index == 0 else self.corner_index-1
+        before = 3 if self.corner_index == 0 else self.corner_index-1  # 是否需要记录属性
         after = 0 if self.corner_index == 3 else self.corner_index+1
         cross = 0 if after == 3 else after+1
         # 不记录到本点的长度
@@ -344,7 +346,8 @@ class Rectangle(Polyline):
         # 根据象限和向量修改普通角点为角点向量点
         corner_pt_lst = []
         for i in range(len(self.pt_lst)):
-            corner_pt_lst.append(pt_lst[i].initPointVec_rectangle_corner(self, i))
+            corner_pt_lst.append(RectangleCornerPoint(self, i))  # 替换成角点的实例对象
+            #corner_pt_lst.append(pt_lst[i].initPointVec_rectangle_corner(self, i))
         return corner_pt_lst
 
         
