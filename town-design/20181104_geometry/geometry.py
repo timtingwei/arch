@@ -390,11 +390,6 @@ class RectangleRelation(object):
                 if anwser:
                     return 1
         return 2    
-            
-
-        gapClass = 0
-        return gapClass
-
     def getGapDistance(self):
         # 根据矩形间距位置, 计算两个矩形之间的间距
         distance = 0
