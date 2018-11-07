@@ -157,7 +157,7 @@ class Vector(object):
     def reverse(self):
         # 取反向量
         vec = Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
-        return Vector(-self.x, -self.y)
+        return vec
 
     def length(self):
         #向量的长度
@@ -254,7 +254,21 @@ class Rectangle(Polyline):
         for i in range(len(self.pt_lst)):
             corner_pt_lst.append(pt_lst[i].initPointVec_rectangle_corner(self, i))
         return corner_pt_lst
-        
+           
+    def pointrecpharse(self,point):
+        #输入一个在矩形外的点，判断与矩形的端点的四个向量是否为同一象限所夹
+        for i in self.phrase_lst:
+            ok = 1
+            for z in self.pt_lst:
+                now_vector = Vector(point.x-z.x,point.y-z.y)
+                isfolder = i.isFolder(now_vector)
+                if isfolder == 0:
+                    ok = 0
+                    break
+            if ok == 1:
+                return True
+        reutrn False
+    
 class RectangleRelation(object):
     ' 两个矩形的关系对象 '
     def __init__(self, rec1, rec2):
@@ -313,15 +327,71 @@ class RectangleRelation(object):
                 path_dict[i][j] = path
 
         return visiable_dict, path_dict, vec_dict
-
     def isParallel(self):
         # 根据向量计算两个矩形是否平行
         parallel = False
         self.rec1.vec_lst[0].isVectorParallel(self.rec2.vec_lst[0])
         return parallel
-
+    def isinclude(self):
+        '输出1代表rec1包含rec2,输出2代表rec2包含了rec1，输出0代表了互不包含'
+        '如果是1或2,则还会附带包含方最靠近的点'
+        #首先判断rec1是否包含rec2,如果没有则判断rec2是否包含rec1
+        order_list = [2,3,0,1]
+        #先遍历rec1的所有端点
+        for i in range(0,len(rec1.pt_lst)):
+            now_phrase = rec1.phrase_lst[order_list[i]]
+            now_pt = rec1.pt_lst[i]
+            rec1_flag = 1 
+            for z in rec2.pt_lst:
+                #得到端点间的向量
+                now_vec = Vector(z.x-now_pt.x,z.y-now_pt.y)
+                isfolder = now_phrase(now_vec)
+                if isfolder == 0:
+                    '如果不夹,则将flag改为0,并且退出'
+                    rec1_flag = 0
+                    break
+            if rec1_flag == 1:
+                return [1,i]
+        for i in range(0,len(rec2.pt_lst)):
+            now_phrase = rec2.phrase_lst[order_list[i]]
+            now_pt = rec2.pt_lst[i]
+            rec2_flag = 1 
+            for z in rec1.pt_lst:j
+                #得到端点间的向量
+                now_vec = Vector(z.x-now_pt.x,z.y-now_pt.y)
+                isfolder = now_phrase(now_vec)
+                if isfolder == 0:
+                    '如果不夹,则将flag改为0,并且退出'
+                    rec2_flag = 0
+                    break
+            if rec2_flag == 1:
+                return [2,i]
+        #两者都不是,返回0
+        return [0]
+        
+        
     def getGapClass(self):
+        '0代表边对边,1代表角对角,2代表边对角'
         # 判断两个矩形间距是属于哪种类型: 角对角, 边对边, 边对角
+        #边对边
+        #需要一个判断是否一个矩形包含另一个矩形的函数
+        include = self.isinclude() #判断包含关系
+        isparallel = self.isParallel() #判断平行
+        if isparallel and (include[0] == 1 or include[0] == 2): #当平行并且1包2或2包1的情况下
+            return 0
+        if include[0] == 1 or include[0] == 2:
+            '当被包含，并且端点与最近点的向量在同一象限'
+            if include[0] == 1:
+                anwser = rec2.pointrecpharse(rec1.pt_lst[include[1]])
+                if anwser:
+                    return 1
+            if include[0] == 2:
+                anwser = rec1.pointrecpharse(rec2.pt_lst[include[1]])
+                if anwser:
+                    return 1
+        return 2    
+            
+
         gapClass = 0
         return gapClass
 
@@ -330,4 +400,3 @@ class RectangleRelation(object):
         distance = 0
         return distance
         
-#
