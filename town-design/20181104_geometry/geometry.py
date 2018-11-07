@@ -11,12 +11,6 @@ class Point2D(object):
 
 class PointVec(Point2D):
     '向量点构造'
-    """
-    def __init__(self, coordinate, vec_lst):
-        self.pt = Point2D(coordinate)
-        self.vec_lst = vec_lst
-    """
-
     def __init__(self, pt, vec_lst):
         self.x, self.y = pt.x, pt.y
         self.vec_lst = vec_lst
@@ -79,54 +73,14 @@ class PointVec(Point2D):
         else:
             return vec_list[min_index],vec_list[min_index_other]
 
-
-class Vector(object):
-    def __init__(self, vec_x, vec_y, length = None):
-        self.x, self.y = vec_x, vec_y
-        self.length = self.getLength() if (length is None) else length
-        return
-    def unit(self):
-        # 单位化一个向量
-        return Vector(self.x/self.length, self.y/self.length, length = 1.0)
-
-    def amplify(self, factor):
-        # 向量扩大倍数
-        return Vector(self.x * factor, self.y * factor, length = self.length * factor)
-
-    def dot(self, vec):
-        # 向量的点积
-        return self.x*vec.x+self.y*vec.y
-
-    def cross(self,vec):
-        #向量的叉积
-        return self.x*vec.y-self.y*vec.x
-
-    def reverse(self):
-        # 取反向量
-        return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
-
-    def getLength(self):
-        # 向量的长度
-        return math.sqrt(self.x * self.x + self.y * self.y)
-
-    def isVectorParallel(self, vec):
-        # 判断实例向量和vec之间是否平行
-	if self.cross(self, vec) == 0: return True
-	else: return False
-
-class VectorTwoPts(Vector):
-    '两点向量构造'
-    def __init__(self, start_pt, end_pt):
-        self.x, self.y = end_pt.x - start_pt.x, end_pt.y - start_pt.y
-        self.length = self.getLength()        # 向量长度, 调用父类的求长度方法
-        return
-
 class RectangleCornerPoint(PointVec):
     '矩形角上 向量点构造'
     def __init__(self, rec, corner_index):
         # 将一个普通的点, 根据矩形角点编号构造成向量角点
-        self.x, self.y = rec.pt_lst[corner_index].x, rec.pt_lst[corner_index].y
-        self.vec_lst = rec.pt_lst[corner_index].vec_lst
+        #self.x, self.y = rec.pt_lst[corner_index].x, rec.pt_lst[corner_index].y
+        #self.vec_lst = rec.pt_lst[corner_index].vec_lst
+        # 根据角点实际pt, 矩形的四个向量, 构造初始点; 角四向量
+        super(RectangleCornerPoint, self).__init__(rec.pt_lst[corner_index], rec.vec_lst)
         self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
         self.isValidPhrase_lst = [True]*4              # 向量点的有效性
         self.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
@@ -159,7 +113,11 @@ class RectangleEdgePoint(PointVec):
         pt = rec.pt_lst[edge_index]
         length_vec = rec.vec_lst[edge_index].unit().amplify(length)
         new_pt = pt.addVec(length_vec)
-        self.x, self.y = new_pt.x, new_pt.y
+
+        vec_dict = {0: [0, 2, 3], 1:[1, 3, 0], 2:[2, 0, 1], 3:[3, 1, 2]}
+        vec_lst = [rec.vec_lst[i] for i in vec_dict[edge_index]]   # 边三向量
+        # 根据pt和vec_lst, 调用父类构造函数, 初始化x, y, vec_lst属性
+        super(RectangleEdgePoint, self).__init__(new_pt, vec_lst)
         
         self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
         self.isValidPhrase_lst = [True]*4              # 向量点的有效性
@@ -195,6 +153,49 @@ class RectangleEdgePoint(PointVec):
         cornerPath_dict[before_a] = [Polyline(self, [path_a_vec, self.rec.vec_lst[b]]),
                                    Polyline(self.rec.pt_lst[before_a], [self.rec.vec_lst[before_a], self.corner_start_length_vec])]
         return cornerPath_dict
+
+
+class Vector(object):
+    def __init__(self, vec_x, vec_y, length = None):
+        self.x, self.y = vec_x, vec_y
+        self.length = self.getLength() if (length is None) else length
+        return
+    def unit(self):
+        # 单位化一个向量
+        return Vector(self.x/self.length, self.y/self.length, length = 1.0)
+
+    def amplify(self, factor):
+        # 向量扩大倍数
+        return Vector(self.x * factor, self.y * factor, length = self.length * factor)
+
+    def dot(self, vec):
+        # 向量的点积
+        return self.x*vec.x+self.y*vec.y
+
+    def cross(self,vec):
+        #向量的叉积
+        return self.x*vec.y-self.y*vec.x
+
+    def reverse(self):
+        # 取反向量
+        return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
+
+    def getLength(self):
+        # 向量的长度
+        return math.sqrt(self.x * self.x + self.y * self.y)
+
+    def judgeVectorParallel(self, vec):
+        # 判断实例向量和vec之间是否平行
+	if self.cross(vec) == 0: return True
+	else: return False
+
+class VectorTwoPts(Vector):
+    '两点向量构造'
+    def __init__(self, start_pt, end_pt):
+        self.x, self.y = end_pt.x - start_pt.x, end_pt.y - start_pt.y
+        self.length = self.getLength()        # 向量长度, 调用父类的求长度方法
+        return
+
         
 class Point3D(Point2D):
     def __init__(self, coordinate):
@@ -233,9 +234,11 @@ class Phrase(object):
     def judgeVecWithPhrase(pt, flode_vec):
         # 找到有效象限, 并判断向量与象限的两个向量是否存在平行
         phrase, isParallel = None, False
+        #print('test: into judgeVecWithPhrase()')
         for pi in range(4):
             if pt.isValidPhrase_lst[pi] == True:
-                isf_rst = pt.phrase_lst[pi].isFlode(flode_vec)
+                isf_rst = pt.phrase_lst[pi].isFolde(flode_vec)
+                #print('test: isf_rst = ' + str(isf_rst))
                 if isf_rst:
                     phrase = pt.phrase_lst[pi]
                     if isf_rst == -1: isParallel = True
@@ -270,7 +273,7 @@ class Polyline(object):
     def getLength(self):
         # 返回polyline的每段向量长度和
         length = 0.0
-        for vec in vec_lst:
+        for vec in self.vec_lst:
             length += vec.length
         return length
 
@@ -331,8 +334,9 @@ class Rectangle(Polyline):
     def getFourPhrase(self):
         # 根据x轴和y轴线得到四个象限
         vec_x, vec_y = self.vec_lst[0], self.vec_lst[1]
-        rev_x, rec_y = vex_x.reverse(), vec_y.reverse()
-        p1 = Phrase(vec_x, vex_y)
+        #rev_x, rec_y = vec_x.reverse(), vec_y.reverse()
+        rev_x, rev_y = self.vec_lst[2], self.vec_lst[3]
+        p1 = Phrase(vec_x, vec_y)
         p2 = Phrase(vec_y, rev_x)
         p3 = Phrase(rev_x, rev_y)
         p4 = Phrase(rev_y, vec_x)
@@ -355,11 +359,11 @@ class RectangleRelation(object):
         self.cornerVisiable_dict = {}             # 矩形各角点间的可见性
         self.cornerShortestPath_dict  = {}        # 矩形各角点间的路径
         self.corner_vec_dict = {}                  # 矩形角点间连线
-        self.cornerVisiable_dict, self.cornerShortestPath_dict, self.corner_vec_dict = getCornerVisiableAndPath()
+        self.cornerVisiable_dict, self.cornerShortestPath_dict, self.corner_vec_dict = self.getCornerVisiableAndPath()
         
-        self.isParallel = judgeParallel()    # 矩形是否平行
-        self.gapClass = getGapClass()        # 矩形间距分类
-        self.gapDistance = getGapDistance()  # 矩形间距
+        self.isParallel = self.judgeParallel()    # 矩形是否平行
+        self.gapClass = self.getGapClass()        # 矩形间距分类
+        self.gapDistance = self.getGapDistance()  # 矩形间距
 
         return
 
@@ -372,7 +376,7 @@ class RectangleRelation(object):
             # 矩形1的四个角点序号
             for j in range(4):
                 # 矩形2的四个角点序号
-                pt1 = rec1.pt_lst[i], pt2 = rec2.pt_lst[j]  # 矩形对应计算的角向量点
+                pt1 = self.rec1.pt_lst[i]; pt2 = self.rec2.pt_lst[j]  # 矩形对应计算的角向量点
                 corner_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量
                 corner_vec_dict[i][j] = corner_vec          # 添加两个角点之间的向量
                 reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
@@ -398,6 +402,8 @@ class RectangleRelation(object):
                             break;
                 """
                 if phrase1 and phrase2 : isVisible = True
+                #print('test: isVisible = ' + str(isVisible))
+                #print('phrase1 = ' + str(phrase1) + ' phrase2 = ' + str(phrase2))
                 if not isVisible: continue       # 其中有一个角点被挡住
                 visiable_dict[i].append(j)       # 添加可见性
                 # 可抽象, 根据可见点的象限, 平行性, 指向性向量得到中间路径
@@ -416,10 +422,10 @@ class RectangleRelation(object):
 
         return visiable_dict, path_dict, corner_vec_dict
 
-    def isParallel(self):
+    def judgeParallel(self):
         # 根据向量计算两个矩形是否平行
         parallel = False
-        if self.rec1.vec_lst[0].isVectorParallel(self.rec2.vec_lst[0]) == True:
+        if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
 	    parallel = True
         return parallel
 
