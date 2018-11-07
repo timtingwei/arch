@@ -9,28 +9,6 @@ class Point2D(object):
     def addVec(self, vec):
         return Point2D([self.x + vec.x, self.y + vec.y])
 
-    """
-    def initPointVec_rectangle_corner(self, rec, corner_index):
-        # 将一个普通的点, 根据矩形角点编号构造成向量点
-        ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
-        ptVec.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
-        ptVec.isValidPhrase_lst = [True]*4              # 向量点的有效性
-        ptVec.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
-        return ptVec
-    """
-
-    """
-    def initPointVec_rectangle_edge(self, rec, edge_index):
-        # 将一个普通的点, 根据矩形的边号构造成向量点
-        ptVec = PointVec(self, rec.vec_lst)             # 用当前点和向量构造向量点
-        ptVec.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
-        ptVec.isValidPhrase_lst = [True]*4              # 向量点的有效性
-        index = 0 if edge_index + 1 == 4 else edge_index
-        ptVec.isValidPhrase_lst[edge_index] = False     # 当前角点面向的象限无效
-        ptVec.isValidPhrase_lst[index] = False          # 当前角点面向的象限无效
-        return ptVec
-    """
-
     def initVecBetweenPts(self, end_pt):
         # 用末尾点和当前点构造向量
         return Vector(end_pt.x-self.x, end_pt.y-self.y)
@@ -39,9 +17,8 @@ class RectangleCornerPoint(PointVec):
     '矩形角上 向量点构造'
     def __init__(self, rec, corner_index):
         # 将一个普通的点, 根据矩形角点编号构造成向量角点
-        origin_pt =  rec.pt_lst[corner_index]
-        self.x, self.y = orgin_pt.x, origin_pt.y
-        self.vec_lst = origin_pt.vec_lst
+        self.x, self.y = rec.pt_lst[corner_index].x, rec.pt_lst[corner_index].y
+        self.vec_lst = rec.pt_lst[corner_index].vec_lst
         self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
         self.isValidPhrase_lst = [True]*4              # 向量点的有效性
         self.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
@@ -206,7 +183,7 @@ class PointVec(Point2D):
         vec1, vec2, vec3, vec4 = phase1.start_vec, phase1.end_vec, phase2.start_vec, phase2.end_vec
         #这里需要调用求向量长度的方法
         vec_list = [vec1,vec2,vec3,vec4]
-        vec1_len, vec2_len, vec3_len, vec4_len = vec1.length(), vec2.length(), vec3.length(), vec4.length()
+        vec1_len, vec2_len, vec3_len, vec4_len = vec1.length, vec2.length, vec3.length, vec4.length
         k_2, k_3, k_4 = vec1_len/vec2_len, vec1_len/vec3_len, vec1_len/vec4_len
         #下面需要用到向量的点积算法
         angle_a1 = veca.dot(vec1)
@@ -249,7 +226,7 @@ class PointVec(Point2D):
 class Vector(object):
     def __init__(self, vec_x, vec_y, length = None):
         self.x, self.y = vec_x, vec_y
-        self.length = self.length() if length is None length
+        self.length = self.getLength() if length is None length
         return
     """
     def __init__(self, start_pt, end_pt):
@@ -258,13 +235,11 @@ class Vector(object):
     """
     def unit(self):
         # 单位化一个向量
-        unit_vec = Vector(self.x/self.length, self.y/self.length, length = 1.0)
-        return unit_vec
+        return Vector(self.x/self.length, self.y/self.length, length = 1.0)
 
     def amplify(self, factor):
         # 向量扩大倍数
-        amp_vec = Vector(self.x * factor, self.y * factor, length = self.length * factor)
-        return amp_vec
+        return Vector(self.x * factor, self.y * factor, length = self.length * factor)
 
     def dot(self, vec):
         # 向量的点积
@@ -276,26 +251,21 @@ class Vector(object):
 
     def reverse(self):
         # 取反向量
-        vec = Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
-        return vec
+        return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
 
-    def length(self):
-        #向量的长度
-        return math.sqrt(self.x*self.x+self.y*self.y)
+    def getLength(self):
+        # 向量的长度
+        return math.sqrt(self.x * self.x + self.y * self.y)
 
     def isVectorParallel(self, vec):
         # 判断实例向量和vec之间是否平行
 	if self.cross(self, vec) == 0: return True
 	else: return False
 
+class VectorTwoPts(Vector):
+
 class Polyline(object):
-    """
-    def __init__(self, pt_lst):
-        self.start_pt = pt_lst[0]
-        self.pt_lst = pt_lst
-        self.vec_lst = getVectorListFromPts()
-        self.cornerYinYangProperty_lst = getYinYangProperty()
-    """
+    '多段线构造'
     def __init__(self, start_pt, vec_lst):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
@@ -350,7 +320,7 @@ class Rectangle(Polyline):
         num = len(self.vec_lst)
         length_lst = [0.0]*num
         for i in range(num):
-            length_lst[i] = self.vec_lst[i].length()
+            length_lst[i] = self.vec_lst[i].length
         return length_lst
             
 
