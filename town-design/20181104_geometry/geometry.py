@@ -31,11 +31,68 @@ class Point2D(object):
         # 用末尾点和当前点构造向量
         return Vector(end_pt.x-self.x, end_pt.y-self.y)
 
+# 添加RectangleCornerPoint类和构造, RectangleEdgePoint类和构造[]
+class RectangleCornerPoint(PointVec):
+    '矩形角上 向量点构造'
+    def __init__(self, rec, corner_index):
+        # 将一个普通的点, 根据矩形角点编号构造成向量角点
+        origin_pt =  rec.pt_lst[corner_index]
+        self.x, self.y = orgin_pt.x, origin_pt.y
+        self.vec_lst = origin_pt.vec_lst
+        self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
+        self.isValidPhrase_lst = [True]*4              # 向量点的有效性
+        self.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
+        
+        self.cornerPath_dict =  self.getRectangleCornerPath()  # 角点到各个角点的向量
+        return
 
+    def getRectangleCornerPath(self):
+        # 获得矩形内部角点到各个角点的线段(向量序)
+        path = None
+        return path
+
+class RectangleEdgePoint(PointVec):
+    '矩形边上 向量点构造'
+    def __init__(self, rec, edge_index, length):
+        # 将一个普通的点, 根据矩形的边号构造成向量点
+        # 根据编号和长度得到坐标x, y
+        pt = rec.pt_lst[edge_index]
+        length_vec = rec.vec_lst[edge_index].unit().amplify(length)
+        new_pt = pt.addVec(length_vec)
+        self.x, self.y = new_pt.x, new_pt.y
+        
+        self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
+        self.isValidPhrase_lst = [True]*4              # 向量点的有效性
+        index = 0 if edge_index == 3 else edge_index
+        self.isValidPhrase_lst[edge_index] = False     # 边缘点面向的象限无效
+        self.isValidPhrase_lst[index] = False          # 边缘点面向的象限无效
+
+        self.rec = rec                                 # 该点所属的矩形
+        self.edge_index = edge_index
+        self.corner_length_vec = length_vec            # 边的起始角点到该点的向量(带长度)
+        self.edgePath_dict = {}                        # 该边缘点到各个角点的路径 {1: [p1, r_p1]}
+        self.edgePath_dict = self.getRectangleEdgeToCornerPath()
+        return
+    def getRectangleEdgeToCornerPath(self):
+        # 得到边上到各个角点的路径, (所有路径放在字典里, 每一个对应有两条, [边点到角点的polyline, 角点到边点的polyline])
+        edgePath_dict = {0:[], 1:[], 2:[], 3:[]}
+        path_a_vec = self.corner_A_length_vec.reverse()
+        path_b_vec = self.corner_B_length_vec.reverse()
+        a = self.edge_index
+        b = 0 if a == 3 else a+1
+        after_b = 0 if b == 3 else b+1
+        before_a = 0 if after_b == 3 else after_b+1
+
+        edgePath_dict[a] = [Polyline(self, [path_a_vec]),
+                            Polyline(self.rec.pt_lst[a], [self.corner_A_length_vec])]
+        edgePath_dict[b] = [Polyline(self, [self.corner_B_length_vec]),]
+        return
+        
 class Point3D(Point2D):
     def __init__(self, coordinate):
         self.x, self.y, self.z = coordinate
         return
+
 class Phrase(object):
     '象限对象'
     def __init__(self, start_vec, end_vec):
@@ -73,7 +130,7 @@ class PointVec(Point2D):
     """
 
     def __init__(self, pt, vec_lst):
-        self.pt = pt
+        self.x, self.y = pt.x, pt.y
         self.vec_lst = vec_lst
         self.phrase_lst = []                      # 所有象限(根据矩形)
         self.isValidPhrase_lst = []               # 象限的有效性(根据矩形)
@@ -145,6 +202,15 @@ class Vector(object):
         self.x = end_pt.x - start_pt.x
         self.y = end_pt.y - start_pt.y
     """
+    def unit(self):
+        # 单位化一个向量
+        unit_vec = None
+        return unit_vec
+
+    def amplify(self, factor):
+        # 向量扩大倍数
+        amp_vec = None
+        return amp_vec
 
     def dot(self, vec):
         # 向量的点积
