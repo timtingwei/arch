@@ -24,6 +24,7 @@ def main():
 
 """
 
+"""
 class Parent(object):
     def __init__(self, a, length = None):
         self.value = a
@@ -37,10 +38,11 @@ class Child(Parent):
     def __init__(self, a):
         self.value = a
         return
-        
+"""
 
+"""
 def main():
-    """
+    
     parent = Parent(4)
     jack = Parent(parent.value)
     jack.value = 12
@@ -51,12 +53,41 @@ def main():
     print(parent.length)
     parent = Parent(4, length = 12)
     print(parent.length)
-    """
+    
     # test class type
     c = Child(3)
     p = Parent(4)
     print(isinstance(c, Child))
     print(type(c))
+"""
+
+# 测试子类调用父类属性和方法的代码
+class Parent(object):
+    def __init__(self, a):
+        self.value = a
+
+    def foo_p(self):
+        print(self.value)
+
+    def getValue(self):
+        return self.value
+
+class Child(Parent):
+    def __init__(self):
+        #super(Child, self).__init__()
+        self.value = 2
+        self.data = self.getValue()
+
+    def foo_c(self):
+        print(self.data)
+
+def main():
+    p = Parent(4)
+    c = Child()
+
+    c.foo_c()
+    c.foo_p()
+    return
 
 if __name__ == '__main__':
     main()
