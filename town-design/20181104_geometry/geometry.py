@@ -42,7 +42,9 @@ class RectangleCornerPoint(PointVec):
         self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
         self.isValidPhrase_lst = [True]*4              # 向量点的有效性
         self.isValidPhrase_lst[corner_index] = False   # 当前角点面向的象限无效
-        
+
+        self.rec = rec                                 # 所属于的矩形
+        self.corner_index = corner_index               # 所在矩形的角点编号
         self.cornerPath_dict =  self.getRectangleCornerPath()  # 角点到各个角点的向量
         return
 
@@ -63,30 +65,38 @@ class RectangleEdgePoint(PointVec):
         
         self.phrase_lst = rec.phrase_lst               # 向量点的象限和矩形的相同
         self.isValidPhrase_lst = [True]*4              # 向量点的有效性
-        index = 0 if edge_index == 3 else edge_index
+        index = 0 if edge_index == 3 else edge_index + 1
         self.isValidPhrase_lst[edge_index] = False     # 边缘点面向的象限无效
         self.isValidPhrase_lst[index] = False          # 边缘点面向的象限无效
 
         self.rec = rec                                 # 该点所属的矩形
-        self.edge_index = edge_index
-        self.corner_length_vec = length_vec            # 边的起始角点到该点的向量(带长度)
-        self.edgePath_dict = {}                        # 该边缘点到各个角点的路径 {1: [p1, r_p1]}
+        self.edge_index = edge_index                   # 所在矩形的边号
+        self.corner_start_length_vec = length_vec            # 边上点到该边头点的向量(带长度)
+        self.corner_end_length_vec = length_vec.reverse()    # 边上点到该边尾的向量(带长度)
+        self.edgePath_dict = {}                              # 该边缘点到各个角点的路径 {1: [p1, r_p1]}
         self.edgePath_dict = self.getRectangleEdgeToCornerPath()
         return
+
+
     def getRectangleEdgeToCornerPath(self):
         # 得到边上到各个角点的路径, (所有路径放在字典里, 每一个对应有两条, [边点到角点的polyline, 角点到边点的polyline])
         edgePath_dict = {0:[], 1:[], 2:[], 3:[]}
-        path_a_vec = self.corner_A_length_vec.reverse()
-        path_b_vec = self.corner_B_length_vec.reverse()
+        path_a_vec = self.corner_start_length_vec.reverse()
+        path_b_vec = self.corner_end_length_vec.reverse()
         a = self.edge_index
         b = 0 if a == 3 else a+1
         after_b = 0 if b == 3 else b+1
         before_a = 0 if after_b == 3 else after_b+1
 
         edgePath_dict[a] = [Polyline(self, [path_a_vec]),
-                            Polyline(self.rec.pt_lst[a], [self.corner_A_length_vec])]
-        edgePath_dict[b] = [Polyline(self, [self.corner_B_length_vec]),]
-        return
+                            Polyline(self.rec.pt_lst[a], [self.corner_start_length_vec])]
+        edgePath_dict[b] = [Polyline(self, [self.corner_end_length_vec]),
+                            Polyline(self.rec.pt_lst[b], [path_b_vec])]
+        edgePath_dict[after_b] = [Polyline(self, [self.corner_end_length_vec, self.rec.vec_lst[b]]),
+                                  Polyline(self.rec.pt_lst[after_b], [self.rec.vec_lst[before_a], path_b_vec])]
+        edgePath_dict[before_a] = [Polyline(self, [path_a_vec, self.rec.vec_lst[b]]),
+                                   Polyline(self.rec.pt_lst[before_a], [self.rec.vec_lst[before_a], self.corner_start_length_vec])]
+        return edgePath_dict
         
 class Point3D(Point2D):
     def __init__(self, coordinate):
@@ -223,7 +233,7 @@ class Vector(object):
     def reverse(self):
         # 取反向量
         vec = Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
-        return Vector(-self.x, -self.y)
+        return vec
 
     def length(self):
         #向量的长度
@@ -320,6 +330,11 @@ class Rectangle(Polyline):
         for i in range(len(self.pt_lst)):
             corner_pt_lst.append(pt_lst[i].initPointVec_rectangle_corner(self, i))
         return corner_pt_lst
+
+    def addPolylines(self, polys):
+        # polys: 与之合并的其他顺序多段线list
+        new_polyline = None
+        return new_polyline
         
 class RectangleRelation(object):
     ' 两个矩形的关系对象 '
