@@ -18,7 +18,7 @@ def judgeVecWithPhrase(pt, flode_vec):
 def getVisiablePathWithPhrase(pt1, pt2, phrase1, phrase2, isParallel1, isParallel2, flode_vec, reverse_vec):
     # 根据可见点的象限, 平行性, 指向性向量得到中间路径
     # 也许可以建立两个点的关系对象实例(结构上的优化)
-    # 也许中间点的可根据角点来判断路径选择的向量(计算上的优化)
+    # 也许中间点的可根据角点来判断路径选择的向量(计算上的优化, 仍要建立在结构上)
     path = None
     if isParallel1 or isParallel2:
         path = Polyline(pt1, [flode_vec])
@@ -38,10 +38,25 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     visiable_dict = relation.cornerVisiable_dict
     shortestPath_dict = relation.cornerShortestPath_dict
 
-    # 判断起点和终点之间的可见性
     corner1_a = edge_index1, corner2_a = edge_index2
     corner1_b = 0 if edge_index1 == 3 else edge_index1+1
     corner2_b = 0 if edge_index2 == 3 else edge_index2+1
+
+    # 构造选择点的实例对象, 可在前面计算完性质和到各个角的路径
+    # 考虑是否需要把选择点作为角点
+    pt1, pt2 = None, None
+    if length1 == 0:                                  pt1 = rec1.pt_lst[corner1_a]
+    elif length1 == rec1.vec_length_lst[edge_index1]: pt1 = rec1.pt_lst[corner1_b]
+    else:                                             pt1 = RectangleEdgeCornerPoint(rec1, edge_index1, length1)
+
+    if length2 == 0:                                  pt2 = rec2.pt_lst[corner2_a]
+    elif length2 == rec2.vec_length_lst[edge_index2]: pt2 = rec2.pt_lst[corner2_b]
+    else:                                             pt2 = RectangleEdgeCornerPoint(rec2, edge_index2, length2)
+    
+    corner1_a = edge_index1, corner2_a = edge_index2
+    corner1_b = 0 if edge_index1 == 3 else edge_index1+1
+    corner2_b = 0 if edge_index2 == 3 else edge_index2+1
+    # 判断起点和终点之间的可见性
     isVisible = False
     if ((corner2_a in visiable_dict[corner1_a]) and (corner2_b in visiable_dict[corner1_a])
         and (corner2_a in visiable_dict[corner1_b]) and (corner2_b in visiable_dict[corner1_b])):
@@ -90,7 +105,7 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
                 mid_path = shorestPath_dict[corner1][corner2_i]
                 path_edge1 = rec1_edge_path_dict[corner1]
                 path_edge2 = rec2_edge_path_dict[corner2]
-                path = path_edge1.addPolyline(mid_path, path_edge2)    # ? 实现addPolyline方法
+                path = path_edge1.addPolylines([mid_path, path_edge2])    # ? 实现addPolyline方法
                 path_lst.append(path)
                 # 比较路径, 选择距离最短的路径
                 if path.length() < min_length:
