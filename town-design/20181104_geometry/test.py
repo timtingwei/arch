@@ -77,7 +77,10 @@ def testFindShortestPath(relation):
     print('len = ' + str(path.length))
     return path
 
-
+def testRectangleCornerPoint():
+    # getRectangleCornerPath()向量方向对应出
+    rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
+    pt = RectangleCornerPoint(rec1, 0)
 
 def main():
     # ZeroDivisionError: float division by zero
@@ -88,6 +91,9 @@ def main():
     relation = constructRelation(rec1, rec2)
     testFindShortestPath(relation)
     return
+
+
 if __name__ == '__main__':
     main()
+    #testRectangleCornerPoint()
     

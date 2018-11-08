@@ -321,10 +321,11 @@ class Polyline(AttrDisplay, object):
 class Polylines(Polyline):
     '多段Polylines构造'
     def __init__(self, polys):
-        start_pt = polys[0].start_pt
-        vec_lst = []
-        for poly in polys: vec_lst.extend(poly.vec_lst)
-        super(Polylines, self).__init__(start_pt, vec_lst)
+        new_start_pt = polys[0].start_pt
+        new_vec_lst = []
+        for poly in polys:
+            new_vec_lst.extend(poly.vec_lst)
+        super(Polylines, self).__init__(new_start_pt, new_vec_lst)
         return
             
     
