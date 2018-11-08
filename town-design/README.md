@@ -123,15 +123,23 @@
 # 11.7
 ## 1. 抽象最短路和矩形关系类中相同的代码成方法[X]
 ## 2. 添加RectangleCornerPoint类和构造, RectangleEdgePoint类和构造[X]
-## 3. 实现Polyline类的addPolyline()方法[] -hzp提供
+## 3. 实现Polyline类的addPolyline()方法[X] -hzp提供
 ## 4. 增加向量的unit(), amplify()工具方法[X] -xyx提供
-## 5. 优化构造, 存储并调用两个矩形角点之间的向量, 替换(initVecBetweenPts)
-## 6. 补写两个向量平行Vector::isVectorParallel()和两个矩形平行RectangleRelation::isParallel()方法[X]
+## 5. 优化构造, 存储并调用两个矩形角点之间的向量, 替换(initVecBetweenPts)[X]
+## 6. 补写两个向量平行Vector::isVectorParallel()和两个矩形平行RectangleRelation::isParallel()方法[]
 ## 7. 优化: 省略掉一些initVecBetweenPts()的计算[X]
 ## 8. 优化: 最短路径问题, 在边上选择点时, 可能存在角点的问题[X]
 ## 9. 优化: initVecBetweenPts()修改成VectorTwoPts类构造[X]
 ## 10. 测试
 ### 10.1: 交换类定义顺序, 两个语法错误[X]
 ### 10.2: 角点和边点veclst属性, 通过父类构造函数初始化[X]
-### 10.3: relation实例中, phrase大量为None, isFolde()大量返回0(不夹)[]
+### 10.3: relation实例中, phrase大量为None, isFolde()大量返回0(不夹)[X]-hxj修改[X]
+### 10.4: rayrayIntersect()方法中, 除数为0
+
+# 11.8
+## 1.测试:
+### 1.1 rayrayIntersect()方法中, 除数为0[]->在minAngleVector方法中, 最小向量bug[X]-hxj提供
+### 1.2 修改角点间路径索引bug, Polyline路径长度调用属性而不是函数[X]
+### 1.3 测试非正交情况[X]
+### ----初步编译, 逻辑通过----
 
