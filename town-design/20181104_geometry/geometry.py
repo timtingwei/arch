@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import math
+import pdb   # 调试
 
 class Point2D(object):
     def __init__(self, coordinate):
@@ -23,9 +24,11 @@ class PointVec(Point2D):
         #分别给定两条射线的起始点与向量,得到交点,注意输入的不能是平行或共线的射线
         a, b, c, d = pt1.x, pt1.y, pt2.x, pt2.y
         x1, y1, x2, y2 = vec1.x, vec1.y, vec2.x, vec2.y
+        #pdb.set_trace()  # 运行到这里暂停
         t2 = (c*y1 - a*y1 - d*x1 + b*x1) / (y2*x1-x2*y1)
         pt = Point2D([c + x2*t2,d + y2*t2])
         return pt
+
 
     @staticmethod
     def minAngleVector(phase1, phase2, veca, vecb):
@@ -42,14 +45,15 @@ class PointVec(Point2D):
         angle_b3 = k_3*vecb.dot(vec3)
         angle_b4 = k_4*vecb.dot(vec4)
         #找到最小的角度以及对应的vector
+        #最小角度对应点积的最大
         angle_list = [angle_a1,angle_a2,angle_b3,angle_b4]
-        min_angle = angle_a1
-        min_index = 0
-        min_index_other = 0
+        max_angle = angle_a1
+        max_index = 0
+        max_index_other = 0
         for i in range(1,4):
-            if angle_list[i] < min_angle:
-                min_angle = angle_list[i]
-                min_index = i
+            if angle_list[i] > max_angle:
+                max_angle = angle_list[i]
+                max_index = i
         #下面需要用到向量的叉积算法
         cross_a1 = veca.cross(vec1)
         cross_a2 = veca.cross(vec2)
@@ -57,21 +61,22 @@ class PointVec(Point2D):
         cross_b4 = vecb.cross(vec4)
         cross_list = [cross_a1,cross_a2,cross_b3,cross_b4]
         #找到最小角度向量对应的另一边的向量
-        if i <= 1:
-            if cross_list[i] * cross_list[2] < 0:
-                min_index_other = 2
+        if max_index <= 1:
+            if cross_list[max_index] * cross_list[2] < 0:
+                max_index_other = 2
             else:
-                min_index_other = 3
+                max_index_other = 3
         else:
-            if cross_list[i] * cross_list[0] < 0:
-                min_index_other = 0
+            if cross_list[max_index] * cross_list[0] < 0:
+                max_index_other = 0
             else:
-                min_index_other = 1
+                max_index_other = 1
         #最后按照phase1，phase2的顺序输出向量
-        if min_index > min_index_other:
-            return vec_list[min_index_other],vec_list[min_index]
+        if max_index > max_index_other:
+            return vec_list[max_index_other],vec_list[max_index]
         else:
-            return vec_list[min_index],vec_list[min_index_other]
+            return vec_list[max_index],vec_list[max_index_other]
+
 
 class RectangleCornerPoint(PointVec):
     '矩形角上 向量点构造'

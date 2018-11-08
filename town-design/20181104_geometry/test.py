@@ -12,6 +12,14 @@ def constructNormalRec(start_pt_lst, length, width):
     rec = Rectangle(vec_lst, start_pt)
     return rec
 
+def constructNotNormalRecsSample1():
+    start_pt1, start_pt2 = Point2D([-2.989484, 2.030411]), Point2D([-0.040854, -9.81334])
+    vec_lst1 = [ Vector(4.523321,-1.382918), Vector(3.008505,9.840376), Vector(-4.523321,1.382918), Vector(-3.008505,-9.840376) ]
+    vec_lst2 = [Vector(8.19364, 4.667886), Vector(-2.098816, 3.684097), Vector(-8.19364, -4.667886), Vector(2.098816, -3.684097)]
+    rec1 = Rectangle(vec_lst1, start_pt1)
+    rec2 = Rectangle(vec_lst2, start_pt2)
+    return rec1, rec2
+
 def constructRelation(rec1, rec2):
     relation = RectangleRelation(rec1, rec2)
 
@@ -41,11 +49,15 @@ def testFindShortestPath(relation):
     print('path: ')
     print(path)
     return path
-    
+
+
 
 def main():
-    rec1 = constructNormalRec([0.0, 4.0], 4, 3)
-    rec2 = constructNormalRec([10.0, 0.0], 3, 5)
+    # ZeroDivisionError: float division by zero
+    #rec1 = constructNormalRec([0.0, 4.0], 4, 3)
+    #rec2 = constructNormalRec([10.0, 0.0], 3, 5)
+
+    rec1, rec2 = constructNotNormalRecsSample1()
     relation = constructRelation(rec1, rec2)
     #testFindShortestPath(relation)
     return
