@@ -6,8 +6,8 @@
 class AttrDisplay:
     ' 观察实例对象属性的类 '
     def gatherAttrs(self):
-        return ',\n'.join("{} = {}"
-                         .format(k, getattr(self, k))
+        return ', \n'.join("{}= {}"
+                         .format('*'+k, getattr(self, k))
                          for k in self.__dict__.keys())
 
     def __str__(self):
