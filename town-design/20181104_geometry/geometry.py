@@ -529,7 +529,8 @@ class RectangleRelation(AttrDisplay, object):
         # 根据矩形间距位置, 计算两个矩形之间的间距
         distance = 0
         return distance
-        
+
+# 需要添加入类方法
 def creatrecpointvec(rec1,rec2):
     rec1 = rs.PolylineVertices(rec1)
     origin_point1 = rec1[0]
