@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import pdb
-from geometry import RectangleCornerPoint, RectangleEdgePoint
+from geometry import RectangleCornerPoint, RectangleEdgePoint, Polylines, ReverseVector
 
 # 已经判断好两个矩形各个角点的可见性
 def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
@@ -26,28 +26,21 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     elif length2 == rec2.vec_length_lst[edge_index2]: pt2 = rec2.pt_lst[corner2_b]
     else:                                             pt2 = RectangleEdgePoint(rec2, edge_index2, length2)
 
-    """
-    print('test pt1, pt2: ')
-    print(pt1, pt2)
-    """
-
     isCorner_pt1, isCorner_pt2 = isinstance(pt1, RectangleCornerPoint), isinstance(pt2, RectangleCornerPoint)
     # 判断起点和终点之间的可见性
     isVisible = False
     if ((corner2_a in visiable_dict[corner1_a]) and (corner2_b in visiable_dict[corner1_a])
         and (corner2_a in visiable_dict[corner1_b]) and (corner2_b in visiable_dict[corner1_b])):
         isVisible = True
-    """
-    print('test isVisible: ')
-    print(isVisible)
-    """
+
     if isVisible: # 如果可见的情况(老师True)
         # 得到可见点之间的路径
         if isCorner_pt1 and isCorner_pt2:   # 如果选择的两个点都位于角点, 直接选择路径
             path = shortestPath_dict[pt1.corner_index][pt2.corner_index]
         else:  # 不位于角点, 需要重新计算
             edgePt_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量
-            reverse_vec = edgePt_vec.reverse()          # 矩形2指向矩形1的向量
+            #reverse_vec = edgePt_vec.reverse()          # 矩形2指向矩形1的向量
+            reverse_vec = ReverseVector(edgePt_vec)          # 矩形2指向矩形1的向量
             
             phrase1, isParallel1 = Phrase.judgeVecWithPhrase(pt1, edgePt_vec)   # 已经抽象
             phrase2, isParallel2 = Phrase.judgeVecWithPhrase(pt2, reverse_vec)
@@ -69,15 +62,18 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
                 # 两个都是角点, 而且被可见性遍历到, 这是不可能的, 只存在一个角点
                 if (isCorner_pt1 and corner1 == pt1.corner_index):
                     path_edge2 = pt2.cornerPath_dict[corner2][1]   # 矩形2 corner2角点出发到pt2的路径
-                    path = mid_path.addPolylines([path_edge2])
+                    #path = mid_path.addPolylines([path_edge2])
+                    path = Polylines([mid_path, path_edge2])
                 elif (isCorner_pt2 and corner2 == pt2.corner_index):
                     path_edge1 = pt1.cornerPath_dict[corner1][0]   # 矩形1边点(角点)出发到corner1角点路径
-                    path = path_edge1.addPolylines([mid_path])
+                    #path = path_edge1.addPolylines([mid_path])
+                    path = Polylines([path_edge1, mid_path])
                 else:
                     path_edge1 = pt1.cornerPath_dict[corner1][0]   # 矩形1边点(角点)出发到corner1角点路径
                     #pdb.set_trace()  # 运行到这里暂停
                     path_edge2 = pt2.cornerPath_dict[corner2][1]   # 矩形2 corner2角点出发到pt2的路径
-                    path = path_edge1.addPolylines([mid_path, path_edge2])    # ? 实现addPolyline方法
+                    #path = path_edge1.addPolylines([mid_path, path_edge2])    # ? 实现addPolyline方法
+                    path = Polylines([path_edge1, mid_path, path_edge2])
                 path_lst.append(path)
                 # 比较路径, 选择距离最短的路径
                 if path.length < min_length:

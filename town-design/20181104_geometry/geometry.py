@@ -134,7 +134,7 @@ class RectangleEdgePoint(PointVec):
         self.rec = rec                                 # 该点所属的矩形
         self.edge_index = edge_index                   # 所在矩形的边号
         self.corner_start_length_vec = length_vec            # 边上点到该边头点的向量(带长度)
-        self.corner_end_length_vec = length_vec.reverse()    # 边上点到该边尾的向量(带长度)
+        self.corner_end_length_vec = VectorTwoPts(new_pt, rec.pt_lst[index]) # 边上点到该边尾的向量(带长度)
         self.cornerPath_dict = {}                              # 该边缘点到各个角点的路径 {1: [p1, r_p1]}
         self.cornerPath_dict = self.getRectangleEdgeToCornerPath()
         return
@@ -143,15 +143,17 @@ class RectangleEdgePoint(PointVec):
     def getRectangleEdgeToCornerPath(self):
         # 得到边上到各个角点的路径, (所有路径放在字典里, 每一个对应有两条, [边点到角点的polyline, 角点到边点的polyline])
         cornerPath_dict = {0:[], 1:[], 2:[], 3:[]}
-        path_a_vec = self.corner_start_length_vec.reverse()
-        path_b_vec = self.corner_end_length_vec.reverse()
+        #path_a_vec = self.corner_start_length_vec.reverse()
+        path_a_vec = ReverseVector(self.corner_start_length_vec)
+        #path_b_vec = self.corner_end_length_vec.reverse()
+        path_b_vec = ReverseVector(self.corner_end_length_vec)
         a = self.edge_index
         b = 0 if a == 3 else a+1
         after_b = 0 if b == 3 else b+1
         before_a = 0 if after_b == 3 else after_b+1
 
         cornerPath_dict[a] = [Polyline(self, [path_a_vec]),
-                            Polyline(self.rec.pt_lst[a], [self.corner_start_length_vec])]
+                              Polyline(self.rec.pt_lst[a], [self.corner_start_length_vec])]
         cornerPath_dict[b] = [Polyline(self, [self.corner_end_length_vec]),
                             Polyline(self.rec.pt_lst[b], [path_b_vec])]
         cornerPath_dict[after_b] = [Polyline(self, [self.corner_end_length_vec, self.rec.vec_lst[b]]),
@@ -182,9 +184,11 @@ class Vector(AttrDisplay, object):
         #向量的叉积
         return self.x*vec.y-self.y*vec.x
 
+
     def reverse(self):
         # 取反向量
         return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
+
 
     def getLength(self):
         # 向量的长度
@@ -192,8 +196,14 @@ class Vector(AttrDisplay, object):
 
     def judgeVectorParallel(self, vec):
         # 判断实例向量和vec之间是否平行
-	if self.cross(vec) == 0: return True
-	else: return False
+        if self.cross(vec) == 0:
+            return True
+        else: return False
+class ReverseVector(Vector):
+    def __init__(self, vec):
+        self.x, self.y = -vec.x, -vec.y
+        self.length = vec.length
+        #super(ReverseVector, self).__init__(-vec.x, -vec.y, vec.length)
 
 class VectorTwoPts(Vector):
     '两点向量构造'
@@ -240,15 +250,9 @@ class Phrase(AttrDisplay, object):
     def judgeVecWithPhrase(pt, flode_vec):
         # 找到有效象限, 并判断向量与象限的两个向量是否存在平行
         phrase, isParallel = None, False
-        
-        # print('test: into judgeVecWithPhrase()')
-        
         for pi in range(4):
             if pt.isValidPhrase_lst[pi] == True:
                 isf_rst = pt.phrase_lst[pi].isFolde(flode_vec)
-                
-                #print('test: isf_rst = ' + str(isf_rst))   测试10.3bug
-                
                 if isf_rst:
                     phrase = pt.phrase_lst[pi]
                     if isf_rst == -1: isParallel = True
@@ -269,6 +273,7 @@ class Phrase(AttrDisplay, object):
             path_vec1 = VectorTwoPts(pt1, mid_pt)   # 两点构造有长度的向量
             path_vec2 = VectorTwoPts(mid_pt, pt2)
             path = Polyline(pt1, [path_vec1, path_vec2])  # 起始点和向量序构造一个Polyline实例
+        #pdb.set_trace()  # 运行到这里暂停
         return path
 
 class Polyline(AttrDisplay, object):
@@ -307,15 +312,21 @@ class Polyline(AttrDisplay, object):
         return cornerYinYangProperty_lst
 
     def addPolylines(self, polys):
-        # polys: 与之合并的其他顺序多段线list
-        # 根据构造函数确定属性, pt的属性丢失, 必要时候重构
-        new_polyline = None
-        new_start_pt = self.start_pt
-        new_vec_lst = self.vec_lst
+        # polys: 与之合并的其他顺序多段线list  # 之前改变了实例对象
+        # 根据构造函数确定属性, pt的属性丢失, 必要时候重构  (一定要重构)
+        new_poly = Polyline(self.start_pt, self.vec_lst)
         for i in range(len(polys)):
-            new_vec_lst.extend(polys[i].vec_lst)
-        new_polyline = Polyline(new_start_pt, new_vec_lst)
-        return new_polyline
+            new_poly.vec_lst.extend(polys[i].vec_lst)
+        return Polyline(new_poly.start_pt, new_poly.vec_lst)
+class Polylines(Polyline):
+    '多段Polylines构造'
+    def __init__(self, polys):
+        start_pt = polys[0].start_pt
+        vec_lst = []
+        for poly in polys: vec_lst.extend(poly.vec_lst)
+        super(Polylines, self).__init__(start_pt, vec_lst)
+        return
+            
     
 
 class Rectangle(Polyline):
@@ -408,7 +419,7 @@ class RectangleRelation(AttrDisplay, object):
                 pt1 = self.rec1.pt_lst[i]; pt2 = self.rec2.pt_lst[j]  # 矩形对应计算的角向量点
                 corner_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量
                 corner_vec_dict[i][j] = corner_vec          # 添加两个角点之间的向量
-                reverse_vec = corner_vec.reverse()          # 矩形2指向矩形1的向量
+                reverse_vec = ReverseVector(corner_vec)          # 矩形2指向矩形1的向量
                 isVisible = False
                 
                 phrase1, isParallel1 = Phrase.judgeVecWithPhrase(pt1, corner_vec)   # 已经抽象
@@ -431,11 +442,6 @@ class RectangleRelation(AttrDisplay, object):
                             break;
                 """
                 if phrase1 and phrase2 : isVisible = True
-
-                print('test: i = ' + str(i) + ', j = ' + str(j))
-                print('test: isVisible = ' + str(isVisible))
-                print('test: phrase1 = ' + str(phrase1) + ' phrase2 = ' + str(phrase2))
-
                 if not isVisible: continue       # 其中有一个角点被挡住
                 visiable_dict[i].append(j)       # 添加可见性
                 # 可抽象, 根据可见点的象限, 平行性, 指向性向量得到中间路径
@@ -458,7 +464,7 @@ class RectangleRelation(AttrDisplay, object):
         # 根据向量计算两个矩形是否平行
         parallel = False
         if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
-	    parallel = True
+            parallel = True
         return parallel
 
     def isInclude(self):
