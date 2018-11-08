@@ -54,12 +54,12 @@ def testFindShortestPath(relation):
 
 def main():
     # ZeroDivisionError: float division by zero
-    #rec1 = constructNormalRec([0.0, 4.0], 4, 3)
-    #rec2 = constructNormalRec([10.0, 0.0], 3, 5)
+    rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
+    rec2 = constructNormalRec([10.0, 0.0], 3.0, 5.0)
 
-    rec1, rec2 = constructNotNormalRecsSample1()
+    #rec1, rec2 = constructNotNormalRecsSample1()
     relation = constructRelation(rec1, rec2)
-    #testFindShortestPath(relation)
+    testFindShortestPath(relation)
     return
 if __name__ == '__main__':
     main()

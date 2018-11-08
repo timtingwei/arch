@@ -430,9 +430,10 @@ class RectangleRelation(object):
                             break;
                 """
                 if phrase1 and phrase2 : isVisible = True
-                
+
+                print('test: i = ' + str(i) + ', j = ' + str(j))
                 print('test: isVisible = ' + str(isVisible))
-                print('phrase1 = ' + str(phrase1) + ' phrase2 = ' + str(phrase2))
+                print('test: phrase1 = ' + str(phrase1) + ' phrase2 = ' + str(phrase2))
 
                 if not isVisible: continue       # 其中有一个角点被挡住
                 visiable_dict[i].append(j)       # 添加可见性
@@ -448,7 +449,7 @@ class RectangleRelation(object):
                     path_vec2 = VectorTwoPts(mid_pt, pt2)
                     path = Polyline(pt1, [path_vec1, path_vec2])
                 """
-                path_dict[i][j] = path
+                path_dict[i].append(path)       # 与可见性对应
 
         return visiable_dict, path_dict, corner_vec_dict
 

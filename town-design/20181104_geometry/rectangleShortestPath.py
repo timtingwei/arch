@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
+import pdb
 from geometry import RectangleCornerPoint, RectangleEdgePoint
 
 # 已经判断好两个矩形各个角点的可见性
@@ -44,7 +44,7 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
     if isVisible: # 如果可见的情况(老师True)
         # 得到可见点之间的路径
         if isCorner_pt1 and isCorner_pt2:   # 如果选择的两个点都位于角点, 直接选择路径
-            path = shorestPath_dict[pt1.corner_index][pt2.corner_index]
+            path = shortestPath_dict[pt1.corner_index][pt2.corner_index]
         else:  # 不位于角点, 需要重新计算
             edgePt_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量
             reverse_vec = edgePt_vec.reverse()          # 矩形2指向矩形1的向量
@@ -63,8 +63,8 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
         min_path, min_length = None, 2147483647  # 初始的最小距离为最大
         for corner1 in visiable_dict:
             for corner2_i in range(len(visiable_dict[corner1])):
-                corner2 = visiable_dict[corner2_i]
-                mid_path = shorestPath_dict[corner1][corner2_i]
+                corner2 = visiable_dict[corner1][corner2_i]
+                mid_path = shortestPath_dict[corner1][corner2_i]
                 # 在这里讨论pt1 或者 pt2是角点的情况
                 # 两个都是角点, 而且被可见性遍历到, 这是不可能的, 只存在一个角点
                 if (isCorner_pt1 and corner1 == pt1.corner_index):
@@ -75,13 +75,14 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
                     path = path_edge1.addPolylines([mid_path])
                 else:
                     path_edge1 = pt1.cornerPath_dict[corner1][0]   # 矩形1边点(角点)出发到corner1角点路径
+                    #pdb.set_trace()  # 运行到这里暂停
                     path_edge2 = pt2.cornerPath_dict[corner2][1]   # 矩形2 corner2角点出发到pt2的路径
                     path = path_edge1.addPolylines([mid_path, path_edge2])    # ? 实现addPolyline方法
                 path_lst.append(path)
                 # 比较路径, 选择距离最短的路径
-                if path.length() < min_length:
+                if path.length < min_length:
                     min_path = path
-                    min_length = path.length()
+                    min_length = path.length
 
         path = min_path
     return path
