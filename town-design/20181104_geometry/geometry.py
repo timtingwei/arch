@@ -305,7 +305,7 @@ class Polyline(AttrDisplay, object):
         vec = Vector(self.pt_lst[-1], self.pt_lst[0])
         vec_lst.append(vec)
         return vec_lst
-
+        
     def getYinYangProperty(self):
         # 得到多边形的端点阴阳角性质
         cornerYinYangProperty_lst = []
@@ -530,3 +530,35 @@ class RectangleRelation(AttrDisplay, object):
         distance = 0
         return distance
         
+def creatrecpointvec(rec1,rec2):
+    rec1 = rs.PolylineVertices(rec1)
+    origin_point1 = rec1[0]
+    point1 = rec1[1]
+    point_end = rec1[-2]
+    vecx1 = [point1[0]-origin_point1[0],point1[1]-origin_point1[1]]
+    vecy1 = [point_end[0]-origin_point1[0],point_end[1]-origin_point1[1]]
+
+    rec2 = rs.PolylineVertices(rec2)
+    origin_point2 = rec2[0]
+    point1 = rec2[1]
+    point_end = rec2[-2]
+    vecx2 = [point1[0]-origin_point2[0],point1[1]-origin_point2[1]]
+    vecy2 = [point_end[0]-origin_point2[0],point_end[1]-origin_point2[1]]
+    
+    return origin_point1,vecx1,vecy1,origin_point2,vecx2,vecy2
+
+def creatrecpoint(rec1_point,rec2_point):
+    return rs.CreatePoint(rec1_point),rs.CreatePoint(rec2_point)
+
+def creatpolyline(polyline):
+    start_pt = polyline.start_pt[:]
+    origin_point = rs.AddPoint(start_pt[0],start_pt[1],0)
+    vec_lst = polyline.vec_lst
+    point_list = [origin_point]
+    for i in vec_lst:
+        start_pt[0] += i[0]
+        start_pt[1] += i[1]
+        temp_point = rs.AddPoint(start_pt[0],start_pt[1],0)
+        point_list.append(temp_point)
+    poly = rs.AddPolyline(point_list)
+    return poly
