@@ -2,8 +2,9 @@
 #-*- coding: utf-8 -*-
 import math
 import pdb   # 调试
+from kits import AttrDisplay
 
-class Point2D(object):
+class Point2D(AttrDisplay, object):
     def __init__(self, coordinate):
         self.x, self.y = coordinate
         return
@@ -160,7 +161,7 @@ class RectangleEdgePoint(PointVec):
         return cornerPath_dict
 
 
-class Vector(object):
+class Vector(AttrDisplay, object):
     def __init__(self, vec_x, vec_y, length = None):
         self.x, self.y = vec_x, vec_y
         self.length = self.getLength() if (length is None) else length
@@ -207,7 +208,7 @@ class Point3D(Point2D):
         self.x, self.y, self.z = coordinate
         return
 
-class Phrase(object):
+class Phrase(AttrDisplay, object):
     '象限对象'
     def __init__(self, start_vec, end_vec):
         self.start_vec = start_vec  # 起始向量
@@ -270,7 +271,7 @@ class Phrase(object):
             path = Polyline(pt1, [path_vec1, path_vec2])  # 起始点和向量序构造一个Polyline实例
         return path
 
-class Polyline(object):
+class Polyline(AttrDisplay, object):
     '多段线构造'
     def __init__(self, start_pt, vec_lst):
         self.start_pt = start_pt
@@ -380,7 +381,7 @@ class Rectangle(Polyline):
                 return True
         return False
 
-class RectangleRelation(object):
+class RectangleRelation(AttrDisplay, object):
     ' 两个矩形的关系对象 '
     def __init__(self, rec1, rec2):
         self.rec1, self.rec2 = rec1, rec2
