@@ -104,7 +104,7 @@ class RectangleCornerPoint(PointVec):
         cross = 0 if after == 3 else after+1
         # 不记录到本点的长度
         cornerPath_dict[before] = [Polyline(self, [self.rec.vec_lst[after]]),
-                                   Polyline(self.rec.pt_lst[before], [self.rec.vec_lst[cross]])]
+                                   Polyline(self.rec.pt_lst[before], [self.rec.vec_lst[before]])]
         cornerPath_dict[after] = [Polyline(self, [self.rec.vec_lst[self.corner_index]]),
                                   Polyline(self.rec.pt_lst[after], [self.rec.vec_lst[cross]])]
         cornerPath_dict[cross] = [Polyline(self, [self.rec.vec_lst[self.corner_index], self.rec.vec_lst[after]]),
