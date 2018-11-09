@@ -464,7 +464,9 @@ class RectangleRelation(AttrDisplay, object):
     def judgeParallel(self):
         # 根据向量计算两个矩形是否平行
         parallel = False
-        if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
+        #if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
+        if (self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True
+            or self.dot(self.rec1.vec_lst[0],self.rec2.vec_lst[0]) == 0):
             parallel = True
         return parallel
 
