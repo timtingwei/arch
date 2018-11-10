@@ -93,15 +93,22 @@ class RectangleCornerPoint(PointVec):
 
         self.rec = rec                                 # 所属于的矩形
         self.corner_index = corner_index               # 所在矩形的角点编号
+        self.corner_index, self.corner_index_before, self.corner_index_after, self.corner_index_cross = getRectangleCornerIndex(corner_index)
         self.cornerPath_dict =  self.getRectangleCornerPath()  # 角点到各个角点的向量
         return
+
+    def getRectangleCornerIndex(self, corner_index):
+        # 根据选择的边点序号得到附近几个角点的编号
+        this = corner_index
+        before = 3 if corner_index == 0 else corner_index-1  # 是否需要记录属性
+        after = 0  if corner_index == 3 else corner_index+1
+        cross = 0  if after == 3 else after+1
+        return this, before, after, cross
 
     def getRectangleCornerPath(self):
         # 获得矩形内部角点到各个角点的路径(向量序)
         cornerPath_dict = {}   # 构造还需要根据计算确定下
-        before = 3 if self.corner_index == 0 else self.corner_index-1  # 是否需要记录属性
-        after = 0 if self.corner_index == 3 else self.corner_index+1
-        cross = 0 if after == 3 else after+1
+        before, after, cross = self.corner_index, self.corner_index_before, self.corner_index_after, self.corner_index_cross
         # 不记录到本点的长度
         cornerPath_dict[before] = [Polyline(self, [self.rec.vec_lst[after]]),
                                    Polyline(self.rec.pt_lst[before], [self.rec.vec_lst[before]])]
