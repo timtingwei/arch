@@ -126,7 +126,7 @@
 ## 3. 实现Polyline类的addPolyline()方法[X] -hzp提供
 ## 4. 增加向量的unit(), amplify()工具方法[X] -xyx提供
 ## 5. 优化构造, 存储并调用两个矩形角点之间的向量, 替换(initVecBetweenPts)[X]
-## 6. 补写两个向量平行Vector::isVectorParallel()和两个矩形平行RectangleRelation::isParallel()方法[]
+## 6. 补写两个向量平行Vector::isVectorParallel()和两个矩形平行RectangleRelation::isParallel()方法[X]
 ## 7. 优化: 省略掉一些initVecBetweenPts()的计算[X]
 ## 8. 优化: 最短路径问题, 在边上选择点时, 可能存在角点的问题[X]
 ## 9. 优化: initVecBetweenPts()修改成VectorTwoPts类构造[X]
@@ -158,3 +158,8 @@
 ##### 重构: 可见点路径选择计算层级重构[X]
 ## 3. 设计一个用于将底层架构的对象属性转换成gh数据的类[X]
 
+# 11.9
+## 1. 角点和边点的四个位点编号存成属性调用[-]
+
+# 11.11
+## 1. 建立在底层架构上, 组织排建筑结构算法[]
