@@ -385,7 +385,7 @@ class Rectangle(Polyline):
             ok = 1
             for z in self.pt_lst:
                 now_vector = Vector(point.x-z.x,point.y-z.y)
-                isfolder = i.isFolder(now_vector)
+                isfolder = i.isFolde(now_vector)
                 if isfolder == 0:
                     ok = 0
                     break
@@ -518,11 +518,11 @@ class RectangleRelation(AttrDisplay, object):
         if include[0] == 1 or include[0] == 2:
             '当被包含，并且端点与最近点的向量在同一象限'
             if include[0] == 1:
-                anwser = rec2.pointRecPharse(rec1.pt_lst[include[1]])
+                anwser = self.rec2.pointRecPharse(self.rec1.pt_lst[include[1]])
                 if anwser:
                     return 1
             if include[0] == 2:
-                anwser = rec1.pointRecPharse(rec2.pt_lst[include[1]])
+                anwser = self.rec1.pointRecPharse(self.rec2.pt_lst[include[1]])
                 if anwser:
                     return 1
         return 2    
