@@ -93,22 +93,15 @@ class RectangleCornerPoint(PointVec):
 
         self.rec = rec                                 # 所属于的矩形
         self.corner_index = corner_index               # 所在矩形的角点编号
-        self.corner_index, self.corner_index_before, self.corner_index_after, self.corner_index_cross = getRectangleCornerIndex(corner_index)
         self.cornerPath_dict =  self.getRectangleCornerPath()  # 角点到各个角点的向量
         return
-
-    def getRectangleCornerIndex(self, corner_index):
-        # 根据选择的边点序号得到附近几个角点的编号
-        this = corner_index
-        before = 3 if corner_index == 0 else corner_index-1  # 是否需要记录属性
-        after = 0  if corner_index == 3 else corner_index+1
-        cross = 0  if after == 3 else after+1
-        return this, before, after, cross
 
     def getRectangleCornerPath(self):
         # 获得矩形内部角点到各个角点的路径(向量序)
         cornerPath_dict = {}   # 构造还需要根据计算确定下
-        before, after, cross = self.corner_index, self.corner_index_before, self.corner_index_after, self.corner_index_cross
+        before = 3 if self.corner_index == 0 else self.corner_index-1  # 是否需要记录属性
+        after = 0 if self.corner_index == 3 else self.corner_index+1
+        cross = 0 if after == 3 else after+1
         # 不记录到本点的长度
         cornerPath_dict[before] = [Polyline(self, [self.rec.vec_lst[after]]),
                                    Polyline(self.rec.pt_lst[before], [self.rec.vec_lst[before]])]
@@ -471,9 +464,7 @@ class RectangleRelation(AttrDisplay, object):
     def judgeParallel(self):
         # 根据向量计算两个矩形是否平行
         parallel = False
-        #if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
-        if (self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True
-            or self.dot(self.rec1.vec_lst[0],self.rec2.vec_lst[0]) == 0):
+        if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
             parallel = True
         return parallel
 
@@ -535,8 +526,59 @@ class RectangleRelation(AttrDisplay, object):
                 if anwser:
                     return 1
         return 2    
-    def getGapDistance(self):
+    #得到一个线段和一个点判断这个点和是否存在垂点，如果有垂点输出垂点。没有返回flag
+    def getVerticalpoint(self,pt1,pt2,pt3):
+        'point1就是该点,point2是线段的原点,point3是线段的末点'
+        line_vector = Vector(pt3.x-pt2.x,pt3.y-pt2.y) 
+        point_vector = Vector(line_vector.y*(-1),line_vector.x)
+        vertical_point = rayrayIntersect(pt1,line_vector,pt2,point_vector)
+        #找到两个射线间的垂点，下面判断垂点是否在pt2与pt3的线段上
+        vertical_vector = Vector(vertical_point.x-pt2.x,vertical_point.y-pt2.y)
+        dotlin_lin = line_vector.dot(line_vector) 
+        dotlin_ver = line_vector.dot(vertical_vector)
+        if dotlin_ver < 0 or dotlin_ver > dotlin_lin:
+            return [False]
+        else:
+            return [True,vertical_point]
+
+
+
+    def getGapDiStance(self):
+               
         # 根据矩形间距位置, 计算两个矩形之间的间距
         distance = 0
         return distance
 
+# 需要添加入类方法
+def creatrecpointvec(rec1,rec2):
+    rec1 = rs.PolylineVertices(rec1)
+    origin_point1 = rec1[0]
+    point1 = rec1[1]
+    point_end = rec1[-2]
+    vecx1 = [point1[0]-origin_point1[0],point1[1]-origin_point1[1]]
+    vecy1 = [point_end[0]-origin_point1[0],point_end[1]-origin_point1[1]]
+
+    rec2 = rs.PolylineVertices(rec2)
+    origin_point2 = rec2[0]
+    point1 = rec2[1]
+    point_end = rec2[-2]
+    vecx2 = [point1[0]-origin_point2[0],point1[1]-origin_point2[1]]
+    vecy2 = [point_end[0]-origin_point2[0],point_end[1]-origin_point2[1]]
+    
+    return origin_point1,vecx1,vecy1,origin_point2,vecx2,vecy2
+
+def creatrecpoint(rec1_point,rec2_point):
+    return rs.CreatePoint(rec1_point),rs.CreatePoint(rec2_point)
+
+def creatpolyline(polyline):
+    start_pt = polyline.start_pt[:]
+    origin_point = rs.AddPoint(start_pt[0],start_pt[1],0)
+    vec_lst = polyline.vec_lst
+    point_list = [origin_point]
+    for i in vec_lst:
+        start_pt[0] += i[0]
+        start_pt[1] += i[1]
+        temp_point = rs.AddPoint(start_pt[0],start_pt[1],0)
+        point_list.append(temp_point)
+    poly = rs.AddPolyline(point_list)
+    return poly
