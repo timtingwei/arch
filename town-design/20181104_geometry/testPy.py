@@ -3,7 +3,7 @@
 
 # 用于测试python的各种语法
 
-from geometry import Point2D, PointVec, Vector, VectorTwoPts, RectangleCornerPoint, RectangleEdgePoint, Phrase, Polyline, Rectangle, RectangleRelation, ReverseVector
+#from geometry import Point2D, PointVec, Vector, VectorTwoPts, RectangleCornerPoint, RectangleEdgePoint, Phrase, Polyline, Rectangle, RectangleRelation, ReverseVector
 
 """
 class AttrDisplay:
@@ -58,6 +58,7 @@ def main():
     
     return
 """
+"""
 def testVector():
     vec = Vector(3.2, 1.1)
     #reverse_vec = vec.reverse()
@@ -65,9 +66,46 @@ def testVector():
     print(vec)
     print(reverse_vec)
     return vec
+"""
+
+class Display:
+    def display(self):
+        if isinstance(self, Parent):
+            print(self.a)
+        elif isinstance(self, Animal):
+            print(self.name)
+
+        return
+
+class Parent(Display, object):
+    def __init__(self):
+        self.a = 5
+        return
+
+class Child(Parent):
+    def __init__(self):
+        self.b = 6
+        super(Child, self).__init__()
+        return
+
+class Animal(Display, object):
+    def __init__(self, name):
+        self.name = name
+        return
+
+class Dog(Animal):
+    def __init__(self):
+        super(Dog, self).__init__('jack')
+        self.active = 'wang'
+        return
+
+
 
 def main():
-    testVector()
+    c = Child()
+    dog = Dog()
+    c.display()
+    dog.display()
     
 
 if __name__ == '__main__':
