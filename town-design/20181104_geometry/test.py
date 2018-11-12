@@ -82,6 +82,14 @@ def testRectangleCornerPoint():
     rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
     pt = RectangleCornerPoint(rec1, 0)
 
+def testRectangleCornerPoint(rec, index, length):
+    pt = RectangleCornerPoint(rec, index)
+    print('index = ' + str(index))
+    print(pt.index_this, pt.index_before, pt.index_after, pt.index_cross)
+    pt_edge = RectangleEdgePoint(rec, index, length)
+    print('pt_edge: ')
+    print(pt_edge.index_this, pt_edge.index_before, pt_edge.index_after, pt_edge.index_cross)
+
 def main():
     # ZeroDivisionError: float division by zero
     rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
@@ -89,6 +97,8 @@ def main():
 
     #rec1, rec2 = constructNotNormalRecsSample1()
     relation = constructRelation(rec1, rec2)
+    #index = 3; length = 3
+    #testRectangleCornerPoint(rec1, index, length)
     testFindShortestPath(relation)
     return
 

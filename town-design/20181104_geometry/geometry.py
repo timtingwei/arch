@@ -93,22 +93,16 @@ class RectangleCornerPoint(PointVec):
 
         self.rec = rec                                 # 所属于的矩形
         self.corner_index = corner_index               # 所在矩形的角点编号
-        self.corner_index, self.corner_index_before, self.corner_index_after, self.corner_index_cross = getRectangleCornerIndex(corner_index)
+        self.index_this, self.index_before, self.index_after, self.index_cross = Rectangle.getRectangleCornerIndex(corner_index)
+
         self.cornerPath_dict =  self.getRectangleCornerPath()  # 角点到各个角点的向量
         return
 
-    def getRectangleCornerIndex(self, corner_index):
-        # 根据选择的边点序号得到附近几个角点的编号
-        this = corner_index
-        before = 3 if corner_index == 0 else corner_index-1  # 是否需要记录属性
-        after = 0  if corner_index == 3 else corner_index+1
-        cross = 0  if after == 3 else after+1
-        return this, before, after, cross
 
     def getRectangleCornerPath(self):
         # 获得矩形内部角点到各个角点的路径(向量序)
         cornerPath_dict = {}   # 构造还需要根据计算确定下
-        before, after, cross = self.corner_index, self.corner_index_before, self.corner_index_after, self.corner_index_cross
+        before, after, cross = self.index_before, self.index_after, self.index_cross
         # 不记录到本点的长度
         cornerPath_dict[before] = [Polyline(self, [self.rec.vec_lst[after]]),
                                    Polyline(self.rec.pt_lst[before], [self.rec.vec_lst[before]])]
@@ -139,13 +133,15 @@ class RectangleEdgePoint(PointVec):
         self.isValidPhrase_lst[index] = False          # 边缘点面向的象限无效
 
         self.rec = rec                                 # 该点所属的矩形
+
         self.edge_index = edge_index                   # 所在矩形的边号
-        self.corner_start_length_vec = length_vec            # 边上点到该边头点的向量(带长度)
+        self.index_this, self.index_before, self.index_after, self.index_cross = Rectangle.getRectangleCornerIndex(edge_index)                       # 根据矩形边号得到其他角点编号
+        
+        self.corner_start_length_vec = length_vec      # 边上点到该边头点的向量(带长度)
         self.corner_end_length_vec = VectorTwoPts(new_pt, rec.pt_lst[index]) # 边上点到该边尾的向量(带长度)
         self.cornerPath_dict = {}                              # 该边缘点到各个角点的路径 {1: [p1, r_p1]}
         self.cornerPath_dict = self.getRectangleEdgeToCornerPath()
         return
-
 
     def getRectangleEdgeToCornerPath(self):
         # 得到边上到各个角点的路径, (所有路径放在字典里, 每一个对应有两条, [边点到角点的polyline, 角点到边点的polyline])
@@ -155,9 +151,12 @@ class RectangleEdgePoint(PointVec):
         #path_b_vec = self.corner_end_length_vec.reverse()
         path_b_vec = ReverseVector(self.corner_end_length_vec)
         a = self.edge_index
-        b = 0 if a == 3 else a+1
-        after_b = 0 if b == 3 else b+1
-        before_a = 0 if after_b == 3 else after_b+1
+        #b = 0 if a == 3 else a+1
+        b = self.index_after
+        #after_b = 0 if b == 3 else b+1
+        after_b = self.index_cross
+        #before_a = 0 if after_b == 3 else after_b+1
+        before_a = self.index_before
 
         cornerPath_dict[a] = [Polyline(self, [path_a_vec]),
                               Polyline(self.rec.pt_lst[a], [self.corner_start_length_vec])]
@@ -399,6 +398,15 @@ class Rectangle(Polyline):
             if ok == 1:
                 return True
         return False
+
+    @staticmethod
+    def getRectangleCornerIndex(edge_index):
+        # 根据选择的边点序号得到附近几个角点的编号(抽象出来, 在edge和corner矩形点类中调用)
+        this = edge_index
+        before = 3 if edge_index == 0 else edge_index-1  # 是否需要记录属性
+        after = 0  if edge_index == 3 else edge_index+1
+        cross = 0  if after == 3 else after+1
+        return this, before, after, cross
 
 class RectangleRelation(AttrDisplay, object):
     ' 两个矩形的关系对象 '
