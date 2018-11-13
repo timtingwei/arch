@@ -79,8 +79,9 @@ class GHDisplay:
         point_end = rec2[-2]
         vecx2 = [point1[0]-origin_point2[0],point1[1]-origin_point2[1]]
         vecy2 = [point_end[0]-origin_point2[0],point_end[1]-origin_point2[1]]
-    
+        
         return origin_point1,vecx1,vecy1,origin_point2,vecx2,vecy2
+
 
     @staticmethod
     def creatrecpoint(rec1_point,rec2_point):
@@ -97,6 +98,6 @@ class GHDisplay:
             start_pt[1] += i[1]
             temp_point = rs.AddPoint(start_pt[0],start_pt[1],0)
             point_list.append(temp_point)
-            poly = rs.AddPolyline(point_list)
+        poly = rs.AddPolyline(point_list)
         return poly
 

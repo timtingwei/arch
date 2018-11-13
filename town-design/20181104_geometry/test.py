@@ -124,12 +124,12 @@ def main():
     relation = constructRelation(rec1, rec2)
     #index = 3; length = 3
     #testRectangleCornerPoint(rec1, index, length)
-    testFindShortestPath(relation)
+    #testFindShortestPath(relation)
     return
 
 
 if __name__ == '__main__':
-    #main()
+    main()
     #testRectangleCornerPoint()
-    testArrangeRectangleWithEdgePoly()
+    #testArrangeRectangleWithEdgePoly()
     

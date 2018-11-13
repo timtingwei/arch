@@ -391,7 +391,7 @@ class Rectangle(Polyline):
             ok = 1
             for z in self.pt_lst:
                 now_vector = Vector(point.x-z.x,point.y-z.y)
-                isfolder = i.isFolder(now_vector)
+                isfolder = i.isFolde(now_vector)
                 if isfolder == 0:
                     ok = 0
                     break
@@ -479,9 +479,7 @@ class RectangleRelation(AttrDisplay, object):
     def judgeParallel(self):
         # 根据向量计算两个矩形是否平行
         parallel = False
-        #if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
-        if (self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True
-            or self.dot(self.rec1.vec_lst[0],self.rec2.vec_lst[0]) == 0):
+        if self.rec1.vec_lst[0].judgeVectorParallel(self.rec2.vec_lst[0]) == True:
             parallel = True
         return parallel
 
@@ -530,21 +528,101 @@ class RectangleRelation(AttrDisplay, object):
         #需要一个判断是否一个矩形包含另一个矩形的函数
         include = self.isInclude() #判断包含关系
         isparallel = self.isParallel #判断平行
-        if isparallel and (include[0] == 1 or include[0] == 2): #当平行并且1包2或2包1的情况下
+        if isparallel and include[0] == 0: #当平行并且1包2或2包1的情况下
             return 0
         if include[0] == 1 or include[0] == 2:
             '当被包含，并且端点与最近点的向量在同一象限'
             if include[0] == 1:
-                anwser = rec2.pointRecPharse(rec1.pt_lst[include[1]])
+                anwser = self.rec2.pointRecPharse(self.rec1.pt_lst[include[1]])
                 if anwser:
                     return 1
             if include[0] == 2:
-                anwser = rec1.pointRecPharse(rec2.pt_lst[include[1]])
+                anwser = self.rec1.pointRecPharse(self.rec2.pt_lst[include[1]])
                 if anwser:
                     return 1
         return 2    
-    def getGapDistance(self):
-        # 根据矩形间距位置, 计算两个矩形之间的间距
-        distance = 0
-        return distance
+    #得到一个线段和一个点判断这个点和是否存在垂点，如果有垂点输出垂点。没有返回flag
+    def getVerticalpoint(self,pt1,pt2,pt3):
+        'point1就是该点,point2是线段的原点,point3是线段的末点'
+        line_vector = Vector(pt3.x-pt2.x,pt3.y-pt2.y) 
+        point_vector = Vector(line_vector.y*(-1),line_vector.x)
+        vertical_point = PointVec.rayrayIntersect(pt1,line_vector,pt2,point_vector)
+        #找到两个射线间的垂点，下面判断垂点是否在pt2与pt3的线段上
+        vertical_vector = Vector(vertical_point.x-pt2.x,vertical_point.y-pt2.y)
+        dotlin_lin = line_vector.dot(line_vector)
+        dotlin_ver = line_vector.dot(vertical_vector)
+        if dotlin_ver < 0 or dotlin_ver > dotlin_lin:
+            return [False]
+        else:
+            return [True,vertical_point]
 
+    def getGapDistance(self):
+        # 根据矩形间距位置, 计算两个矩形之间的最短间距
+        #返回间距距离和两点
+        #得到两个矩形间的关系
+        disclass = self.gapClass
+        min_distance = 2147483647
+        if disclass == 0:
+            '当是边对边的情况的时候'
+            min_point1 = None
+            min_point2 = None
+            for i in self.rec1.pt_lst:
+                for z in range(0,4):
+                    point1 = i
+                    point2 = self.rec2.pt_lst[z]
+                    point3 = self.rec2.pt_lst[(z+1)%4]
+                    anwser = self.getVerticalpoint(point1,point2,point3)
+                    if anwser[0] == True:
+                        temp_vector = Vector(anwser[1].x-point1.x,anwser[1].y-point1.y)
+                        temp_distance = temp_vector.getLength()
+                        if temp_distance < min_distance:
+                            min_distance = temp_distance
+                            min_point1 = i
+                            min_point2 = anwser[1]
+            return [min_distance,min_point1,min_point2]
+        elif disclass == 1:
+            '当是角对角的情况的时候'
+            min_point1 = None
+            min_point2 = None
+            for i in self.rec1.pt_lst:
+                for z in self.rec2.pt_lst:
+                    point1 = i
+                    point2 = z
+                    temp_vector = Vector(point2.x-point1.x,point2.y-point1.y)
+                    temp_distance = temp_vector.getLength()
+                    if temp_distance < min_distance:
+                        min_distance = temp_distance
+                        min_point1 = point1
+                        min_point2 = point2
+            return [min_distance,min_point1,min_point2]
+        else:
+            '当是角对边的情况,要注意是什么矩形的角对什么矩形的边'
+            min_point1 = None
+            min_point2 = None
+            for i in self.rec1.pt_lst:
+                for z in range(0,4):
+                    point1 = i
+                    point2 = self.rec2.pt_lst[z]
+                    point3 = self.rec2.pt_lst[(z+1)%4]
+                    anwser = self.getVerticalpoint(point1,point2,point3)
+                    if anwser[0] == True:
+                        temp_vector = Vector(anwser[1].x-point1.x,anwser[1].y-point1.y)
+                        temp_distance = temp_vector.getLength()
+                        if temp_distance < min_distance:
+                            min_distance = temp_distance
+                            min_point1 = i
+                            min_point2 = anwser[1]
+            for i in self.rec2.pt_lst:
+                for z in range(0,4):
+                    point1 = i
+                    point2 = self.rec1.pt_lst[z]
+                    point3 = self.rec1.pt_lst[(z+1)%4]
+                    anwser = self.getVerticalpoint(point1,point2,point3)
+                    if anwser[0] == True:
+                        temp_vector = Vector(anwser[1].x-point1.x,anwser[1].y-point1.y)
+                        temp_distance = temp_vector.getLength()
+                        if temp_distance < min_distance:
+                            min_distance = temp_distance
+                            min_point1 = i
+                            min_point2 = anwser[1]
+            return [min_distance,min_point1,min_point2]
