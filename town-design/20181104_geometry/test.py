@@ -61,9 +61,9 @@ def constructRelation(rec1, rec2):
     return relation
 
 def testFindShortestPath(relation):
-    edge_index1 = 0; length1 = 3.5
-    edge_index2 = 1; length2 = 2.2
-    path = findShortestPath(relation, edge_index1, length1, edge_index2, length2)
+    #edge_index1 = 0; length1 = 3.5
+    #edge_index2 = 1; length2 = 2.2
+    path = findShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length2=0.0)
     #print('path: ')
     #print(path)
     print('path.keys: ')
@@ -90,11 +90,36 @@ def testRectangleCornerPoint(rec, index, length):
     print('pt_edge: ')
     print(pt_edge.index_this, pt_edge.index_before, pt_edge.index_after, pt_edge.index_cross)
 
+def arrangeRectangleWithEdgePoly():
+    # 根据地块边界多段线布置建筑
+
+    # 按矩形序得到的矩形间的最短路
+    # num = 10
+    # rec_lst = [None] * num       # 所有矩形列表
+    rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
+    rec2 = constructNormalRec([10.0, 0.0], 3.0, 5.0)
+    rec3 = constructNormalRec([0.0, -3.0], 3.3, 2.33)
+    rec4 = constructNormalRec([-1.5, -8.0], 4.4, 2.2)
+    rec_lst = [rec1, rec2, rec3, rec4]
+    edge_poly = None            # 地块边界
+    path_lst = []
+    for i in range(len(rec_lst)-1):
+        rec1 = rec_lst[i]; rec2 = rec_lst[i+1]
+        relation = constructRelation(rec1, rec2)
+        path = findShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length2=0.0)
+        path_lst.append(path)
+    return path_lst
+
+def testArrangeRectangleWithEdgePoly():
+    path_lst = arrangeRectangleWithEdgePoly()
+    print('path_lst: ')
+    print(path_lst)
+        
+        
 def main():
     # ZeroDivisionError: float division by zero
     rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
     rec2 = constructNormalRec([10.0, 0.0], 3.0, 5.0)
-
     #rec1, rec2 = constructNotNormalRecsSample1()
     relation = constructRelation(rec1, rec2)
     #index = 3; length = 3
@@ -104,6 +129,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
     #testRectangleCornerPoint()
+    testArrangeRectangleWithEdgePoly()
     

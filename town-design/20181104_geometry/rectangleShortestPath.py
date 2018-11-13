@@ -4,7 +4,7 @@ import pdb
 from geometry import RectangleCornerPoint, RectangleEdgePoint, Polylines, ReverseVector, VectorTwoPts, Phrase
 
 # 已经判断好两个矩形各个角点的可见性
-def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
+def findShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length2=0.0):
     # 把两个矩形的关系对象实例作为参数传入(关系对象只算一次), 计算得到两个矩形之间的最短路径
     path = None
     rec1, rec2 = relation.rec1, relation.rec2
@@ -58,7 +58,7 @@ def findShortestPath(relation, edge_index1, length1, edge_index2, length2):
                 mid_path = cornerShortestPath_dict[corner1][corner2_i]
                 if isCorner_pt1 and corner1 == pt1.corner_index:  # 端点就是pt1
                     edge2_path = pt2.cornerPath_dict[corner2][1]    # 进2
-                    merge_path_lst = [mid_path, merge_path_lst]
+                    merge_path_lst = [mid_path, edge2_path]
                 elif isCorner_pt2 and corner2 == pt2.corner_index:  # 端点就是pt2
                     edge1_path = pt1.cornerPath_dict[corner1][0]    # 出1
                     merge_path_lst = [edge1_path, mid_path]
