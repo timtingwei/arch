@@ -409,9 +409,22 @@ class Rectangle(Polyline):
         return this, before, after, cross
 class Arch(Rectangle):
     '建筑对象构造'
-    def __init__(self, length = None, width = None, area = None):
+    def __init__(self, length = None, width = None, area = None, arrangeClass = 0):
         self.length, self.width = length, width    # 建筑长宽
         # start_pt, vec_lst, vec_length_lst, pt_lst, phrase_lst, cornerYinYangProperty_lst
+        self.arrangeClass = arrangeClass     # 建筑的沿边界分布的分配方式(0是建筑垂线不会有超过poly部分)
+        return
+
+    def fillArchWithRectangle(self, start_pt, vec_lst):
+        # 用起始点和向量填充当前矩形
+        rec = super(Arch, self).__init__(start_pt, vec_lst)
+        rec.length, rec.width = self.length, self.width
+        self.start_pt = rec.start_pt
+        self.vec_lst = rec.vec_lst
+        self.vec_length_lst = rec.vec_length_lst
+        self.pt_lst = rec.pt_lst
+        self.phrase_lst = rec.phrase_lst
+        self.cornerYinYangProperty_lst = rec.cornerYinYangProperty_lst
         return
 
 class Edge(Polyline):
