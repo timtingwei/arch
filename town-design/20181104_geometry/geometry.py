@@ -407,6 +407,26 @@ class Rectangle(Polyline):
         after = 0  if edge_index == 3 else edge_index+1
         cross = 0  if after == 3 else after+1
         return this, before, after, cross
+class Arch(Rectangle):
+    '建筑对象构造'
+    def __init__(self, length = None, width = None, area = None):
+        self.length, self.width = length, width    # 建筑长宽
+        # start_pt, vec_lst, vec_length_lst, pt_lst, phrase_lst, cornerYinYangProperty_lst
+        return
+
+class Edge(Polyline):
+    '地块边界对象构造'
+    def __init__(self, start_pt, vec_lst):
+        super(Edge, self).__init__(start_pt, vec_lst)
+        self.edgeProperty_lst = []     # 边界性质
+
+class Road(Polyline):
+    '道路对象描述'
+    def __init__(self, start_pt, vec_lst):
+        super(Road, self).__init__(start_pt, vec_lst)
+        self.max_flow = 0.0    # 这条路的最大人流量
+        return
+    
 
 class RectangleRelation(AttrDisplay, object):
     ' 两个矩形的关系对象 '
