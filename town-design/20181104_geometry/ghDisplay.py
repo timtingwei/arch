@@ -101,3 +101,19 @@ class GHDisplay:
         poly = rs.AddPolyline(point_list)
         return poly
 
+    @staticmethod
+    def creatrects(rects)
+    start_pt = []
+    vect = []
+    for i in range (len(rects)):
+        pt_lst = rs.PolylineVertices(rects[i])
+        start_pt.append(pt_lst[0])
+        vec = [[],[],[],[]]
+        for z in range(4):
+            ve = rs.CreateVector([ pt_lst[z+1][0]-pt_lst[z][0] , pt_lst[z+1][1]-pt_lst[z][1] , 0 ])
+            vec[z].append(ve)
+        vect.append(vec)
+    vec_lst = []
+    for i in range(len(rects)):
+        for z in range(4):
+            vec_lst = vect[i][z][0]
