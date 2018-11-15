@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-from geometry import Point2D, PointVec, Vector, VectorTwoPts, RectangleCornerPoint, RectangleEdgePoint, Phrase, Polyline, Rectangle, RectangleRelation, ReverseVector
+from geometry import Point2D, PointVec, Vector, VectorTwoPts, RectangleCornerPoint, RectangleEdgePoint, Phrase, Polyline, Rectangle, RectangleRelation, ReverseVector, Edge, Arch
 from rectangleShortestPath import findShortestPath
+import rectangleArrange
+
 
 def constructNormalRec(start_pt_lst, length, width):
     start_pt = Point2D(start_pt_lst)
@@ -92,7 +94,6 @@ def testRectangleCornerPoint(rec, index, length):
 
 def arrangeRectangleWithEdgePoly():
     # 根据地块边界多段线布置建筑
-
     # 按矩形序得到的矩形间的最短路
     # num = 10
     # rec_lst = [None] * num       # 所有矩形列表
@@ -102,6 +103,8 @@ def arrangeRectangleWithEdgePoly():
     rec4 = constructNormalRec([-1.5, -8.0], 4.4, 2.2)
     rec_lst = [rec1, rec2, rec3, rec4]
     edge_poly = None            # 地块边界
+
+
     path_lst = []
     for i in range(len(rec_lst)-1):
         rec1 = rec_lst[i]; rec2 = rec_lst[i+1]
@@ -109,12 +112,35 @@ def arrangeRectangleWithEdgePoly():
         path = findShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length2=0.0)
         path_lst.append(path)
     return path_lst
+    
+    
 
-def testArrangeRectangleWithEdgePoly():
-    path_lst = arrangeRectangleWithEdgePoly()
-    print('path_lst: ')
-    print(path_lst)
-        
+
+def testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst, ):
+    #start_pt = Point2D([1.0, -2.0])
+    #vec_lst = [Vector(10.0, 0.0), Vector(0.0, 15.0), Vector(10.0, 20.0), Vector(10.0, 0.0)]
+    #edge = Edge(start_pt, vec_lst)
+    #dist_lst = [1.2, 0.0, 0.0, 6.0, 4.0, 9.0]
+    arch_lst = []
+    for i in range(len(length_lst)):
+        arch = Arch(length=length_lst[i], width=width_lst[i], arrangeClass=arrangeClass_lst[i])
+        arch_lst.append(arch)
+    """
+    arch_lst = [Arch(length=6.0, width=2.5),
+                Arch(length=3.0, width=2.5),
+                Arch(length=5.0, width=6),
+                Arch(length=2.2, width=2.5),
+                Arch(length=8.0, width=2.5),
+                Arch(length=3.0, width=2.5)]
+    """
+    
+    poly_index_lst, poly_lengthToStart_lst = rectangleArrange.computeArchPosition(edge, dist_lst, arch_lst)
+    #print(poly_index_lst)
+    #print(poly_lengthToStart_lst)
+    new_arch_lst = rectangleArrange.arrangeAllArchs(arch_lst, edge, poly_index_lst, poly_lengthToStart_lst)
+    #print(new_arch_lst)
+    return
+
         
 def main():
     # ZeroDivisionError: float division by zero
@@ -127,9 +153,20 @@ def main():
     #testFindShortestPath(relation)
     return
 
+def main_arrangeRectangleWithEdgePoly():
+    start_pt = Point2D([1.0, -2.0])
+    vec_lst = [Vector(10.0, 0.0), Vector(0.0, 15.0), Vector(10.0, 20.0), Vector(10.0, 0.0)]
+    edge = Edge(start_pt, vec_lst)
+    dist_lst = [1.2, 0.0, 0.0, 6.0, 4.0, 9.0]
+    length_lst = [6.0, 3.0, 5.0, 2.2, 8.0, 3.0]
+    width_lst =  [2.5, 2.5, 6.0, 2.5, 2.5, 2.5]
+    arrangeClass_lst = [0, 0, 0, 0, 0, 0, 0]
+    testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst, )
+    return
 
 if __name__ == '__main__':
-    main()
+    #main()
     #testRectangleCornerPoint()
     #testArrangeRectangleWithEdgePoly()
+    main_arrangeRectangleWithEdgePoly()
     
