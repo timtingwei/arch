@@ -180,3 +180,4 @@
 ### 1.3 debug: 添加逆时针旋转90度的向量方法Vector::rotateVertical()[X]
 ### 1.4 测试ReverseVector类和类方法Vector::reverse()的区别, 是否会改变实例对象[X]
 ### 1.5 debug: fillArchWithRectangle方法, 用超类构造函数填充[X]
+## 2. 增加:将gh的polyline转化成构造的polyline实例的静态方法[X]
