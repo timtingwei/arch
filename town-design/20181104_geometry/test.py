@@ -124,21 +124,12 @@ def testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arra
     arch_lst = []
     for i in range(len(length_lst)):
         arch = Arch(length=length_lst[i], width=width_lst[i], arrangeClass=arrangeClass_lst[i])
-        arch_lst.append(arch)
-    """
-    arch_lst = [Arch(length=6.0, width=2.5),
-                Arch(length=3.0, width=2.5),
-                Arch(length=5.0, width=6),
-                Arch(length=2.2, width=2.5),
-                Arch(length=8.0, width=2.5),
-                Arch(length=3.0, width=2.5)]
-    """
-    
+        arch_lst.append(arch)    
     poly_index_lst, poly_lengthToStart_lst = rectangleArrange.computeArchPosition(edge, dist_lst, arch_lst)
-    #print(poly_index_lst)
-    #print(poly_lengthToStart_lst)
+    print(poly_index_lst)
+    print(poly_lengthToStart_lst)
     new_arch_lst = rectangleArrange.arrangeAllArchs(arch_lst, edge, poly_index_lst, poly_lengthToStart_lst)
-    #print(new_arch_lst)
+    print(new_arch_lst)
     return
 
         
@@ -161,8 +152,8 @@ def main_arrangeRectangleWithEdgePoly():
     length_lst = [6.0, 3.0, 5.0, 2.2, 8.0, 3.0]
     width_lst =  [2.5, 2.5, 6.0, 2.5, 2.5, 2.5]
     arrangeClass_lst = [0, 0, 0, 0, 0, 0, 0]
-    testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst, )
-    return
+    arch_lst = testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst)
+    return arch_lst
 
 if __name__ == '__main__':
     #main()
