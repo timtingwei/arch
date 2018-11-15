@@ -287,10 +287,20 @@ class Polyline(AttrDisplay, object):
     def __init__(self, start_pt, vec_lst):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
-        self.pt_lst = self.getPointListFromVecs()
+        self.vec_length_lst = self.getVectorLengthList()
+        self.pt_lst = self.getPtListFromVectors()
         self.length = self.getLength()
         self.cornerYinYangProperty_lst = self.getYinYangProperty()
 
+
+    def getVectorLengthList(self):
+        # 根据所有向量将长度写入矩形实例属性
+        num = len(self.vec_lst)
+        length_lst = [0.0]*num
+        for i in range(num):
+            length_lst[i] = self.vec_lst[i].length
+        return length_lst
+        
     def getLength(self):
         # 返回polyline的每段向量长度和
         length = 0.0
@@ -298,9 +308,15 @@ class Polyline(AttrDisplay, object):
             length += vec.length
         return length
 
-    def getPointListFromVecs(self):
-        # 根据向量序得到点
-        return
+    def getPtListFromVectors(self):
+        # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
+        pt_lst = []
+        pt_lst.append(self.start_pt)
+        temp_pt = self.start_pt
+        for vec in self.vec_lst[:-1]:
+            temp_pt = temp_pt.addVec(vec)
+            pt_lst.append(temp_pt)
+        return pt_lst
 
     def getVectorListFromPts(self):
         # 根据顺序点得到向量
@@ -317,6 +333,7 @@ class Polyline(AttrDisplay, object):
         cornerYinYangProperty_lst = []
         return cornerYinYangProperty_lst
 
+    """
     def addPolylines(self, polys):
         # polys: 与之合并的其他顺序多段线list  # 之前改变了实例对象
         # 根据构造函数确定属性, pt的属性丢失, 必要时候重构  (一定要重构)
@@ -324,6 +341,7 @@ class Polyline(AttrDisplay, object):
         for i in range(len(polys)):
             new_poly.vec_lst.extend(polys[i].vec_lst)
         return Polyline(new_poly.start_pt, new_poly.vec_lst)
+    """
 class Polylines(Polyline):
     '多段Polylines构造'
     def __init__(self, polys):
@@ -338,14 +356,16 @@ class Polylines(Polyline):
 
 class Rectangle(Polyline):
     def __init__(self, vec_lst, start_pt):
-        self.start_pt = start_pt
-        self.vec_lst = vec_lst
-        self.vec_length_lst = self.getVectorLengthList()
-        self.pt_lst = self.getPtListFromVectors()
+        #self.start_pt = start_pt
+        #self.vec_lst = vec_lst
+        #self.vec_length_lst = self.getVectorLengthList()
+        #self.pt_lst = self.getPtListFromVectors()
+        super(Rectangle, self).__init__(vec_lst, start_pt)
         self.phrase_lst = self.getFourPhrase()
         self.pt_lst = self.revisePtToPtVec()    # 根据象限和向量得到角点向量点
         self.cornerYinYangProperty_lst = [1, 1, 1, 1]
 
+    """
     def getVectorLengthList(self):
         # 根据所有向量将长度写入矩形实例属性
         num = len(self.vec_lst)
@@ -353,8 +373,10 @@ class Rectangle(Polyline):
         for i in range(num):
             length_lst[i] = self.vec_lst[i].length
         return length_lst
+    """
             
 
+    """
     def getPtListFromVectors(self):
         # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
         pt_lst = []
@@ -364,6 +386,7 @@ class Rectangle(Polyline):
             temp_pt = temp_pt.addVec(vec)
             pt_lst.append(temp_pt)
         return pt_lst
+    """
 
     def getFourPhrase(self):
         # 根据x轴和y轴线得到四个象限
@@ -409,7 +432,7 @@ class Rectangle(Polyline):
         return this, before, after, cross
 class Arch(Rectangle):
     '建筑对象构造'
-    def __init__(self, length = None, width = None, area = None, arrangeClass = 0):
+    def __init__(self, length = None, width = None, arrangeClass = 0, area = None):
         self.length, self.width = length, width    # 建筑长宽
         # start_pt, vec_lst, vec_length_lst, pt_lst, phrase_lst, cornerYinYangProperty_lst
         self.arrangeClass = arrangeClass     # 建筑的沿边界分布的分配方式(0是建筑垂线不会有超过poly部分)
