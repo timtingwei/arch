@@ -3,7 +3,7 @@
 
 # 定义一些GH小工具, 将计算逻辑与工具逻辑分开
 import rhinoscriptsyntax as rs
-from geometry import Point2D, Vector, Polyline
+from geometry import Point2D, Vector, Polyline, VectorTwoPts
 class GHDisplay:
     '数据类型和GH的转换类'
     """
@@ -64,6 +64,20 @@ class GHDisplay:
         return poly
         
 
+
+    @staticmethod
+    def createPolyline(poly_gh):
+        # 将gh的polyline转化成构造的polyline实例
+        poly_pt_lst = rs.PolylineVertices(poly_gh)
+        start_pt = Point2D(poly_pt_lst[0][0], poly_pt_lst[0][1])
+        vec_lst = []
+        for i in range(len(poly_pt_lst)-1):
+            pt1 = poly_pt_lst[i]; pt2 = poly_pt_lst[i+1]
+            vec = Vector(pt2[0]-pt1[0], pt2[1]-pt1[1])
+            vec_lst.append(vec)
+        polyline = Polyline(start_pt, vec_lst)
+        return polyline
+    
     @staticmethod
     def creatrecpointvec(rec1,rec2):
         rec1 = rs.PolylineVertices(rec1)
@@ -87,6 +101,7 @@ class GHDisplay:
     def creatrecpoint(rec1_point,rec2_point):
         return rs.CreatePoint(rec1_point),rs.CreatePoint(rec2_point)
 
+    """
     @staticmethod
     def creatpolyline(polyline):
         start_pt = polyline.start_pt[:]
@@ -100,4 +115,5 @@ class GHDisplay:
             point_list.append(temp_point)
         poly = rs.AddPolyline(point_list)
         return poly
+    """
 
