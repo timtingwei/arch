@@ -68,6 +68,7 @@ def testVector():
     return vec
 """
 
+"""
 class Display:
     def display(self):
         if isinstance(self, Parent):
@@ -106,7 +107,31 @@ def main():
     dog = Dog()
     c.display()
     dog.display()
-    
+"""
+
+# 测试子类实例如何调用父类的方法
+class Parent(object):
+    def __init__(self, a):
+        self.a = a
+        #self.b = self.getName()
+    def getName(self):
+        print('getName in parent')
+        return
+
+class Child(Parent):
+    def __init__(self, b):
+        # 用超类继承属性
+        super(Child, self).__init__(3)
+        self.b = b
+    def getAge(self):
+        print('getAge in child')
+        return
+
+def main():
+    p = Parent(2)
+    child = Child(3)
+    child.getName()      # 继承类自然可以调用父类的方法
+    print(child.a)
 
 if __name__ == '__main__':
     main()
