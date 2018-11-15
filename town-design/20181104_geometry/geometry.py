@@ -195,10 +195,15 @@ class Vector(AttrDisplay, object):
         # 取反向量
         return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
 
+    def rotateVertical(self):
+        # 逆时针旋转90度
+        return Vector(-self.y, self.x, length = self.length)
+
 
     def getLength(self):
         # 向量的长度
         return math.sqrt(self.x * self.x + self.y * self.y)
+
 
     def judgeVectorParallel(self, vec):
         # 判断实例向量和vec之间是否平行
@@ -439,15 +444,8 @@ class Arch(Rectangle):
         return
 
     def fillArchWithRectangle(self, start_pt, vec_lst):
-        # 用起始点和向量填充当前矩形
-        rec = super(Arch, self).__init__(start_pt, vec_lst)
-        rec.length, rec.width = self.length, self.width
-        self.start_pt = rec.start_pt
-        self.vec_lst = rec.vec_lst
-        self.vec_length_lst = rec.vec_length_lst
-        self.pt_lst = rec.pt_lst
-        self.phrase_lst = rec.phrase_lst
-        self.cornerYinYangProperty_lst = rec.cornerYinYangProperty_lst
+        # 用起始点和向量填充当前arch实例
+        super(Arch, self).__init__(start_pt, vec_lst)
         return
 
 class Edge(Polyline):

@@ -23,13 +23,13 @@ def computeArchPosition(edge, dist_lst, arch_lst, angle_lst = None):
             while poly_index < poly_num:
                 poly_lengthToStart += dist_lst[i]
                 start_length = poly_lengthToStart  # 矩形头点距离
-                if isBetweenPoly(start_length, edge, poly_index):
+                if not isBetweenPoly(start_length, edge, poly_index):
                     poly_index += 1
                     poly_lengthToStart = 0.0
                     continue;
                 poly_lengthToStart += arch.length   # 矩形尾点距离
                 end_length = poly_lengthToStart
-                if isBetweenPoly(end_length, edge, poly_index):
+                if not isBetweenPoly(end_length, edge, poly_index):
                     poly_index += 1
                     poly_lengthToStart = 0.0
                     continue;
@@ -47,23 +47,24 @@ def computeArchPosition(edge, dist_lst, arch_lst, angle_lst = None):
 # 根据线段, 线段索引, 相对长度, 原有宽深的矩形实例, 构造分配好位置的矩形
 def arrangeArch(arch, edge, poly_index, poly_lengthToStart, offset = None):
     origin_vec1 = edge.vec_lst[poly_index].unit()                 # 得到该线段的单位向量
-    start_length_vec = origin_vec1.amptify(poly_lengthToStart)    # 线段初始点到位点的向量
+    start_length_vec = origin_vec1.amplify(poly_lengthToStart)    # 线段初始点到位点的向量
     start_pt = edge.pt_lst[poly_index].addVec(start_length_vec)   # 矩形的初始位点
     # 得到偏移的向量
 
-    origin_vec2 = origin_vec1.rotate(90)   # 得到该线段向量的垂直向量
-    vec_lst = [origin_vec1, origin_vec2, ReverseVector(origin_vec1), ReverseVector(origin_vec2)]
-
+    origin_vec2 = origin_vec1.rotateVertical()      # 得到该线段向量的垂直向量
+    vec1, vec2 = origin_vec1.amplify(arch.length), origin_vec2.amplify(arch.width)
+    
+    vec_lst = [vec1, vec2, vec1.reverse(),vec2.reverse()]  # 矩形的四个向量
     arch.fillArchWithRectangle(start_pt, vec_lst)
     return arch
 
 # 沿着边界布置建筑
 def arrangeAllArchs(arch_lst, edge, poly_index_lst, poly_lengthToStart_lst):
     # 构造所有新矩形
-    arch_lst = []
+    new_arch_lst = []
     for i in range(len(poly_index_lst)):
         arch = arrangeArch(arch_lst[i], edge, poly_index_lst[i], poly_lengthToStart_lst[i])
-        arch_lst.append(arch)
-    return arch_lst
+        new_arch_lst.append(arch)
+    return new_arch_lst
 
         
