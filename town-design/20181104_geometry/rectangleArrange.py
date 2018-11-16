@@ -35,7 +35,7 @@ def computeArchPosition(edge, dist_lst, arch_lst, angle_lst = None):
                     continue;
                 # 此时矩形完全在线段上, 是满足条件的
                 poly_index_lst_rst.append(poly_index)
-                poly_lengthToStart_lst_rst.append(poly_lengthToStart)
+                poly_lengthToStart_lst_rst.append(start_length)
                 break;  # 退出while
 
         elif arch.arrangeClass == 1:  # 在线段外, 缩小长度, 填满这段线

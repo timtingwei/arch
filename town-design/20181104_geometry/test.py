@@ -154,13 +154,13 @@ def main_arrangeRectangleWithEdgePoly():
     width_lst =  [2.5, 2.5, 6.0, 2.5, 2.5, 2.5]
     arrangeClass_lst = [0, 0, 0, 0, 0, 0, 0]
     """
-    start_pt = Point2D([1.0, -2.0])
-    vec_lst = [Vector(10.0, 0.0), Vector(0.0, 15.0), Vector(10.0, 20.0), Vector(10.0, 0.0)]
+    start_pt = Point2D([0.0, 0.0])
+    vec_lst = [Vector(13.0, 0.0)]
     edge = Edge(start_pt, vec_lst)
-    dist_lst = [1.2, 0.0, 0.0, 6.0, 4.0, 9.0]
-    length_lst = [6.0, 3.0, 5.0, 2.2, 8.0, 3.0]
-    width_lst =  [2.5, 2.5, 6.0, 2.5, 2.5, 2.5]
-    arrangeClass_lst = [0, 0, 0, 0, 0, 0, 0]
+    dist_lst = [3.0, 0.0, 1.0, 1.0]
+    length_lst = [2.0, 2.0, 3.0, 2.0]
+    width_lst =  [1.0, 2.0, 1.5, 1.5]
+    arrangeClass_lst = [0, 0, 0, 0]
     arch_lst = testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst)
     return arch_lst
 
