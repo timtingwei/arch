@@ -11,7 +11,7 @@ def constructNormalRec(start_pt_lst, length, width):
     length_vec = Vector(length, 0.0)
     width_vec = Vector(0.0, width)
     vec_lst = [length_vec, width_vec, ReverseVector(length_vec), ReverseVector(width_vec)]
-    rec = Rectangle(vec_lst, start_pt)
+    rec = Rectangle(start_pt, vec_lst)
     #print("print(rec.vec_lst): ")
     #for vec in rec.vec_lst:
     #    print(vec)
@@ -21,8 +21,8 @@ def constructNotNormalRecsSample1():
     start_pt1, start_pt2 = Point2D([-2.989484, 2.030411]), Point2D([-0.040854, -9.81334])
     vec_lst1 = [ Vector(4.523321,-1.382918), Vector(3.008505,9.840376), Vector(-4.523321,1.382918), Vector(-3.008505,-9.840376) ]
     vec_lst2 = [Vector(8.19364, 4.667886), Vector(-2.098816, 3.684097), Vector(-8.19364, -4.667886), Vector(2.098816, -3.684097)]
-    rec1 = Rectangle(vec_lst1, start_pt1)
-    rec2 = Rectangle(vec_lst2, start_pt2)
+    rec1 = Rectangle(start_pt1, vec_lst1)
+    rec2 = Rectangle(start_pt2, vec_lst2)
     return rec1, rec2
 
 def constructRelation(rec1, rec2):
@@ -141,10 +141,19 @@ def main():
     relation = constructRelation(rec1, rec2)
     #index = 3; length = 3
     #testRectangleCornerPoint(rec1, index, length)
-    #testFindShortestPath(relation)
+    testFindShortestPath(relation)
     return
 
 def main_arrangeRectangleWithEdgePoly():
+    """
+    start_pt = Point2D([1.0, -2.0])
+    vec_lst = [Vector(10.0, 0.0), Vector(0.0, 15.0), Vector(10.0, 20.0), Vector(10.0, 0.0)]
+    edge = Edge(start_pt, vec_lst)
+    dist_lst = [1.2, 0.0, 0.0, 6.0, 4.0, 9.0]
+    length_lst = [6.0, 3.0, 5.0, 2.2, 8.0, 3.0]
+    width_lst =  [2.5, 2.5, 6.0, 2.5, 2.5, 2.5]
+    arrangeClass_lst = [0, 0, 0, 0, 0, 0, 0]
+    """
     start_pt = Point2D([1.0, -2.0])
     vec_lst = [Vector(10.0, 0.0), Vector(0.0, 15.0), Vector(10.0, 20.0), Vector(10.0, 0.0)]
     edge = Edge(start_pt, vec_lst)
@@ -157,7 +166,5 @@ def main_arrangeRectangleWithEdgePoly():
 
 if __name__ == '__main__':
     #main()
-    #testRectangleCornerPoint()
-    #testArrangeRectangleWithEdgePoly()
     main_arrangeRectangleWithEdgePoly()
     

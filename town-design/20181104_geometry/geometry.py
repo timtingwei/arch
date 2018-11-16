@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import math
-import pdb   # 调试
+#import pdb   # 调试
 from kits import AttrDisplay
 
 class Point2D(AttrDisplay, object):
@@ -360,38 +360,15 @@ class Polylines(Polyline):
     
 
 class Rectangle(Polyline):
-    def __init__(self, vec_lst, start_pt):
+    def __init__(self, start_pt, vec_lst):
         #self.start_pt = start_pt
         #self.vec_lst = vec_lst
         #self.vec_length_lst = self.getVectorLengthList()
         #self.pt_lst = self.getPtListFromVectors()
-        super(Rectangle, self).__init__(vec_lst, start_pt)
+        super(Rectangle, self).__init__(start_pt, vec_lst)
         self.phrase_lst = self.getFourPhrase()
         self.pt_lst = self.revisePtToPtVec()    # 根据象限和向量得到角点向量点
         self.cornerYinYangProperty_lst = [1, 1, 1, 1]
-
-    """
-    def getVectorLengthList(self):
-        # 根据所有向量将长度写入矩形实例属性
-        num = len(self.vec_lst)
-        length_lst = [0.0]*num
-        for i in range(num):
-            length_lst[i] = self.vec_lst[i].length
-        return length_lst
-    """
-            
-
-    """
-    def getPtListFromVectors(self):
-        # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
-        pt_lst = []
-        pt_lst.append(self.start_pt)
-        temp_pt = self.start_pt
-        for vec in self.vec_lst[:-1]:
-            temp_pt = temp_pt.addVec(vec)
-            pt_lst.append(temp_pt)
-        return pt_lst
-    """
 
     def getFourPhrase(self):
         # 根据x轴和y轴线得到四个象限

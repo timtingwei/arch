@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-import pdb
 from geometry import RectangleCornerPoint, RectangleEdgePoint, Polylines, ReverseVector, VectorTwoPts, Phrase
 
 # 已经判断好两个矩形各个角点的可见性
