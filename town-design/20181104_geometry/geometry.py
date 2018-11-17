@@ -544,9 +544,9 @@ class RectangleRelation(AttrDisplay, object):
     #得到一个线段和一个点判断这个点和是否存在垂点，如果有垂点输出垂点。没有返回flag
     def getVerticalpoint(self,pt1,pt2,pt3):
         'point1就是该点,point2是线段的原点,point3是线段的末点'
-        line_vector = Vector(pt3.x-pt2.x,pt3.y-pt2.y) 
-        point_vector = Vector(line_vector.y*(-1),line_vector.x)
-        vertical_point = PointVec.rayrayIntersect(pt1,line_vector,pt2,point_vector)
+        line_vector = Vector(pt3.x-pt2.x,pt3.y-pt2.y) #线段向量 
+        point_vector = Vector(line_vector.y*(-1),line_vector.x) #pt1向量
+        vertical_point = PointVec.rayrayIntersect(pt1,point_vector,pt2,line_vector)
         #找到两个射线间的垂点，下面判断垂点是否在pt2与pt3的线段上
         vertical_vector = Vector(vertical_point.x-pt2.x,vertical_point.y-pt2.y)
         dotlin_lin = line_vector.dot(line_vector)
