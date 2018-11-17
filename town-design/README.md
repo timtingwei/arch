@@ -181,3 +181,14 @@
 ### 1.4 测试ReverseVector类和类方法Vector::reverse()的区别, 是否会改变实例对象[X]
 ### 1.5 debug: fillArchWithRectangle方法, 用超类构造函数填充[X]
 ## 2. 增加:将gh的polyline转化成构造的polyline实例的静态方法[X]
+
+----
+stone在这里说要暂停技术, 那我就自己并行着做了.
+
+# 11.16
+## 1. debug: 修改polyline的构造veclst和startpt的顺序, 做到几个继承类和调用的统一[X]
+## 2. 思路错误: 沿着边界排建筑的改变长度的同时间距改变的原因[X]-> 应该记录start_length
+
+# 11.17
+## 3. 将面积转宽深机制与沿着边界排房子结合起来[X]
+## 4. debug: 修改hxj测试最短路径时, 选择点为角点时, 路径不存在列表中的问题[]
