@@ -25,6 +25,14 @@ def constructNotNormalRecsSample1():
     rec2 = Rectangle(start_pt2, vec_lst2)
     return rec1, rec2
 
+def constructNotNormalRecsSample3():
+    start_pt1, start_pt2 = Point2D([900.447964935,239.278153979]), Point2D([3465.71194023,2299.56214292])
+    vec_lst1 = [Vector(-760.288490508,514.115187156), Vector(-209.600807071,-309.963769207), Vector(760.288490508,-514.115187156), Vector(209.600807071,309.963769207) ]
+    vec_lst2 = [Vector(-567.049662268,772.009549672), Vector(-393.991080522,-289.390862123), Vector(567.049662268,-772.009549672), Vector(393.991080522,289.390862123)]
+    rec1 = Rectangle(start_pt1, vec_lst1)
+    rec2 = Rectangle(start_pt2, vec_lst2)
+    return rec1, rec2
+
 def constructRelation(rec1, rec2):
     relation = RectangleRelation(rec1, rec2)
 
@@ -62,10 +70,10 @@ def constructRelation(rec1, rec2):
 
     return relation
 
-def testFindShortestPath(relation):
+def testFindShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length2=0.0):
     #edge_index1 = 0; length1 = 3.5
     #edge_index2 = 1; length2 = 2.2
-    path = findShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length2=0.0)
+    path = findShortestPath(relation, edge_index1, length1, edge_index2, length2)
     #print('path: ')
     #print(path)
     print('path.keys: ')
@@ -135,15 +143,17 @@ def testArrangeRectangleWithEdgePoly(edge, area_lst, length_domain_lst, width_do
     return
 
         
-def main():
+def main_shortestPath():
     # ZeroDivisionError: float division by zero
-    rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
-    rec2 = constructNormalRec([10.0, 0.0], 3.0, 5.0)
+    #rec1 = constructNormalRec([0.0, 4.0], 4.0, 3.0)
+    #rec2 = constructNormalRec([10.0, 0.0], 3.0, 5.0)
     #rec1, rec2 = constructNotNormalRecsSample1()
+    # 矩形最短路径, 选择点为角点时报错
+    rec1, rec2 = constructNotNormalRecsSample3()
     relation = constructRelation(rec1, rec2)
     #index = 3; length = 3
     #testRectangleCornerPoint(rec1, index, length)
-    testFindShortestPath(relation)
+    testFindShortestPath(relation, 0, 0.0, 3, 0.0)
     return
 
 def main_arrangeRectangleWithEdgePoly():
@@ -172,6 +182,6 @@ def main_arrangeRectangleWithEdgePoly():
     return arch_lst
 
 if __name__ == '__main__':
-    #main()
-    main_arrangeRectangleWithEdgePoly()
+    main_shortestPath()
+    #main_arrangeRectangleWithEdgePoly()
     
