@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-from geometry import Point2D, PointVec, Vector, VectorTwoPts, RectangleCornerPoint, RectangleEdgePoint, Phrase, Polyline, Rectangle, RectangleRelation, ReverseVector, Edge, Arch
+from geometry import Point2D, PointVec, Vector, VectorTwoPts, RectangleCornerPoint, RectangleEdgePoint, Phrase, Polyline, Rectangle, RectangleRelation, ReverseVector, Edge, Arch, Domain
 from rectangleShortestPath import findShortestPath
 import rectangleArrange
 
@@ -116,16 +116,18 @@ def arrangeRectangleWithEdgePoly():
     
 
 
-def testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst, ):
+def testArrangeRectangleWithEdgePoly(edge, area_lst, length_domain_lst, width_domain_lst, dist_lst, length_lst, width_lst, flag_lst, arrangeClass_lst):
     #start_pt = Point2D([1.0, -2.0])
     #vec_lst = [Vector(10.0, 0.0), Vector(0.0, 15.0), Vector(10.0, 20.0), Vector(10.0, 0.0)]
     #edge = Edge(start_pt, vec_lst)
     #dist_lst = [1.2, 0.0, 0.0, 6.0, 4.0, 9.0]
     arch_lst = []
     for i in range(len(length_lst)):
-        arch = Arch(length=length_lst[i], width=width_lst[i], arrangeClass=arrangeClass_lst[i])
+        #arch = Arch(length=length_lst[i], width=width_lst[i], arrangeClass=arrangeClass_lst[i])
+        arch = Arch(area_lst[i], length_domain_lst[i], width_domain_lst[i], length_lst[i], width_lst[i], flag_lst[i], arrangeClass_lst[i])
         arch_lst.append(arch)    
     poly_index_lst, poly_lengthToStart_lst = rectangleArrange.computeArchPosition(edge, dist_lst, arch_lst)
+    print(arch_lst[0].area)
     print(poly_index_lst)
     print(poly_lengthToStart_lst)
     new_arch_lst = rectangleArrange.arrangeAllArchs(arch_lst, edge, poly_index_lst, poly_lengthToStart_lst)
@@ -158,10 +160,15 @@ def main_arrangeRectangleWithEdgePoly():
     vec_lst = [Vector(13.0, 0.0)]
     edge = Edge(start_pt, vec_lst)
     dist_lst = [3.0, 0.0, 1.0, 1.0]
+    area_lst = [5.2, 3.2, 4.3, 8.5]
+    length_domain_lst = [Domain(1.0, 4.0), Domain(2.0, 6.0), Domain(1.0, 7.0), Domain(2.0, 6.0)]
+    width_domain_lst = [Domain(1.0, 4.0), Domain(2.0, 6.0), Domain(1.0, 7.0), Domain(2.0, 6.0)]
     length_lst = [2.0, 2.0, 3.0, 2.0]
     width_lst =  [1.0, 2.0, 1.5, 1.5]
+    flag_lst = [0, 1, 0, 1]
     arrangeClass_lst = [0, 0, 0, 0]
-    arch_lst = testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst)
+    # arch_lst = testArrangeRectangleWithEdgePoly(edge, dist_lst, length_lst, width_lst, arrangeClass_lst)
+    arch_lst = testArrangeRectangleWithEdgePoly(edge, area_lst, length_domain_lst, width_domain_lst, dist_lst, length_lst, width_lst, flag_lst, arrangeClass_lst)
     return arch_lst
 
 if __name__ == '__main__':
