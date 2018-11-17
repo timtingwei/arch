@@ -171,8 +171,21 @@ def main_arrangeRectangleWithEdgePoly():
     edge = Edge(start_pt, vec_lst)
     dist_lst = [3.0, 0.0, 1.0, 1.0]
     area_lst = [5.2, 3.2, 4.3, 8.5]
-    length_domain_lst = [Domain(1.0, 4.0), Domain(2.0, 6.0), Domain(1.0, 7.0), Domain(2.0, 6.0)]
-    width_domain_lst = [Domain(1.0, 4.0), Domain(2.0, 6.0), Domain(1.0, 7.0), Domain(2.0, 6.0)]
+    length_domain_lst = []
+    width_domain_lst = []
+    # 用左右值列表构造区间(轩总可以照这个思路自己设计下, edge同理)
+    length_domain_left_lst =  [1.0, 2.0, 1.0, 2.0]
+    length_domain_right_lst = [4.0, 6.0, 7.0, 6.0]
+    width_domain_left_lst =  [1.0, 2.0, 1.0, 2.0]
+    width_domain_right_lst = [4.0, 6.0, 7.0, 6.0]
+    for i in range(len(length_domain_left_lst)):
+        lenth_domain = Domain(length_domain_left_lst[i], length_domain_right_lst[i])
+        width_domain = Domain(width_domain_left_lst[i], width_domain_right_lst[i])
+        length_domain_lst.append(lenth_domain)
+        width_domain_lst.append(width_domain)
+
+    #length_domain_lst = [Domain(1.0, 4.0), Domain(2.0, 6.0), Domain(1.0, 7.0), Domain(2.0, 6.0)]
+    #width_domain_lst = [Domain(1.0, 4.0), Domain(2.0, 6.0), Domain(1.0, 7.0), Domain(2.0, 6.0)]
     length_lst = [2.0, 2.0, 3.0, 2.0]
     width_lst =  [1.0, 2.0, 1.5, 1.5]
     flag_lst = [0, 1, 0, 1]
@@ -182,6 +195,6 @@ def main_arrangeRectangleWithEdgePoly():
     return arch_lst
 
 if __name__ == '__main__':
-    main_shortestPath()
-    #main_arrangeRectangleWithEdgePoly()
+    #main_shortestPath()
+    main_arrangeRectangleWithEdgePoly()
     
