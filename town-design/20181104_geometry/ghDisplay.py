@@ -121,7 +121,7 @@ class GHDisplay:
     def createPolyline(poly_gh):
         # 将gh的polyline转化成构造的polyline实例
         poly_pt_lst = rs.PolylineVertices(poly_gh)
-        start_pt = Point2D(poly_pt_lst[0][0], poly_pt_lst[0][1])
+        start_pt = Point2D([poly_pt_lst[0][0], poly_pt_lst[0][1]])
         vec_lst = []
         for i in range(len(poly_pt_lst)-1):
             pt1 = poly_pt_lst[i]; pt2 = poly_pt_lst[i+1]
@@ -191,7 +191,7 @@ class GHDisplay:
                                        width_domain_left_lst, width_domain_right_lst,
                                        length_lst, width_lst, flag_lst,
                                        arrangeClass_lst):
-        '''
+        """
         展示根据地块边界多段线布置建筑
         @params:
         input:
@@ -206,7 +206,7 @@ class GHDisplay:
             arrangeClass_lst: 每个建筑排列性质, 0->出头就排到下一段满足的
         output:
             poly_gh_lst: 每个建筑在gh里的多段线
-        '''
+        """
         edge = GHDisplay.createPolyline(poly_gh)  # ?这里只是polyine, 不具备edge属性, 到时再改
         length_domain_lst = [Domain(length_domain_left_lst[i], length_domain_right_lst[i]) for i in range(len(length_domain_left_lst))]
         width_domain_lst = [Domain(width_domain_left_lst[i], width_domain_right_lst[i]) for i in range(len(width_domain_left_lst))]
@@ -222,5 +222,5 @@ class GHDisplay:
         #print(poly_lengthToStart_lst)
         #print(new_arch_lst)
         # 转换成gh多段线实例
-        poly_gh_lst = [GHDisplay.displayPolyline(poly) for arch in new_arch_lst]
+        poly_gh_lst = [GHDisplay.displayPolyline(arch) for arch in new_arch_lst]
         return poly_gh_lst
