@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-#test
-# 定义一些GH小工具, 将计算逻辑与工具逻辑分开
+# 定义一些GH小工具, 将计算逻辑与展示逻辑分开
+# 将rhinoscriptsyntax, geometry, rectangleArrange, rectangleShortestPath 作为lib
 import rhinoscriptsyntax as rs
-from geometry import Point2D, Vector, Polyline, Rectangle
+from geometry import Point2D, Vector, Polyline, Rectangle, Domain, Arch
+import rectangleArrange
+import rectangleShortestPath
+
 class GHDisplay:
     '数据类型和GH的转换类'
     """
@@ -180,3 +183,44 @@ class GHDisplay:
         for i in range(len(rects)):
             for z in range(4):
                 vec_lst = vect[i][z][0]
+
+    @staticmethod
+    def displayArrangeArchWithEdgePoly(poly_gh,
+                                       area_lst, dist_lst,
+                                       length_domain_left_lst, length_domain_right_lst,
+                                       width_domain_left_lst, width_domain_right_lst,
+                                       length_lst, width_lst, flag_lst,
+                                       arrangeClass_lst):
+        '''
+        展示根据地块边界多段线布置建筑
+        @params:
+        input:
+            poly_gh: gh中的边界多段线
+            area_lst: 每个建筑的面积列表
+            dist_lst: 每个建筑的间距列表
+            length_left(right)_domain_lst: 每个建筑的宽度值域区间左(右)列表
+            width_left(right)_domain_lst: 每个建筑的深度值域区间左(右)列表
+            length_lst: 每个建筑的宽列表
+            width_lst: 每个建筑的深度列表
+            flag_lst: 每个建筑先决定宽or深, 0->宽, 1->深
+            arrangeClass_lst: 每个建筑排列性质, 0->出头就排到下一段满足的
+        output:
+            poly_gh_lst: 每个建筑在gh里的多段线
+        '''
+        edge = GHDisplay.createPolyline(poly_gh)  # ?这里只是polyine, 不具备edge属性, 到时再改
+        length_domain_lst = [Domain(length_domain_left_lst[i], length_domain_right_lst[i]) for i in range(len(length_domain_left_lst))]
+        width_domain_lst = [Domain(width_domain_left_lst[i], width_domain_right_lst[i]) for i in range(len(width_domain_left_lst))]
+        arch_lst = []
+        for i in range(len(area_lst)):
+            arch = Arch(area_lst[i], length_domain_lst[i], width_domain_lst[i], length_lst[i], width_lst[i], flag_lst[i], arrangeClass_lst[i])
+            arch_lst.append(arch)
+        poly_index_lst, poly_lengthToStart_lst = rectangleArrange.computeArchPosition(edge, dist_lst, arch_lst)
+        # 建筑对象实例列表
+        new_arch_lst = rectangleArrange.arrangeAllArchs(arch_lst, edge, poly_index_lst, poly_lengthToStart_lst)
+        #print(arch_lst[0].area)
+        #print(poly_index_lst)
+        #print(poly_lengthToStart_lst)
+        #print(new_arch_lst)
+        # 转换成gh多段线实例
+        poly_gh_lst = [GHDisplay.displayPolyline(poly) for arch in new_arch_lst]
+        return poly_gh_lst
