@@ -183,6 +183,32 @@ class GHDisplay:
         for i in range(len(rects)):
             for z in range(4):
                 vec_lst = vect[i][z][0]
+    @staticmethod
+    def convertRec(rec):
+        # 将gh里的rectangle转换成起始点和四个向量
+        start_pt = None
+        vec_lst = []
+        #for i in range (len(rects)):
+        pt_lst = rs.PolylineVertices(rec)
+        start_pt = [pt_lst[0][0], pt_lst[0][1]]
+        for i in range(3):
+            vec_x = pt_lst[i+1][0] - pt_lst[i][0]; vec_y = pt_lst[i+1][1] - pt_lst[i][1]
+            vec = [vec_x, vec_y]
+            vec_lst.append(vec)
+        vec_x = pt_lst[0][0] - pt_lst[3][0]; vec_y = pt_lst[0][1] - pt_lst[3][1]
+        vec = [vec_x, vec_y]
+        vec_lst.append(vec)
+        return start_pt, vec_lst
+
+    @staticmethod
+    def convertRecs(rec_lst):
+        # 多个矩形的转换
+        pt_dict, vec_dict = {}, {}
+        for i in range(len(rec_lst)):
+            start_pt, vec_lst = GHDisplay.convertRec(rec_lst[i])
+            pt_dict[i] = start_pt
+            vec_dict[i] = vec_lst
+        return pt_dict, vec_dict
 
     @staticmethod
     def displayArrangeArchWithEdgePoly(poly_gh,
