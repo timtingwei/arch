@@ -26,12 +26,14 @@ def computeArchPosition(edge, dist_lst, arch_lst, angle_lst = None):
                 if not isBetweenPoly(start_length, edge, poly_index):
                     poly_index += 1
                     poly_lengthToStart = 0.0
+                    dist_lst[i] = 0.0  # 位于下一段的始端点
                     continue;
                 poly_lengthToStart += arch.length   # 矩形尾点距离
                 end_length = poly_lengthToStart
                 if not isBetweenPoly(end_length, edge, poly_index):
                     poly_index += 1
                     poly_lengthToStart = 0.0
+                    dist_lst[i] = 0.0  # 位于下一段的始端点
                     continue;
                 # 此时矩形完全在线段上, 是满足条件的
                 poly_index_lst_rst.append(poly_index)
