@@ -124,7 +124,7 @@ class GHDisplay:
         vecy1 = Vector(point_end[0]-origin_point1.x,point_end[1]-origin_point1.y)
         vecx1_na = vecx1.reverse()
         vecy1_na = vecy1.reverse()
-        now_rec1 = Rectangle([vecx1,vecy1,vecx1_na,vecy1_na],origin_point1)
+        now_rec1 = Rectangle(origin_point1,[vecx1,vecy1,vecx1_na,vecy1_na])
         return now_rec1
 
     @staticmethod
