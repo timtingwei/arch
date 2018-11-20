@@ -165,3 +165,44 @@
 ## 1. 建立在底层架构上, 组织排建筑结构算法[]
 ## 2. 构思建筑作为智能体的排房方法[]
 ## 3. 修改最短路算法, 选择点为角点时的poly是list问题[X]
+## 4. 建筑间距和建筑间距类型属性[X]-hxj提供
+
+# 11.14
+## 1. 增加沿着多段线布置矩形方法[]
+## 2. 增加Polyline类的几个子类, 建筑Arch类(Rectangle), 地块边界Edge类(Polyline), 道路Road类(Polyline), 存在继承关系[]
+## 3. 测试: gh矩形转换成构造数据类型[]-xyx提供
+
+
+# 11.15
+## 1. 沿着边界排建筑debug：
+### 1.1. debug: 'Edge' object has no attribute 'veclengthlst': Rectangle类中的一些方法和属性, 放在Polyline类中, Rectangle使用超类继承[X]
+### 1.2 debug: arrange文件返回的三变量都是空列表: computeArchPosition方法中, 不在线段上的长度才重新滞空, 少两个not[X]
+### 1.3 debug: 添加逆时针旋转90度的向量方法Vector::rotateVertical()[X]
+### 1.4 测试ReverseVector类和类方法Vector::reverse()的区别, 是否会改变实例对象[X]
+### 1.5 debug: fillArchWithRectangle方法, 用超类构造函数填充[X]
+## 2. 增加:将gh的polyline转化成构造的polyline实例的静态方法[X]
+
+----
+stone在这里说要暂停技术, 那我就自己并行着做了.
+
+# 11.16
+## 1. debug: 修改polyline的构造veclst和startpt的顺序, 做到几个继承类和调用的统一[X]
+## 2. 思路错误: 沿着边界排建筑的改变长度的同时间距改变的原因[X]-> 应该记录start_length
+
+# 11.17
+## 1. 将面积转宽深机制与沿着边界排房子结合起来[X]
+## 2. debug: 修改hxj测试最短路径时, 选择点为角点时, 路径不存在列表中的问题[X]
+## 3. 增加: 沿着边界排建筑的GhDisplay中的方法(可直接在ghPython中导入), GHDisplay::displayArrangeArchWithEdgePoly()[X]
+
+----
+整合现有的算法:
+现状人口建筑类型描述模型
+地块建筑属性分配
+主干道路割地块
+
+两个矩形间最短路径
+两个矩形间距, 分类
+沿着道路边界排建筑
+# 11.18
+## 1. debug: 修改间距的定义是, 和上一位点在edge上的距离, 而不是下一个合适线段的开始端点[X]
+## 2. debug: 增加转角阴阳角时的避让[]

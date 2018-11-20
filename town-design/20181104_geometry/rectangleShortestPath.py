@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-import pdb
 from geometry import RectangleCornerPoint, RectangleEdgePoint, Polylines, ReverseVector, VectorTwoPts, Phrase
 
 # 已经判断好两个矩形各个角点的可见性
@@ -33,7 +32,8 @@ def findShortestPath(relation, edge_index1=0, length1=0.0, edge_index2=0, length
         index =  0
         for i in cornerVisiable_dict[pt1.corner_index]:
             if pt2.corner_index == i:
-                isVisible = True; index = i; break;
+                isVisible = True; break;
+            index += 1
     else:
         # 至少有一个边点的情况
         edgePt_vec = VectorTwoPts(pt1, pt2)         # 矩形1指向指向矩形2角点的向量

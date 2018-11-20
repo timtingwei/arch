@@ -1,8 +1,18 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import math
-import pdb   # 调试
+#import pdb   # 调试
 from kits import AttrDisplay
+class Domain(AttrDisplay, object):
+    def __init__(self, domain_left, domain_right):
+        self.left = domain_left
+        self.right = domain_right
+
+    def limitInDomain(self, value):
+        # 把长度限制在值域范围内
+        value = self.left if value < self.left else (
+            self.right if value > self.right else value)
+        return value
 
 class Point2D(AttrDisplay, object):
     def __init__(self, coordinate):
@@ -195,10 +205,15 @@ class Vector(AttrDisplay, object):
         # 取反向量
         return Vector(-self.x, -self.y, length = self.length)  # 传值, 不会重新计算长度
 
+    def rotateVertical(self):
+        # 逆时针旋转90度
+        return Vector(-self.y, self.x, length = self.length)
+
 
     def getLength(self):
         # 向量的长度
         return math.sqrt(self.x * self.x + self.y * self.y)
+
 
     def judgeVectorParallel(self, vec):
         # 判断实例向量和vec之间是否平行
@@ -287,10 +302,20 @@ class Polyline(AttrDisplay, object):
     def __init__(self, start_pt, vec_lst):
         self.start_pt = start_pt
         self.vec_lst = vec_lst
-        self.pt_lst = self.getPointListFromVecs()
+        self.vec_length_lst = self.getVectorLengthList()
+        self.pt_lst = self.getPtListFromVectors()
         self.length = self.getLength()
         self.cornerYinYangProperty_lst = self.getYinYangProperty()
 
+
+    def getVectorLengthList(self):
+        # 根据所有向量将长度写入矩形实例属性
+        num = len(self.vec_lst)
+        length_lst = [0.0]*num
+        for i in range(num):
+            length_lst[i] = self.vec_lst[i].length
+        return length_lst
+        
     def getLength(self):
         # 返回polyline的每段向量长度和
         length = 0.0
@@ -298,9 +323,15 @@ class Polyline(AttrDisplay, object):
             length += vec.length
         return length
 
-    def getPointListFromVecs(self):
-        # 根据向量序得到点
-        return
+    def getPtListFromVectors(self):
+        # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
+        pt_lst = []
+        pt_lst.append(self.start_pt)
+        temp_pt = self.start_pt
+        for vec in self.vec_lst[:-1]:
+            temp_pt = temp_pt.addVec(vec)
+            pt_lst.append(temp_pt)
+        return pt_lst
 
     def getVectorListFromPts(self):
         # 根据顺序点得到向量
@@ -317,6 +348,7 @@ class Polyline(AttrDisplay, object):
         cornerYinYangProperty_lst = []
         return cornerYinYangProperty_lst
 
+    """
     def addPolylines(self, polys):
         # polys: 与之合并的其他顺序多段线list  # 之前改变了实例对象
         # 根据构造函数确定属性, pt的属性丢失, 必要时候重构  (一定要重构)
@@ -324,6 +356,7 @@ class Polyline(AttrDisplay, object):
         for i in range(len(polys)):
             new_poly.vec_lst.extend(polys[i].vec_lst)
         return Polyline(new_poly.start_pt, new_poly.vec_lst)
+    """
 class Polylines(Polyline):
     '多段Polylines构造'
     def __init__(self, polys):
@@ -337,33 +370,15 @@ class Polylines(Polyline):
     
 
 class Rectangle(Polyline):
-    def __init__(self, vec_lst, start_pt):
-        self.start_pt = start_pt
-        self.vec_lst = vec_lst
-        self.vec_length_lst = self.getVectorLengthList()
-        self.pt_lst = self.getPtListFromVectors()
+    def __init__(self, start_pt, vec_lst):
+        #self.start_pt = start_pt
+        #self.vec_lst = vec_lst
+        #self.vec_length_lst = self.getVectorLengthList()
+        #self.pt_lst = self.getPtListFromVectors()
+        super(Rectangle, self).__init__(start_pt, vec_lst)
         self.phrase_lst = self.getFourPhrase()
         self.pt_lst = self.revisePtToPtVec()    # 根据象限和向量得到角点向量点
         self.cornerYinYangProperty_lst = [1, 1, 1, 1]
-
-    def getVectorLengthList(self):
-        # 根据所有向量将长度写入矩形实例属性
-        num = len(self.vec_lst)
-        length_lst = [0.0]*num
-        for i in range(num):
-            length_lst[i] = self.vec_lst[i].length
-        return length_lst
-            
-
-    def getPtListFromVectors(self):
-        # 根据初始点和所有向量得到所有点, 将角点记录成向量位点
-        pt_lst = []
-        pt_lst.append(self.start_pt)
-        temp_pt = self.start_pt
-        for vec in self.vec_lst[:-1]:
-            temp_pt = temp_pt.addVec(vec)
-            pt_lst.append(temp_pt)
-        return pt_lst
 
     def getFourPhrase(self):
         # 根据x轴和y轴线得到四个象限
@@ -407,6 +422,98 @@ class Rectangle(Polyline):
         after = 0  if edge_index == 3 else edge_index+1
         cross = 0  if after == 3 else after+1
         return this, before, after, cross
+class Arch(Rectangle):
+    '建筑对象构造'
+    """
+    #通过宽深来构造矩形
+    def __init__(self, length = None, width = None, arrangeClass = 0, area = None):
+        self.length, self.width = length, width    # 建筑长宽
+        # start_pt, vec_lst, vec_length_lst, pt_lst, phrase_lst, cornerYinYangProperty_lst
+        self.arrangeClass = arrangeClass     # 建筑的沿边界分布的分配方式(0是建筑垂线不会有超过poly部分)
+        return
+    """
+    def __init__(self, area, length_domain, width_domain, length, width, flag, arrangeClass=0):
+        self.area = area
+        self.length_domain, self.width_domain = length_domain, width_domain
+        self.length, self.width = self.convertArea(area, length_domain, width_domain, length, width, flag)
+        self.arrangeClass = arrangeClass    # 建筑的沿边界分布的分配方式(0是建筑垂线不会有超过poly部分)
+        return
+
+    def fillArchWithRectangle(self, start_pt, vec_lst):
+        # 用起始点和向量填充当前arch实例
+        super(Arch, self).__init__(start_pt, vec_lst)
+        return
+
+    """
+    def limit(self, length, length_domain):
+        # 把长度限制在值域范围内
+        length = length_domain[0] if length < length_domain[0] else (length_domain[1] if length > length_domain[1] else length)
+        return length
+    """
+
+
+    def recomputeDomain(self, area, length_domain, width_domain):
+        # 根据面积, 对宽深范围重新计算, 得到在限制一次后, 不会超出的范围
+        # 注释掉的会改变区间对象实例
+        length_left, length_right = length_domain.left, length_domain.right
+        width_left, width_right = width_domain.left, width_domain.right
+        l_d1 = area/width_domain.right  # 得到最大深时的最小宽
+        l_d2 = area/width_domain.left  # 得到最小深时的最大宽
+        #if l_d1 > length_domain.left: length_domain.left = l_d1
+        #if l_d2 < length_domain.right: length_domain.right = l_d2
+        if l_d1 > length_domain.left: length_left = l_d1
+        if l_d2 < length_domain.right: length_right = l_d2
+
+        l_w1 = area/length_domain.right  # 得到最大宽时的最小深
+        l_w2 = area/length_domain.left  # 得到最小宽时的最大深
+        #if l_w1 > width_domain.left: width_domain.left = l_w1
+        #if l_w2 < width_domain.right: width_domain.right = l_w2
+        if l_w1 > width_domain.left: width_left = l_w1
+        if l_w2 < width_domain.right: width_right = l_w2
+        new_length_domain = Domain(length_left, length_right)
+        new_width_domain = Domain(width_left, width_right)
+        return new_length_domain, new_width_domain
+
+
+    # 结合面积转宽深的机制
+    def convertArea(self, area, length_domain, width_domain, length, width, flag):
+        """
+        给定面积, 宽深范围, 改变宽深中的一个值, 确定另外一个值
+        @params:
+        area: 面积 float
+        length_domian: 宽值范围 float[2]
+        width_domain: 深值范围 float[2]
+        length:   宽度 float
+        width:    深度 float
+        flag:     当前确定的是宽还是深度, 1 -> 宽, 0 -> 深
+        """
+        area = float(area)  # ? 如何定义好呢
+        length_domian, width_domain = self.recomputeDomain(area, length_domain, width_domain)
+        # 修改实例属性
+        self.length_domain, self.width_domain = length_domain, width_domain
+        if flag:
+            #length = limit(length, length_domain)
+            length = length_domain.limitInDomain(length)
+            width = area / length
+        else:
+            #width = limit(width, width_domain)
+            width = width_domain.limitInDomain(width)
+            length = area / width
+        return length, width
+
+class Edge(Polyline):
+    '地块边界对象构造'
+    def __init__(self, start_pt, vec_lst):
+        super(Edge, self).__init__(start_pt, vec_lst)
+        self.edgeProperty_lst = []     # 边界性质
+
+class Road(Polyline):
+    '道路对象描述'
+    def __init__(self, start_pt, vec_lst):
+        super(Road, self).__init__(start_pt, vec_lst)
+        self.max_flow = 0.0    # 这条路的最大人流量
+        return
+    
 
 class RectangleRelation(AttrDisplay, object):
     ' 两个矩形的关系对象 '
@@ -544,9 +651,9 @@ class RectangleRelation(AttrDisplay, object):
     #得到一个线段和一个点判断这个点和是否存在垂点，如果有垂点输出垂点。没有返回flag
     def getVerticalpoint(self,pt1,pt2,pt3):
         'point1就是该点,point2是线段的原点,point3是线段的末点'
-        line_vector = Vector(pt3.x-pt2.x,pt3.y-pt2.y) 
-        point_vector = Vector(line_vector.y*(-1),line_vector.x)
-        vertical_point = PointVec.rayrayIntersect(pt1,line_vector,pt2,point_vector)
+        line_vector = Vector(pt3.x-pt2.x,pt3.y-pt2.y) #线段向量 
+        point_vector = Vector(line_vector.y*(-1),line_vector.x) #pt1向量
+        vertical_point = PointVec.rayrayIntersect(pt1,point_vector,pt2,line_vector)
         #找到两个射线间的垂点，下面判断垂点是否在pt2与pt3的线段上
         vertical_vector = Vector(vertical_point.x-pt2.x,vertical_point.y-pt2.y)
         dotlin_lin = line_vector.dot(line_vector)
