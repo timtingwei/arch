@@ -515,6 +515,18 @@ class Road(Polyline):
         return
     
 
+class Rigid(Rectangle):
+    '刚体对象描述'
+    def __init__(self, start_pt, x_domain, y_domain, length, width):#刚体的x和y坐标的范围，对应的是刚体的宽深
+        super(Edge, self).__init__(start_pt, x_domain, y_domain, length, width)
+        self.min_x
+        self.max_x
+        self.min_y
+        self.max_y
+        return
+
+
+
 class RectangleRelation(AttrDisplay, object):
     ' 两个矩形的关系对象 '
     def __init__(self, rec1, rec2):
