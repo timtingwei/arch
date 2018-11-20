@@ -513,6 +513,37 @@ class Road(Polyline):
         super(Road, self).__init__(start_pt, vec_lst)
         self.max_flow = 0.0    # 这条路的最大人流量
         return
+
+class Block(object):
+    '地块对象描述'
+    def __init__(self, edge_poly):
+        self.edge_poly = edge_poly     # 地块边界
+        return
+
+class GroupBlock(Rectangle):
+    '正交区块对象描述'
+    def __init__(self, parent_block):
+        self.parent_block = parent_block    # 区块所属父地块
+        return
+
+class ArchGroup(object):
+    '建筑组团对象描述'
+    def __init__(self, child_arch_lst):
+        self.child_arch_lst = child_arch_lst    # 该组团所拥有的建筑列表
+        return
+    
+class Rigid(Rectangle):
+    '在区块中包含建筑的刚体对象描述'
+    def __init__(self, parent_groupBlock, child_arch):
+        self.parent = parent_groupBlock
+        self.child = child_arch
+        self.x_domain, self.y_domain = self.computeRigidDomain()
+        return
+
+    def computeRigidDomain(self):
+        x_domain, y_domain = None
+        # 计算存放矩形的刚体, 在区块中的位置, 从0角点开始算
+        return x_domain, y_domain
     
 
 class RectangleRelation(AttrDisplay, object):
