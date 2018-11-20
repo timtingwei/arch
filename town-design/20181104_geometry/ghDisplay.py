@@ -250,3 +250,16 @@ class GHDisplay:
         # 转换成gh多段线实例
         poly_gh_lst = [GHDisplay.displayPolyline(arch) for arch in new_arch_lst]
         return poly_gh_lst
+
+    @staticmethod
+    def creatRigid(rect):
+        #生成一个刚体
+        pt_lst = rs.PolylineVertices(rect)
+        rigid = Rigid(pt_lst)
+        pt1 = rs.CreatePoint(rigid.min_x, rigid.min_y)
+        pt2 = rs.CreatePoint(rigid.max_x, rigid.min_y)
+        pt3 = rs.CreatePoint(rigid.max_x, rigid.max_y)
+        pt4 = rs.CreatePoint(rigid.min_x, rigid.max_y)
+        gh_pt_lst = [pt1, pt2, pt3, pt4]
+        poly = rs.AddPolyline([pt1,pt2,pt3,pt4,pt1])
+        return gh_pt_lst,poly

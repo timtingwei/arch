@@ -515,15 +515,20 @@ class Road(Polyline):
         return
     
 
-class Rigid(Rectangle):
+class Rigid():
     '刚体对象描述'
-    def __init__(self, start_pt, x_domain, y_domain, length, width):#刚体的x和y坐标的范围，对应的是刚体的宽深
-        super(Edge, self).__init__(start_pt, x_domain, y_domain, length, width)
-        self.min_x
-        self.max_x
-        self.min_y
-        self.max_y
-        return
+    def __init__(self, pt_lst):
+        x_lst = []
+        y_lst = []
+        for i in range(len(pt_lst)):
+            x_lst.append(int(pt_lst[i][0]))
+            y_lst.append(int(pt_lst[i][1]))
+        x_lst.sort()
+        y_lst.sort()
+        self.min_x = x_lst[0]
+        self.max_x = x_lst[-1]
+        self.min_y = y_lst[0]
+        self.max_y = y_lst[-1]
 
 
 
