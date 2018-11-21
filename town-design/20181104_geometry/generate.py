@@ -109,9 +109,27 @@ class GroupBlock(geometry.Rectangle):
 
 class ArchGroup(object):
     '建筑组团对象描述'
-    def __init__(self, child_arch_lst):
+    def __init__(self, parent_groupBlock, child_arch_lst):
+        self.parent_groupBlock = parent_groupBlock  # 该组团所属区块
         self.child_arch_lst = child_arch_lst    # 该组团所拥有的建筑列表
         return
+
+    # 供xyx组团排列方式参考
+    def arrangeAppositeArch(self, arch_lst, arrange_direction, align_direction):
+        # 以第一个建筑为队首, 生成在某一方向, 与首建筑某边对齐, 并行排列的剩余建筑
+        orig_rigid = Rigid(self.parent_groupBlock, arch_lst[i])
+        p_rigid = orig_rigid
+        for i in range(len(arch_lst)-1):
+            this_arch, next_arch = arch_lst[i], arch_lst[i+1]
+            # 此类型的调用的刚体生成方法(核心)
+            rigid = p_rigid.generateRigidFromDistance(next_arch.length, next_arch.width,
+                                                      this_arch.length, 0.0,
+                                                      arrange_direction, align_direction, 0)
+            arch_lst[i] = rigid.convertArch()
+            # area, length_domain, width_domain, length, width, 还要覆盖某些属性
+        return
+            
+            
     
 class Rigid(geometry.Rectangle):
     '在区块中包含建筑的刚体对象描述'
@@ -127,3 +145,12 @@ class Rigid(geometry.Rectangle):
         # 如果已经是平行于父矩形边界:
         # 如果不平行
         return x_domain, y_domain
+
+    def convertArch(self):
+        # 将刚体转换成建筑
+    def generateRigidFromDistance(x_length, y_length,
+                                  dist_length, offset_length,
+                                  dist_direction, align_direction, offset_direction):
+        # 矩形刚体根据间距, 偏移, 间距方向, 对齐方向, 偏移方向生成另一刚体
+        rigid = None; x_domain = None; y_domain = None;
+        
