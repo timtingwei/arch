@@ -117,7 +117,8 @@ class ArchGroup(object):
     # 供xyx组团排列方式参考
     def arrangeAppositeArch(self, arch_lst, arrange_direction, align_direction):
         # 以第一个建筑为队首, 生成在某一方向, 与首建筑某边对齐, 并行排列的剩余建筑
-        orig_rigid = Rigid(self.parent_groupBlock, arch_lst[i])
+        orig_rigid = Rigid(0,
+                           parent_groupBlock = self.parent_groupBlock, child_arch = arch_lst[i])
         p_rigid = orig_rigid
         for i in range(len(arch_lst)-1):
             this_arch, next_arch = arch_lst[i], arch_lst[i+1]
@@ -133,10 +134,19 @@ class ArchGroup(object):
     
 class Rigid(geometry.Rectangle):
     '在区块中包含建筑的刚体对象描述'
-    def __init__(self, parent_groupBlock, child_arch):
-        self.parent = parent_groupBlock   # 所属的组团
-        self.child = child_arch           # 包含的建筑
-        self.x_domain, self.y_domain = self.computeRigidDomain()
+    def __init__(self, init_flag,
+                 parent_groupBlock = None, child_arch = None,
+                 x_domain = None, y_domain = None):
+        if init_flag == 0 and
+        not parent_groupBlock is None and not child_arch is None:
+            # __init__(parent_groupBlock, child_arch)            
+            self.parent = parent_groupBlock   # 所属的组团
+            self.child = child_arch           # 包含的建筑
+            self.x_domain, self.y_domain = self.computeRigidDomain()
+        elif init_flag == 1 and not parent_groupBlock is None and not x_domain is None and not y_domain is None:
+            # __init__(parent_groupBlock, x_domain, y_domain)
+            self.parent = parent_groupBlock   # 所属的组团
+            self.x_domain = x_domain; self.y_domain = y_domain
         return
 
     def computeRigidDomain(self):
@@ -212,9 +222,10 @@ class Rigid(geometry.Rectangle):
                 x_domain_left = self.x_domain.right + dist_length
                 x_domain_right = x_domain_left + x_length
 
-        rigid = Rigid(self.parent,
-                      geometry.Domain(x_domain_left, x_domain_right),
-                      geometry.Domain(y_domain_left, y_domain_right))  # ?构造一个对齐排列的刚体
+        rigid = Rigid(1,
+                      parent_groupBlock = self.parent,
+                      x_domain = geometry.Domain(x_domain_left, x_domain_right),
+                      y_domain = geometry.Domain(y_domain_left, y_domain_right))  # ?构造一个对齐排列的刚体
         return rigid
 
         
