@@ -148,9 +148,76 @@ class Rigid(geometry.Rectangle):
 
     def convertArch(self):
         # 将刚体转换成建筑
-    def generateRigidFromDistance(x_length, y_length,
-                                  dist_length, offset_length,
-                                  dist_direction, align_direction, offset_direction):
+        return
+
+    def generateRigidFromDistance(self, x_length, y_length,
+                                  dist_length, dist_direction,
+                                  align_direction, offset_direction = None, offset_length = None):
         # 矩形刚体根据间距, 偏移, 间距方向, 对齐方向, 偏移方向生成另一刚体
+        # dist_direction: 0下, 1右, 2上, 3左
+        # align_direction: 01上下, 01左右
+        # offset_direction: 0内, 1外
+        # 未加入对偏移量的限制
         rigid = None; x_domain = None; y_domain = None;
+        x_domain_left, x_domain_right = 0.0, 0.0
+        y_domain_left, y_domain_right = 0.0, 0.0
+        if dist_direction == 0 or dist_direction == 2:   # 向上下作用距离
+            if align_direction == 0:  # 和左对齐
+                x_domain_left = self.x_domain.left
+                x_domain_right = self.x_domain.left + x_length
+                if not offset_direction is None:
+                    # 向内外偏移
+                    if offset_direction == 0:
+                        x_domain_left += offset_length; x_domain_right += offset_length
+                    else:
+                        x_domain_left -= offset_length; x_domain_right -= offset_length
+            else:  # 和右对齐
+                x_domain_right = self.x_domain.right
+                x_domain_left = self.x_domain.right - x_length
+                if not offset_direction is None:
+                    # 向内外偏移
+                    if offset_direction == 0:
+                        x_domain_left -= offset_length; x_domain_right -= offset_length
+                    else:
+                        x_domain_left += offset_length; x_domain_right += offset_length
+            if dist_direction == 0:  # 向下作用距离
+                y_domain_right = self.y_domain.left - dist_length
+                y_domain_left = y_domain_right - y_length
+            else:    # 向上作用距离
+                y_domain_left = self.y_domain.left + dist_length
+                y_domain_right = y_domain_left + y_length
+        else:    # 向左右作用距离
+            if align_direction == 0:   # 和上对齐
+                y_domain_right = self.y_domain.right
+                y_domain_left = self.y_domain.right - y_length
+                if not offset_direction is None:
+                    # 向内外偏移
+                    if offset_direction == 0:
+                        y_domain_left -= offset_length; y_domain_right -= offset_length
+                    else:
+                        y_domain_left += offset_length; y_domain_right += offset_length
+            else:   # 和下对齐
+                y_domain_left = self.y_domain.left
+                y_domain_right = self.y_domain.left + y_length
+                if not offset_direction is None:
+                    # 向内外偏移
+                    if offset_direction == 0:
+                        y_domain_left += offset_length; y_domain_right += offset_length
+                    else:
+                        y_domain_left -= offset_length; y_domain_right -= offset_length
+            if dist_direction == 1: # 向左作用距离
+                x_domain_right = self.x_domain.left - dist_length
+                x_domain_left = x_domain_right - x_length
+            else:  # 向右作用距离
+                x_domain_left = self.x_domain.right + dist_length
+                x_domain_right = x_domain_left + x_length
+
+        rigid = Rigid(self.parent,
+                      geometry.Domain(x_domain_left, x_domain_right),
+                      geometry.Domain(y_domain_left, y_domain_right))  # ?构造一个对齐排列的刚体
+        return rigid
+
+        
+        
+                
         
