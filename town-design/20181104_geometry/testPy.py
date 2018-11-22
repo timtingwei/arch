@@ -135,6 +135,7 @@ def main():
     print(child.a)
 """
 
+"""
 # 测试ReverseVector类和类方法Vector::reverse()的区别, 是否会改变实例对象
 from geometry import Vector, ReverseVector
 
@@ -148,7 +149,26 @@ def testReverse():
 
 def main():
     testReverse()
+"""
 
+# 测试用012+关键字的重载构造函数方法
+
+class Parent(object):
+    def __init__(self, init_flag, a = None, b = None, c = None):
+        if init_flag == 0 and (not a is None) and (not b is None):
+            # __init__(a, b)
+            self.a = a; self.b = b
+        elif init_flag == 1 and (not c is None):
+            # __init__(c)
+            self.c = c
+        return
+
+def main():
+    parent = Parent(0, a = 2, b = 3)
+    print(parent.a, parent.b)
+    parent2 = Parent(1, c = 3)
+    print(parent2.c)
+    #print(parent.c)
 
 if __name__ == '__main__':
     main()
