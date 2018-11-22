@@ -437,6 +437,23 @@ class Rectangle(Polyline):
         return this, before, after, cross
     
 
+class Rigid():
+    '刚体对象描述'
+    def __init__(self, pt_lst):
+        x_lst = []
+        y_lst = []
+        for i in range(len(pt_lst)):
+            x_lst.append(int(pt_lst[i][0]))
+            y_lst.append(int(pt_lst[i][1]))
+        x_lst.sort()
+        y_lst.sort()
+        self.min_x = x_lst[0]
+        self.max_x = x_lst[-1]
+        self.min_y = y_lst[0]
+        self.max_y = y_lst[-1]
+
+
+
 class RectangleRelation(AttrDisplay, object):
     ' 两个矩形的关系对象 '
     def __init__(self, rec1, rec2):
