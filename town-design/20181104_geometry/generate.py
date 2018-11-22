@@ -152,8 +152,18 @@ class Rigid(geometry.Rectangle):
     def computeRigidDomain(self):
         # 计算存放矩形的刚体, 在区块中的位置, 从0角点开始算
         x_domain, y_domain = None
-        # 如果已经是平行于父矩形边界:
-        # 如果不平行
+        vec = self.child.pt_lst[0].createTwoPtsVec(self.parent.pt_lst[0])
+        x_domain_mid = vec.x; y_domain_mid = vec.y
+        if self.child.vec_lst[0].judgeVectorParallel(self.parent.vec_lst[0]):
+            # 如果已经是平行于父矩形边界:
+            x_domain = geometry.Domain(x_domain_mid, x_domain_mid + self.child.vec_length_lst[0])
+            y_domain = geometry.Domain(y_domain_mid, y_domain_mid + self.child.vec_length_lst[3])
+        else:
+            # 如果不平行
+            x_domain = Domain(x_domain_mid - self.child.vec_lst[3].projectToXAxis(),
+                              x_domain_mid + self.child.vec_lst[0].projectToXAxis()) # 在x轴投影
+            y_domain = Domain(y_domain_mid - self.child.vec_lst[0].projectToYAxis(),
+                              y_domain_mid + self.child.vec_lst[1].projectToYAxis()) # 在y轴投影
         return x_domain, y_domain
 
     def convertArch(self):
