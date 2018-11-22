@@ -21,6 +21,11 @@ class Point2D(AttrDisplay, object):
     def addVec(self, vec):
         return Point2D([self.x + vec.x, self.y + vec.y])
 
+    def createTwoPtsVec(self, other_pt):
+        # 得到从other_pt指向该pt的向量
+        vec = Vector(self.x - other_pt.x, self.y - other_pt.y)
+        return vec
+
 class PointVec(Point2D):
     '向量点构造'
     def __init__(self, pt, vec_lst):
@@ -220,6 +225,14 @@ class Vector(AttrDisplay, object):
         if self.cross(vec) == 0:
             return True
         else: return False
+
+    def projectToXAxis(self):
+        # 返回向量在x轴上的投影
+        return abs(self.x)
+
+    def projectToYAxis(self):
+        # 返回向量在y轴上的投影
+        return abs(self.y)
 class ReverseVector(Vector):
     def __init__(self, vec):
         self.x, self.y = -vec.x, -vec.y
