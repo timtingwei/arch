@@ -14,10 +14,12 @@ class Arch(geometry.Rectangle):
         return
     """
     def __init__(self, area, length_domain, width_domain, length, width, flag, arrangeClass=0):
+        # 考虑到先给出的是抽象的长度和面积以及一系列属性, 位置不确定
         self.area = area
         self.length_domain, self.width_domain = length_domain, width_domain
         self.length, self.width = self.convertArea(area, length_domain, width_domain, length, width, flag)
         self.arrangeClass = arrangeClass    # 建筑的沿边界分布的分配方式(0是建筑垂线不会有超过poly部分)
+        self.rigid = None    # 当前建筑的外包刚体
         return
 
     def fillArchWithRectangle(self, start_pt, vec_lst):
@@ -114,6 +116,25 @@ class ArchGroup(object):
         self.child_arch_lst = child_arch_lst    # 该组团所拥有的建筑列表
         return
 
+    def computeGroupDomain(self):
+        # 计算包围一个组团的刚体, 找出上下左右值域极值
+        rigid = None
+        x_domain, y_domain = None, None
+        x_min, y_min = -2147483645, -2147483645; x_max, y_max = 2147483647, 2147483647
+        for arch in self.child_arch_lst:
+            if arch.rigid is None:
+                arch.rigid = Rigid(0, parent_groupBlock = self.parentBlock, child_arch = arch)
+            rigid_x_domain = arch.rigid.x_domain
+            rigid_y_domain = arch.rigid.y_domain
+            if rigid_x_domain.left < x_min: x_min = rigid_x_domain.left
+            if rigid_y_domain.right > x_max: x_max = rigid_x_domain.right
+            if rigid_y_domain.left < y_min: y_min = rigid_y_domain.left
+            if rigid_y_domain.right > y_max: y_max = rigid_y_domain.right
+        x_domain = Domain(x_min, x_max); y_domain = Domain(y_min, y_max)
+        rigid = Rigid(1, parent_groupBlock = self.parent_groupBlock, x_domin = x_domain, y_domain = y_domain)
+        return rigid
+        
+
     # 供xyx组团排列方式参考
     def arrangeAppositeArch(self, arch_lst, arrange_direction, align_direction):
         # 以第一个建筑为队首, 生成在某一方向, 与首建筑某边对齐, 并行排列的剩余建筑
@@ -123,9 +144,12 @@ class ArchGroup(object):
         for i in range(len(arch_lst)-1):
             this_arch, next_arch = arch_lst[i], arch_lst[i+1]
             # 此类型的调用的刚体生成方法(核心)
+            generateRigidFromDistance(self, x_length, y_length,
+                                  dist_length, dist_direction,
+                                  align_direction, offset_direction = None, offset_length = None):
             rigid = p_rigid.generateRigidFromDistance(next_arch.length, next_arch.width,
-                                                      this_arch.length, 0.0,
-                                                      arrange_direction, align_direction, 0)
+                                                      this_arch.length, arrange_direction,
+                                                      align_direction)
             arch_lst[i] = rigid.convertArch()
             # area, length_domain, width_domain, length, width, 还要覆盖某些属性
         return
@@ -170,7 +194,7 @@ class Rigid(geometry.Rectangle):
         # 将刚体转换成建筑
         return
 
-    def generateRigidFromDistance(self, x_length, y_length,
+    def generateRigidFromDistance(self, x_length, y_width,
                                   dist_length, dist_direction,
                                   align_direction, offset_direction = None, offset_length = None):
         # 矩形刚体根据间距, 偏移, 间距方向, 对齐方向, 偏移方向生成另一刚体
